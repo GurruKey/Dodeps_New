@@ -1,0 +1,18 @@
+Файл — scripts/new-game.mjs
+
+(создай папку scripts/ в корне и вставь содержимое)
+
+Как пользоваться
+# пример 1
+node scripts/new-game.mjs Dodepus CoinFlip --title "Coin Flip"
+
+# пример 2
+node scripts/new-game.mjs LuckySoft Lucky777 --title "Lucky 777"
+
+
+Скрипт создаст:
+
+public/games/<provider>/<slug>/index.html
+
+
+и напечатает готовый маршрут.

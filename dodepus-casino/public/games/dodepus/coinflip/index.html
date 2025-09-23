@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <title>Coin Flip — demo package</title>
+    <style>
+      :root {
+        --bg: #0f1216;
+        --card: #171b21;
+        --text: #e5e7eb;
+        --muted: #9aa3af;
+        --accent: #4f46e5;
+        --accent-2: #06b6d4;
+        --success: #10b981;
+        --danger: #ef4444;
+        --radius: 16px;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        background: radial-gradient(1200px 600px at 50% 0%, #10151c 0%, #0b0f14 60%, #0a0d12 100%), var(--bg);
+        color: var(--text);
+        font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        display: grid;
+        place-items: center;
+      }
+      .wrap {
+        width: min(960px, 92vw);
+        height: min(540px, 52vw); /* рассчитано под iframe 16:9 */
+        background: var(--card);
+        border: 1px solid #1f242c;
+        border-radius: var(--radius);
+        box-shadow: 0 10px 30px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.03);
+        padding: 20px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 14px;
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex; gap: 10px; align-items: center;
+        font-weight: 600;
+      }
+      .brand-dot {
+        width: 10px; height: 10px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: 0 0 12px rgba(79,70,229,.6);
+      }
+      .muted { color: var(--muted); }
+      .area {
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(220px 120px at 20% 10%, rgba(79,70,229,.12), transparent 55%),
+          radial-gradient(260px 160px at 80% 0%, rgba(6,182,212,.12), transparent 60%),
+          linear-gradient(180deg, rgba(255,255,255,.02), transparent);
+        border: 1px solid #212731;
+        border-radius: calc(var(--radius) - 6px);
+        position: relative;
+      }
+      .coin {
+        width: clamp(120px, 22vmin, 180px);
+        height: clamp(120px, 22vmin, 180px);
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #ffd57a, #b8860b 70%, #7a5c0a);
+        box-shadow:
+          inset 0 0 8px rgba(0,0,0,.4),
+          0 12px 28px rgba(0,0,0,.4);
+        display: grid;
+        place-items: center;
+        color: #2a230a;
+        font-weight: 800;
+        letter-spacing: .5px;
+        text-transform: uppercase;
+        transform-style: preserve-3d;
+        transition: transform .2s ease;
+        user-select: none;
+        cursor: pointer;
+      }
+      .coin:hover { transform: translateY(-2px) scale(1.02); }
+      .coin.spin {
+        animation: flip 900ms cubic-bezier(.2,.7,.2,1) forwards;
+      }
+      @keyframes flip {
+        0%   { transform: rotateY(0deg); }
+        50%  { transform: rotateY(540deg) scale(1.02); }
+        100% { transform: rotateY(1080deg); }
+      }
+      .result {
+        position: absolute;
+        bottom: 14px; left: 14px; right: 14px;
+        display: flex; justify-content: space-between; align-items: center;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 6px 10px;
+        border: 1px solid #2a3140; border-radius: 999px;
+        background: #141922;
+      }
+      .pill.ok { border-color: rgba(16,185,129,.35); color: #a7f3d0; }
+      .pill.bad { border-color: rgba(239,68,68,.35); color: #fecaca; }
+      .bottom {
+        display: flex; justify-content: space-between; align-items: center;
+        color: var(--muted);
+        gap: 10px;
+      }
+      .btn {
+        border: 1px solid #2a3140; background: #141922; color: #e5e7eb;
+        padding: 8px 14px; border-radius: 10px; cursor: pointer;
+      }
+      .btn:active { transform: translateY(1px); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap" role="application" aria-label="Game canvas">
+      <div class="top">
+        <div class="brand"><span class="brand-dot"></span> Coin Flip (demo)</div>
+        <div class="muted">Управление находится внутри игры-пакета</div>
+      </div>
+
+      <div class="area" id="area">
+        <div class="coin" id="coin" aria-live="polite" title="Кликни, чтобы подбросить">
+          <span>Flip</span>
+        </div>
+        <div class="result" id="resultRow">
+          <span id="status" class="pill">Готово</span>
+          <span class="muted">Демо-логика, без связи с сайтом</span>
+        </div>
+      </div>
+
+      <div class="bottom">
+        <span class="muted">Пакет игры загружается из <code>/public/games/dodepus/coinflip/</code></span>
+        <button class="btn" id="fullscreenBtn" title="Во весь экран">Во весь экран</button>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const coin = document.getElementById('coin');
+        const status = document.getElementById('status');
+        const area = document.getElementById('area');
+        const fullBtn = document.getElementById('fullscreenBtn');
+
+        let busy = false;
+
+        function flip() {
+          if (busy) return;
+          busy = true;
+          status.className = 'pill';
+          status.textContent = 'Крутим…';
+          coin.classList.remove('spin');
+          // перезапуск анимации
+          void coin.offsetWidth;
+          coin.classList.add('spin');
+
+          setTimeout(() => {
+            const win = Math.random() < 0.5;
+            status.className = 'pill ' + (win ? 'ok' : 'bad');
+            status.textContent = win ? 'Орёл' : 'Решка';
+            busy = false;
+          }, 900);
+        }
+
+        coin.addEventListener('click', flip);
+        area.addEventListener('keydown', (e) => {
+          if (e.code === 'Space' || e.code === 'Enter') {
+            e.preventDefault();
+            flip();
+          }
+        });
+
+        // Фуллскрин внутри iframe (на весь iframe)
+        fullBtn.addEventListener('click', async () => {
+          try {
+            if (!document.fullscreenElement) {
+              await document.documentElement.requestFullscreen();
+            } else {
+              await document.exitFullscreen();
+            }
+          } catch (e) {
+            console.warn('Fullscreen error', e);
+          }
+        });
+
+        // Сообщим родителю, что игра готова (опционально)
+        try {
+          window.parent && window.parent.postMessage({ type: 'GAME_READY', game: 'coinflip' }, '*');
+        } catch {}
+      })();
+    </script>
+  </body>
+</html>

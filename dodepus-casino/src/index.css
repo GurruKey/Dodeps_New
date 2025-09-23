@@ -1,0 +1,67 @@
+/* ===== База и сброс ===== */
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+}
+
+:root {
+  color-scheme: light; /* корректные системные скроллбары/формы в светлой */
+}
+
+[data-bs-theme='dark'] {
+  color-scheme: dark;  /* корректные скроллбары/формы в тёмной */
+}
+
+/* ===== Плавные переходы при смене темы ===== */
+@media (prefers-reduced-motion: no-preference) {
+  html, body {
+    transition: background-color .25s ease, color .25s ease;
+  }
+  .card, .navbar, .dropdown-menu, .list-group-item, .btn, .badge, .form-control, .form-select {
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+}
+
+/* ===== Фон страницы (деликатная подложка) ===== */
+body {
+  /* Bootstrap сам выставляет базовые цвета через CSS-переменные.
+     Здесь лишь добавим лёгкий градиент поверх theming-переменных. */
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(0,0,0,.04), transparent 60%),
+    var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+/* В тёмной — чуть более глубокий фон */
+[data-bs-theme='dark'] body {
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.04), transparent 60%),
+    var(--bs-body-bg);
+}
+
+/* ===== Ссылки ===== */
+a {
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Выделение текста (selection) под тему ===== */
+::selection {
+  background: color-mix(in oklab, var(--bs-primary), transparent 80%);
+}
+
+/* ===== Карточки/контейнеры — деликатные границы ===== */
+.card, .list-group-item, .dropdown-menu, .navbar, .form-control, .form-select {
+  border-color: var(--bs-border-color, rgba(0,0,0,.125));
+}
+
+/* ===== Утилиты ===== */
+.ratio > iframe, .ratio > img {
+  border-radius: .5rem;
+}
+
+/* Избавляемся от возможных наследованных демо-стилей Vite */
+#root > .logo, .read-the-docs { display: none !important; }
