@@ -4,19 +4,30 @@ import { useAuth } from './AuthContext.jsx';
 import Home from '../pages/Home.jsx';
 import Lobby from '../pages/Lobby.jsx';
 import Game from '../pages/Game.jsx';
-import Profile from '../pages/Profile.jsx';
-import Auth from '../pages/Auth.jsx';
 import Admin from '../pages/Admin.jsx';
 import ProviderPage from '../pages/Provider.jsx';
 import ProvidersPage from '../pages/Providers.jsx';
 import CategoriesPage from '../pages/Categories.jsx';
 import NotFound from '../pages/NotFound.jsx';
 
+import Login from '../pages/auth/Login.jsx';
+import Register from '../pages/auth/Register.jsx';
+
+import ProfileLayout from '../pages/profile/ProfileLayout.jsx';
+import Personal from '../pages/profile/Personal.jsx';
+import Wallet from '../pages/profile/Wallet.jsx';
+import Terminal from '../pages/profile/Terminal.jsx';
+import History from '../pages/profile/History.jsx';
+import Verification from '../pages/profile/Verification.jsx';
+import Promos from '../pages/profile/Promos.jsx';
+import Season from '../pages/profile/Season.jsx';
+import GamesHistory from '../pages/profile/GamesHistory.jsx';
+
 function RequireAuth({ children }) {
   const { isAuthed } = useAuth();
   const location = useLocation();
   if (!isAuthed) {
-    return <Navigate to="/auth" replace state={{ from: location }} />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
   return children;
 }
@@ -36,7 +47,12 @@ export default function AppRoutes() {
       <Route path="/providers" element={<ProvidersPage />} />
       <Route path="/providers/:provider" element={<ProviderPage />} />
 
-      <Route path="/auth" element={<Auth />} />
+      {/* Auth */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/auth" element={<Navigate to="/login" replace />} />
+
+      {/* Admin (если нужен доступ только авторизованным — оберни в RequireAuth) */}
       <Route path="/admin" element={<Admin />} />
 
       {/* Только для авторизованных */}
@@ -48,14 +64,28 @@ export default function AppRoutes() {
           </RequireAuth>
         }
       />
+
+      {/* Профиль — layout + вложенные вкладки */}
       <Route
         path="/profile"
         element={
           <RequireAuth>
-            <Profile />
+            <ProfileLayout />
           </RequireAuth>
         }
-      />
+      >
+        {/* redirect /profile -> /profile/personal */}
+        <Route index element={<Navigate to="personal" replace />} />
+        <Route path="wallet" element={<Wallet />} />
+        <Route path="history" element={<History />} />
+        <Route path="terminal" element={<Terminal />} />
+        <Route path="personal" element={<Personal />} />
+        <Route path="verification" element={<Verification />} />
+        <Route path="promos" element={<Promos />} />
+        <Route path="season" element={<Season />} />
+        <Route path="games-history" element={<GamesHistory />} />
+        {/* будущее: security, notifications и т.п. */}
+      </Route>
 
       <Route path="*" element={<NotFound />} />
     </Routes>

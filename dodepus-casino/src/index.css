@@ -1,67 +1,72 @@
-/* ===== База и сброс ===== */
-* { box-sizing: border-box; }
-
-html, body, #root {
-  height: 100%;
-}
-
-:root {
-  color-scheme: light; /* корректные системные скроллбары/формы в светлой */
-}
-
-[data-bs-theme='dark'] {
-  color-scheme: dark;  /* корректные скроллбары/формы в тёмной */
-}
-
-/* ===== Плавные переходы при смене темы ===== */
-@media (prefers-reduced-motion: no-preference) {
-  html, body {
-    transition: background-color .25s ease, color .25s ease;
-  }
-  .card, .navbar, .dropdown-menu, .list-group-item, .btn, .badge, .form-control, .form-select {
-    transition: background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
-  }
-}
-
-/* ===== Фон страницы (деликатная подложка) ===== */
-body {
-  /* Bootstrap сам выставляет базовые цвета через CSS-переменные.
-     Здесь лишь добавим лёгкий градиент поверх theming-переменных. */
-  background:
-    radial-gradient(1200px 600px at 50% -10%, rgba(0,0,0,.04), transparent 60%),
-    var(--bs-body-bg);
-  color: var(--bs-body-color);
-}
-
-/* В тёмной — чуть более глубокий фон */
-[data-bs-theme='dark'] body {
-  background:
-    radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.04), transparent 60%),
-    var(--bs-body-bg);
-}
-
-/* ===== Ссылки ===== */
-a {
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
-}
-
-/* ===== Выделение текста (selection) под тему ===== */
-::selection {
-  background: color-mix(in oklab, var(--bs-primary), transparent 80%);
-}
-
-/* ===== Карточки/контейнеры — деликатные границы ===== */
-.card, .list-group-item, .dropdown-menu, .navbar, .form-control, .form-select {
-  border-color: var(--bs-border-color, rgba(0,0,0,.125));
-}
-
-/* ===== Утилиты ===== */
-.ratio > iframe, .ratio > img {
+/* ==== GameCard v2 (cover + hover overlay + zoom/blur) ==== */
+.game-card-thumb {
+  position: relative;
   border-radius: .5rem;
+  overflow: hidden;
 }
 
-/* Избавляемся от возможных наследованных демо-стилей Vite */
-#root > .logo, .read-the-docs { display: none !important; }
+/* картинка тянется ровно, со стабильной высотой */
+.game-card-thumb img,
+.game-card-thumb picture,
+.game-card-thumb canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  transition: transform .35s ease, filter .35s ease;
+}
+
+/* эффект увеличения и лёгкого блюра на hover */
+.game-card:hover .game-card-thumb img,
+.game-card:focus-within .game-card-thumb img {
+  transform: scale(1.06);
+  filter: blur(1.5px);
+}
+
+.game-card-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, .35);      /* лёгкое затемнение */
+  backdrop-filter: blur(2px);          /* размытие фона под оверлеем */
+  opacity: 0;
+  transition: opacity .2s ease-in-out;
+  pointer-events: none;
+  z-index: 2;                /* чтоб не блокировал hover, пока скрыт */
+}
+
+.game-card:hover .game-card-overlay,
+.game-card:focus-within .game-card-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.game-card-meta {
+  padding: .5rem .25rem 0;
+}
+
+.game-card-title {
+  font-weight: 600;
+}
+
+.game-card-sub {
+  font-size: .85rem;
+  color: var(--bs-secondary-color, #9aa0a6);
+}
+
+.profile-sidebar {
+  position: sticky;
+  top: 12px;
+}
+
+.balance-amount {
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: .3px;
+}
+
+.balance-actions .btn {
+  min-width: 220px;
+}
