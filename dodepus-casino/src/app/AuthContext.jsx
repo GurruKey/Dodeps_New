@@ -10,18 +10,31 @@ function normalizeUser(u) {
   if (!u) return u;
   return {
     ...u,
+    // базовые поля
     nickname: u.nickname ?? (u.email || ''),
     firstName: u.firstName ?? '',
     lastName: u.lastName ?? '',
     gender: u.gender ?? 'unspecified',
     dob: u.dob ?? null,
-    socialStatus: u.socialStatus ?? 'employed',
+
+    // контакты/адрес
+    phone: u.phone ?? '',
     country: u.country ?? '',
     city: u.city ?? '',
     address: u.address ?? '',
     emailVerified: u.emailVerified ?? false,
-    mfaEnabled: u.mfaEnabled ?? false,              // ← NEW
+    mfaEnabled: u.mfaEnabled ?? false,
+
+    // финансы
+    balance: Number.isFinite(Number(u.balance)) ? Number(u.balance) : 0, // реальный, выводимый
+    currency: u.currency ?? 'USD',
+    // 🔹 НОВОЕ: казино-баланс (не для вывода, не учитывается в withdrawable)
+    casinoBalance: Number.isFinite(Number(u.casinoBalance)) ? Number(u.casinoBalance) : 0,
+
     transactions: Array.isArray(u.transactions) ? u.transactions : [],
+
+    // верификация
+    verificationUploads: Array.isArray(u.verificationUploads) ? u.verificationUploads : [],
   };
 }
 
@@ -52,7 +65,7 @@ export function AuthProvider({ children }) {
       normalizeUser({
         id,
         email: isEmail ? identifier : null,
-        phone: isEmail ? null : identifier,
+        phone: isEmail ? '' : identifier,
         nickname: isEmail ? identifier : '',
         firstName: '',
         lastName: '',
@@ -63,24 +76,37 @@ export function AuthProvider({ children }) {
         city: '',
         address: '',
         emailVerified: false,
-        mfaEnabled: false,                           // ← NEW
-        balance: 1000,
+        mfaEnabled: false,
+        balance: 1000,           // реальный баланс
+        casinoBalance: 0,        // 🔹 НОВОЕ: отдельный «баланс казино»
         currency: 'USD',
         transactions: [],
+        verificationUploads: [],
       })
     );
   };
 
   const logout = () => setUser(null);
 
+  // Реальный (выводимый) баланс
   const setBalance = (value) =>
     setUser((u) => (u ? { ...u, balance: Number(value) || 0 } : u));
 
   const addBalance = (delta) =>
     setUser((u) =>
-      u ? { ...u, balance: Math.max(0, (u.balance || 0) + Number(delta || 0)) } : u
+      u ? { ...u, balance: Math.max(0, (Number(u.balance) || 0) + Number(delta || 0)) } : u
     );
 
+  // 🔹 НОВОЕ: казино-баланс (не для вывода)
+  const setCasinoBalance = (value) =>
+    setUser((u) => (u ? { ...u, casinoBalance: Math.max(0, Number(value) || 0) } : u));
+
+  const addCasinoBalance = (delta) =>
+    setUser((u) =>
+      u ? { ...u, casinoBalance: Math.max(0, (Number(u.casinoBalance) || 0) + Number(delta || 0)) } : u
+    );
+
+  // Профильные штуки
   const setNickname = (nickname) =>
     setUser((u) => (u ? { ...u, nickname: nickname ?? '' } : u));
 
@@ -101,17 +127,44 @@ export function AuthProvider({ children }) {
       return { ...u, transactions: [nextTxn, ...(u.transactions || [])] };
     });
 
+  const addVerificationUpload = (file) => {
+    if (!file) return;
+    const entry = {
+      id:
+        (globalThis.crypto?.randomUUID?.() ??
+          `vf_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`),
+      name: file.name ?? 'document',
+      type: file.type ?? '',
+      size: file.size ?? 0,
+      uploadedAt: new Date().toISOString(),
+    };
+    setUser((u) => (u ? { ...u, verificationUploads: [entry, ...(u.verificationUploads || [])] } : u));
+  };
+
+  const setEmailVerified = (flag = true) =>
+    setUser((u) => (u ? { ...u, emailVerified: !!flag } : u));
+
   const value = useMemo(
     () => ({
       user,
       isAuthed: Boolean(user),
       login,
       logout,
+
+      // балансы
+      balance: user?.balance ?? 0,
+      casinoBalance: user?.casinoBalance ?? 0,
       setBalance,
       addBalance,
+      setCasinoBalance,
+      addCasinoBalance,
+
+      // профиль/транзакции/верификация
       setNickname,
       updateProfile,
       addTransaction,
+      addVerificationUpload,
+      setEmailVerified,
     }),
     [user]
   );

@@ -6,11 +6,7 @@ export default function AccountIdBlock() {
   if (!user) return null;
 
   const copy = async () => {
-    try {
-      await navigator.clipboard?.writeText(user.id);
-    } catch {
-      // no-op
-    }
+    try { await navigator.clipboard?.writeText(user.id); } catch {}
   };
 
   return (
@@ -19,9 +15,7 @@ export default function AccountIdBlock() {
         <Card.Title className="mb-2">ID аккаунта</Card.Title>
         <div className="d-flex align-items-center gap-2">
           <code className="fs-6">{user.id}</code>
-          <Button size="sm" variant="outline-secondary" onClick={copy}>
-            Копировать
-          </Button>
+          <Button size="sm" variant="outline-secondary" onClick={copy}>Копировать</Button>
         </div>
       </Card.Body>
     </Card>

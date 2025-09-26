@@ -3,23 +3,36 @@ import { Card, Form, Button, Stack, Badge } from 'react-bootstrap';
 import { useAuth } from '../../../../app/AuthContext.jsx';
 
 export default function WithdrawBlock() {
-  const { user, addBalance } = useAuth();
+  const { user, addBalance, addTransaction } = useAuth();
+  const balance = Number(user?.balance || 0);
   const currency = user?.currency || 'USD';
-  const fmt = (v) => new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(v);
+  const fmt = (v) =>
+    new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(Number(v || 0));
 
-  const available = user?.balance ?? 0; // пока все средства доступны
   const [amount, setAmount] = useState('100');
-  const presets = [100, 250, 500];
+  const presets = [50, 100, 250, 500];
 
   const parsed = Number(amount);
-  const valid = !Number.isNaN(parsed) && parsed > 0 && parsed <= available;
+  const validNumber = !Number.isNaN(parsed) && parsed > 0;
+  const enough = parsed <= balance;
+  const canSubmit = validNumber && enough;
 
   const submit = (e) => {
     e.preventDefault();
-    if (!valid) return;
-    // ограничим списание доступной суммой
-    const delta = -Math.min(parsed, available);
-    addBalance(delta);
+    if (!canSubmit) return;
+
+    // 1) Списываем с баланса
+    addBalance(-parsed);
+
+    // 2) Фиксируем транзакцию в истории
+    addTransaction({
+      amount: parsed,
+      type: 'withdraw',   // тип: вывод
+      method: 'other',    // заглушка метода
+      status: 'success',  // демо: сразу успешно
+      // date/currency/id заполнятся в addTransaction автоматически
+    });
+
     setAmount('');
   };
 
@@ -27,8 +40,8 @@ export default function WithdrawBlock() {
     <Card className="h-100">
       <Card.Body>
         <Card.Title className="d-flex justify-content-between align-items-center">
-          <span>Вывод средств</span>
-          <Badge bg="secondary">Доступно: {fmt(available)}</Badge>
+          <span>Вывод</span>
+          <Badge bg="secondary">{fmt(balance)}</Badge>
         </Card.Title>
 
         <Form onSubmit={submit}>
@@ -40,7 +53,7 @@ export default function WithdrawBlock() {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Введите сумму"
-            isInvalid={Boolean(amount) && Number(amount) > available}
+            isInvalid={validNumber && !enough}
           />
           <Form.Control.Feedback type="invalid">
             Недостаточно средств.
@@ -57,19 +70,10 @@ export default function WithdrawBlock() {
                 {v}
               </Button>
             ))}
-            {available > 0 && (
-              <Button
-                size="sm"
-                variant="outline-secondary"
-                onClick={() => setAmount(String(available))}
-              >
-                Всё
-              </Button>
-            )}
           </Stack>
 
           <div className="mt-3 d-flex gap-2">
-            <Button type="submit" variant="outline-light" disabled={!valid}>
+            <Button type="submit" variant="warning" disabled={!canSubmit}>
               Вывести
             </Button>
             <Button type="button" variant="outline-secondary" onClick={() => setAmount('')}>
@@ -79,7 +83,8 @@ export default function WithdrawBlock() {
         </Form>
 
         <div className="text-muted mt-3" style={{ fontSize: 12 }}>
-          * Здесь позже появится выбор способа вывода и реквизиты.
+          * В демо проверяем только наличие средств на балансе. Ограничения «к выводу» можно
+          подключить позже (например, по верификации).
         </div>
       </Card.Body>
     </Card>

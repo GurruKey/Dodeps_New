@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Card, Form, Button, Row, Col } from 'react-bootstrap';
+import { Card, Form, Row, Col } from 'react-bootstrap';
 import { useAuth } from '../../../../app/AuthContext.jsx';
 
 const countries = [
@@ -8,6 +8,8 @@ const countries = [
   'Грузия','Армения','Другая страна',
 ];
 
+const t = (v) => (v ?? '').trim();
+
 export default function AddressBlock() {
   const { user, updateProfile } = useAuth();
 
@@ -15,25 +17,41 @@ export default function AddressBlock() {
   const [city, setCity]       = useState(user?.city ?? '');
   const [address, setAddress] = useState(user?.address ?? '');
 
+  // Синхронизация при смене пользователя/профиля
   useEffect(() => setCountry(user?.country ?? ''), [user?.country]);
-  useEffect(() => setCity(user?.city ?? ''), [user?.city]);
+  useEffect(() => setCity(user?.city ?? ''),       [user?.city]);
   useEffect(() => setAddress(user?.address ?? ''), [user?.address]);
 
   const changed =
-    country !== (user?.country ?? '') ||
-    city !== (user?.city ?? '') ||
-    address !== (user?.address ?? '');
+    t(country) !== t(user?.country) ||
+    t(city)    !== t(user?.city)    ||
+    t(address) !== t(user?.address);
 
-  const onSubmit = (e) => {
-    e.preventDefault();
-    updateProfile({ country, city, address });
-  };
+  // ⚡ Сообщаем кнопке о "грязном" состоянии блока
+  useEffect(() => {
+    const id = 'block:address';
+    window.dispatchEvent(new CustomEvent('personal:dirty', { detail: { id, dirty: !!changed } }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('personal:dirty', { detail: { id, dirty: false } }));
+    };
+  }, [changed]);
+
+  // Глобальное сохранение по общей кнопке
+  useEffect(() => {
+    const onSave = () => {
+      if (!changed) return;
+      updateProfile({ country: t(country), city: t(city), address: t(address) });
+    };
+    window.addEventListener('personal:save', onSave);
+    return () => window.removeEventListener('personal:save', onSave);
+  }, [changed, country, city, address, updateProfile]);
 
   return (
     <Card>
       <Card.Body>
         <Card.Title className="mb-3">Страна / Город / Адрес</Card.Title>
-        <Form onSubmit={onSubmit}>
+        {/* Локального сабмита нет — сохраняем общей кнопкой */}
+        <Form onSubmit={(e) => e.preventDefault()}>
           <Row className="g-3">
             <Col md={6}>
               <Form.Label>Страна</Form.Label>
@@ -66,12 +84,6 @@ export default function AddressBlock() {
               />
             </Col>
           </Row>
-
-          <div className="mt-3">
-            <Button type="submit" variant="warning" disabled={!changed}>
-              Сохранить
-            </Button>
-          </div>
         </Form>
       </Card.Body>
     </Card>

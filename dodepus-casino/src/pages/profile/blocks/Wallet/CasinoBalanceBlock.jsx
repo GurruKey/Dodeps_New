@@ -10,20 +10,23 @@ function fmtCurrency(v, curr) {
   }
 }
 
-export default function RealBalanceBlock() {
+/**
+ * Баланс казино — не для вывода и не учитывается в "Доступно к выводу".
+ */
+export default function CasinoBalanceBlock() {
   const { user } = useAuth();
-  const balance = Number(user?.balance || 0);
   const currency = user?.currency || 'USD';
+  const casinoBalance = Number(user?.casinoBalance || 0);
 
   return (
     <Card>
       <Card.Body className="d-flex justify-content-between align-items-center">
         <div>
-          <Card.Title className="mb-1">Реальный баланс</Card.Title>
-          <div className="text-secondary small">Обновляется после депозита и вывода</div>
+          <Card.Title className="mb-1">Баланс казино</Card.Title>
+          <div className="text-secondary small">Не для вывода. Не учитывается в доступном к выводу.</div>
         </div>
         <Badge bg="secondary" className="fs-6">
-          {fmtCurrency(balance, currency)}
+          {fmtCurrency(casinoBalance, currency)}
         </Badge>
       </Card.Body>
     </Card>

@@ -1,11 +1,12 @@
-import { Card, Table, Button, Badge } from 'react-bootstrap';
+import { Card, Table, Badge } from 'react-bootstrap';
 import { useAuth } from '../../../../app/AuthContext.jsx';
 
 function fmtCurrency(v, curr) {
   try {
-    return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: curr || 'USD' }).format(v);
+    return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: curr || 'USD' })
+      .format(Number(v || 0));
   } catch {
-    return `${v} ${curr || ''}`;
+    return `${Number(v || 0).toFixed(2)} ${curr || ''}`;
   }
 }
 
@@ -18,70 +19,72 @@ function fmtDate(iso) {
   });
 }
 
-function statusBadge(status) {
-  switch (status) {
-    case 'success': return <Badge bg="success">Успешно</Badge>;
-    case 'failed':  return <Badge bg="danger">Неуспешно</Badge>;
-    case 'pending': return <Badge bg="warning" text="dark">В ожидании</Badge>;
-    default:        return <Badge bg="secondary">{status}</Badge>;
-  }
+function typeLabel(type) {
+  if (type === 'deposit') return 'Депозит';
+  if (type === 'withdraw') return 'Вывод';
+  return 'Операция';
 }
 
-function typeLabel(type, method) {
-  const t = type === 'withdraw' ? 'Вывод' : 'Депозит';
-  const m =
-    method === 'bank'   ? 'Банк'   :
-    method === 'crypto' ? 'Крипто' :
-    method === 'card'   ? 'Карта'  : 'Другое';
-  return `${t} · ${m}`;
+function statusBadge(status) {
+  const map = {
+    success: { bg: 'success', text: 'Успешно' },
+    pending: { bg: 'secondary', text: 'В обработке' },
+    failed:  { bg: 'danger', text: 'Ошибка' },
+  };
+  return map[status] || map.success;
 }
 
 export default function TransactionsBlock() {
   const { user } = useAuth();
-  const items = user?.transactions || [];
+  const rows = Array.isArray(user?.transactions) ? [...user.transactions] : [];
+  const currency = user?.currency || 'USD';
 
-  const copy = async (id) => {
-    try { await navigator.clipboard?.writeText(id); } catch {}
-  };
+  // сортируем по дате (новые сверху)
+  rows.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
   return (
     <Card>
       <Card.Body>
         <Card.Title className="mb-3">История транзакций</Card.Title>
 
-        {items.length === 0 ? (
-          <div className="text-muted">История пуста.</div>
+        {rows.length === 0 ? (
+          <div className="text-secondary">Пока нет транзакций.</div>
         ) : (
-          <div className="table-responsive">
-            <Table hover className="align-middle mb-0">
-              <thead>
-                <tr>
-                  <th style={{minWidth: 140}}>Сумма</th>
-                  <th style={{minWidth: 160}}>Тип</th>
-                  <th style={{minWidth: 180}}>Дата</th>
-                  <th style={{minWidth: 140}}>ID</th>
-                  <th style={{minWidth: 120}}>Статус</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((tx) => (
-                  <tr key={tx.id}>
-                    <td className="fw-semibold">
-                      {fmtCurrency(tx.amount, tx.currency)}
+          <Table responsive hover className="mb-0 align-middle">
+            <thead>
+              <tr>
+                <th style={{ width: 170 }}>Когда</th>
+                <th style={{ width: 120 }}>Тип</th>
+                <th style={{ width: 140 }}>Метод</th>
+                <th style={{ width: 140 }} className="text-end">Сумма</th>
+                <th style={{ width: 130 }}>Статус</th>
+                <th>ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((t) => {
+                const isWithdraw = t.type === 'withdraw';
+                const sign = isWithdraw ? -1 : 1;
+                const badge = statusBadge(t.status);
+                return (
+                  <tr key={t.id}>
+                    <td className="text-nowrap">{fmtDate(t.date)}</td>
+                    <td>{typeLabel(t.type)}</td>
+                    <td className="text-muted">{t.method || '—'}</td>
+                    <td className={`text-end ${isWithdraw ? 'text-danger' : 'text-success'}`}>
+                      {isWithdraw ? '−' : '+'}{fmtCurrency(Math.abs(Number(t.amount || 0)), currency)}
                     </td>
-                    <td>{typeLabel(tx.type, tx.method)}</td>
-                    <td className="text-muted">{fmtDate(tx.date)}</td>
                     <td>
-                      <Button size="sm" variant="outline-secondary" onClick={() => copy(tx.id)}>
-                        Копировать ID
-                      </Button>
+                      <Badge bg={badge.bg}>{badge.text}</Badge>
                     </td>
-                    <td>{statusBadge(tx.status)}</td>
+                    <td className="text-muted text-truncate" title={t.id} style={{ maxWidth: 220 }}>
+                      <code>{t.id}</code>
+                    </td>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
+                );
+              })}
+            </tbody>
+          </Table>
         )}
       </Card.Body>
     </Card>

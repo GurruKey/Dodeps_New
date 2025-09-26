@@ -3,7 +3,7 @@ import { Card, Form, Button, Stack, Badge } from 'react-bootstrap';
 import { useAuth } from '../../../../app/AuthContext.jsx';
 
 export default function DepositBlock() {
-  const { user, addBalance } = useAuth();
+  const { user, addBalance, addTransaction } = useAuth();
   const currency = user?.currency || 'USD';
   const fmt = (v) => new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(v);
 
@@ -16,8 +16,21 @@ export default function DepositBlock() {
   const submit = (e) => {
     e.preventDefault();
     if (!valid) return;
+
+    // 1) Пополняем баланс
     addBalance(parsed);
-    setAmount(''); // очистим поле для наглядности
+
+    // 2) Пишем транзакцию в историю
+    addTransaction({
+      amount: parsed,
+      type: 'deposit',      // для истории: депозит
+      method: 'other',      // заглушка метода (позже: card/crypto/bank)
+      status: 'success',    // демо: сразу успешно
+      // date/currency/id заполнятся в addTransaction автоматически
+    });
+
+    // Очистим поле
+    setAmount('');
   };
 
   return (

@@ -1,37 +1,50 @@
-import { Card, Button, Stack, Badge } from 'react-bootstrap';
-import { useAuth } from '../../../../app/AuthContext.jsx';
+import { Card, Button, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../../app/AuthContext.jsx';
+
+function fmtCurrency(v, curr) {
+  try {
+    return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: curr || 'USD' })
+      .format(Number(v || 0));
+  } catch {
+    return `${Number(v || 0).toFixed(2)} ${curr || ''}`;
+  }
+}
 
 export default function BalanceSummaryBlock() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const balance = Number(user?.balance || 0);
   const currency = user?.currency || 'USD';
-  const fmt = (v) => new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(v);
-  const total = user?.balance ?? 0;
-
-  const go = (hash) => {
-    // открываем терминал; hash — #withdraw или #deposit (необязательно)
-    navigate(`/profile/terminal${hash ? `#${hash}` : ''}`);
-  };
 
   return (
     <Card>
       <Card.Body>
-        <div className="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
-          <div>
-            <div className="text-muted">Общий баланс</div>
-            <div className="balance-amount">{fmt(total)}</div>
+        <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex flex-column">
+            <Card.Title className="mb-1">Баланс</Card.Title>
+
+            <Button
+              variant="link"
+              className="p-0 text-decoration-none"
+              onClick={() => navigate('/profile/history')}
+            >
+              История транзакций
+            </Button>
           </div>
 
-          <Stack direction="horizontal" gap={2} className="balance-actions">
-            <Button variant="outline-light" onClick={() => go('withdraw')}>
-              ВЫВОД СРЕДСТВ
-            </Button>
-            <Button variant="success" onClick={() => go('deposit')}>
-              ДЕПОЗИТ
-            </Button>
-          </Stack>
+        {/* Значение баланса справа в бэйдже */}
+          <Badge bg="secondary" className="fs-6">
+            {fmtCurrency(balance, currency)}
+          </Badge>
+        </div>
+
+        {/* CTA в терминал */}
+        <div className="mt-3">
+          <Button variant="primary" onClick={() => navigate('/profile/terminal')}>
+            Терминал
+          </Button>
         </div>
       </Card.Body>
     </Card>

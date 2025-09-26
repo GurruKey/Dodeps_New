@@ -5,11 +5,13 @@ import GenderDobBlock from './blocks/Personal/GenderDobBlock.jsx';
 import SocialStatusBlock from './blocks/Personal/SocialStatusBlock.jsx';
 import AddressBlock from './blocks/Personal/AddressBlock.jsx';
 import ContactsBlock from './blocks/Personal/ContactsBlock.jsx';
-import AuthenticatorBlock from './blocks/Personal/AuthenticatorBlock.jsx';
+// import AuthenticatorBlock from './blocks/Personal/AuthenticatorBlock.jsx'; // убрано
+import SavePersonalBlock from './blocks/Personal/SavePersonalBlock.jsx';
 
 export default function Personal() {
   return (
     <div className="d-flex flex-column gap-3">
+      {/* Кнопка сверху, по центру */}
       <AccountIdBlock />
       <NicknameBlock />
       <NameBlock />
@@ -17,7 +19,8 @@ export default function Personal() {
       <SocialStatusBlock />
       <AddressBlock />
       <ContactsBlock />
-      <AuthenticatorBlock /> {/* ← новый блок */}
+      <SavePersonalBlock />
+      {/* <AuthenticatorBlock /> */}
     </div>
   );
 }

@@ -1,24 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Card, Form, Button, Row, Col, InputGroup, Badge } from 'react-bootstrap';
+import { Card, Form, Button, Row, Col, InputGroup, Badge, Spinner, Dropdown } from 'react-bootstrap';
 import { useAuth } from '../../../../app/AuthContext.jsx';
 
-const DIAL_CODES = [
-  { c: 'UA', code: '+380' },
-  { c: 'KZ', code: '+7' },
-  { c: 'RU', code: '+7' },
-  { c: 'BY', code: '+375' },
-  { c: 'LT', code: '+370' },
-  { c: 'LV', code: '+371' },
-  { c: 'EE', code: '+372' },
-  { c: 'PL', code: '+48' },
-  { c: 'GE', code: '+995' },
-  { c: 'AM', code: '+374' },
-];
+const DIAL_CODES = ['+380', '+7', '+375', '+370', '+371', '+372', '+48', '+995', '+374'];
 
 function splitPhone(full) {
   if (!full || !full.startsWith('+')) return { dial: '+380', number: '' };
-  const found = DIAL_CODES.find((d) => full.startsWith(d.code));
-  if (found) return { dial: found.code, number: full.slice(found.code.length) };
+  const found = DIAL_CODES.find((code) => full.startsWith(code));
+  if (found) return { dial: found, number: full.slice(found.length) };
   return { dial: '+380', number: full.replace(/^\+/, '') };
 }
 
@@ -30,100 +19,107 @@ export default function ContactsBlock() {
   const [number, setNumber] = useState(initial.number.replace(/\D/g, ''));
 
   useEffect(() => {
-    const { dial, number } = splitPhone(user?.phone || '');
-    setDial(dial);
-    setNumber(number.replace(/\D/g, ''));
+    const next = splitPhone(user?.phone || '');
+    setDial(next.dial);
+    setNumber(next.number.replace(/\D/g, ''));
   }, [user?.phone]);
 
   const phoneChanged = `${dial}${number}` !== (user?.phone || '');
-  const savePhone = (e) => {
-    e.preventDefault();
-    const clean = number.replace(/\D/g, '');
-    updateProfile({ phone: clean ? `${dial}${clean}` : '' });
-  };
+
+  // dirty-индикатор только по телефону (email редактированию не подлежит)
+  useEffect(() => {
+    const id = 'block:contacts';
+    window.dispatchEvent(new CustomEvent('personal:dirty', { detail: { id, dirty: !!phoneChanged } }));
+    return () => window.dispatchEvent(new CustomEvent('personal:dirty', { detail: { id, dirty: false } }));
+  }, [phoneChanged]);
+
+  // Сохранение по общей кнопке
+  useEffect(() => {
+    const onSave = () => {
+      if (!phoneChanged) return;
+      const clean = String(number).replace(/\D/g, '');
+      updateProfile({ phone: clean ? `${dial}${clean}` : '' });
+    };
+    window.addEventListener('personal:save', onSave);
+    return () => window.removeEventListener('personal:save', onSave);
+  }, [phoneChanged, dial, number, updateProfile]);
 
   const email = user?.email || '';
   const emailVerified = !!user?.emailVerified;
   const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [sent,   setSent]     = useState(false);
 
-  const requestEmailVerify = async (e) => {
-    e.preventDefault();
-    if (!email || emailVerified) return;
+  const requestEmailVerify = (e) => {
+    e?.preventDefault?.();
+    if (!email || emailVerified || sending) return;
     setSending(true);
-    // Заглушка: имитируем отправку письма и «подтверждение»
     setTimeout(() => {
       setSending(false);
       setSent(true);
-      // Если хочешь видеть статус "подтверждён", раскомментируй:
       // updateProfile({ emailVerified: true });
     }, 800);
   };
+
+  const controlHeight = { minHeight: 'calc(1.5em + .75rem + 2px)' };
 
   return (
     <Card>
       <Card.Body>
         <Card.Title className="mb-3">Контакты</Card.Title>
 
-        <Row className="g-3 align-items-end">
+        <Row className="g-4">
           <Col md={6}>
-            <Form onSubmit={savePhone}>
+            <Form onSubmit={(e) => e.preventDefault()}>
               <Form.Label>Номер телефона</Form.Label>
               <InputGroup>
-                <Form.Select
-                  value={dial}
-                  onChange={(e) => setDial(e.target.value)}
-                  style={{ maxWidth: 110 }}
-                >
-                  {DIAL_CODES.map((d) => (
-                    <option key={d.c + d.code} value={d.code}>
-                      {d.c} {d.code}
-                    </option>
-                  ))}
-                </Form.Select>
+                <Dropdown>
+                  <Dropdown.Toggle id="dial-code" variant="outline-secondary" className="flex-shrink-0" style={{ width: 96, ...controlHeight }}>
+                    {dial}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu align="start" style={{ minWidth: 96 }}>
+                    {DIAL_CODES.map((code) => (
+                      <Dropdown.Item key={code} active={code === dial} onClick={() => setDial(code)}>
+                        {code}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+
                 <Form.Control
-                  type="tel"
-                  placeholder="XXXXXXXXXXXX"
-                  value={number}
-                  onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
-                  autoComplete="tel"
+                  type="tel" inputMode="numeric" placeholder="Номер" value={number}
+                  maxLength={12} onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
+                  autoComplete="tel" className="flex-grow-1" style={controlHeight}
                 />
               </InputGroup>
-              <div className="mt-2">
-                <Button type="submit" variant="warning" disabled={!phoneChanged}>
-                  Сохранить
-                </Button>
-              </div>
             </Form>
           </Col>
 
           <Col md={6}>
             <Form.Label>Электронная почта</Form.Label>
-            <div className="d-flex align-items-center justify-content-between">
-              <Form.Control type="email" value={email} readOnly />
-            </div>
-            <div className="mt-1">
+            <InputGroup>
+              <Form.Control type="email" value={email} readOnly style={controlHeight} />
               {emailVerified ? (
-                <Badge bg="success">Подтверждён</Badge>
+                <InputGroup.Text className="bg-success-subtle text-success" style={controlHeight}>
+                  <Badge bg="success">Подтверждён</Badge>
+                </InputGroup.Text>
+              ) : sent ? (
+                <InputGroup.Text className="bg-secondary-subtle text-secondary" style={controlHeight}>
+                  Отправлено
+                </InputGroup.Text>
               ) : (
-                <>
-                  <Button
-                    variant="link"
-                    className="p-0 text-danger"
-                    onClick={requestEmailVerify}
-                    disabled={!email || sending}
-                  >
-                    {sending ? 'Отправляю…' : 'Подтвердить'}
-                  </Button>
-                  {sent && (
-                    <span className="ms-2 text-muted">
-                      Письмо отправлено (заглушка).
-                    </span>
-                  )}
-                </>
+                <Button
+                  variant="danger" onClick={requestEmailVerify}
+                  disabled={!email || sending}
+                  className="d-inline-flex align-items-center" style={controlHeight}
+                >
+                  {sending ? (<><Spinner animation="border" size="sm" className="me-2" />Отправляю…</>) : 'Подтвердить'}
+                </Button>
               )}
-            </div>
-            <Form.Text className="text-muted">
+            </InputGroup>
+            {!emailVerified && sent && (
+              <Form.Text className="text-muted d-block mt-1">Письмо отправлено (заглушка).</Form.Text>
+            )}
+            <Form.Text className="text-muted d-block mt-1">
               Для изменения электронной почты обратитесь в службу поддержки.
             </Form.Text>
           </Col>
