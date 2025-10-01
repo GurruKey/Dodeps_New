@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Card, Form, Button, Alert, ButtonGroup, ToggleButton } from 'react-bootstrap';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Card, Button, Alert } from 'react-bootstrap';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../app/AuthContext.jsx';
 
+// блоки (создадим следующими файлами)
+import EmailRegisterForm from '../../features/auth/EmailRegisterForm.jsx';
+import PhoneRegisterForm from '../../features/auth/PhoneRegisterForm.jsx';
+
 export default function Register() {
-  const { isAuthed, login } = useAuth(); // пока регистрация тоже делает авторизацию
-  const [mode, setMode] = useState('email'); // 'email' | 'phone'
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState(''); // для дизайна, пока не используется
-  const [error, setError] = useState('');
+  const { isAuthed } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [mode, setMode] = useState('email'); // 'email' | 'phone'
+  const [globalError, setGlobalError] = useState('');
 
   useEffect(() => {
     if (isAuthed) {
@@ -19,118 +21,49 @@ export default function Register() {
     }
   }, [isAuthed, navigate]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError('');
-
-    const identifier = mode === 'email' ? email.trim().toLowerCase() : phone.trim();
-    if (!identifier) {
-      setError(mode === 'email' ? 'Введите E-mail' : 'Введите телефон');
-      return;
-    }
-
-    // пароль пока не используется намеренно
-    login(identifier);
-
+  const handleSuccess = () => {
     const next = location.state?.from?.pathname || '/lobby';
     navigate(next, { replace: true });
   };
 
-  const fillDemo = () => {
-    if (mode === 'email') setEmail('player@dodepus.dev');
-    else setPhone('+380501234567');
-  };
-
   return (
-    <div className="d-flex justify-content-center">
-      <Card className="w-100" style={{ maxWidth: 420 }}>
+    <div className="container py-4 d-flex justify-content-center">
+      <Card className="w-100" style={{ maxWidth: 560 }}>
         <Card.Body>
-          <Card.Title className="mb-3">Регистрация в Dodepus</Card.Title>
+          <h3 className="text-center mb-3">Регистрация</h3>
 
-          {/* Переключатель способа регистрации */}
-          <ButtonGroup className="mb-3 w-100">
-            <ToggleButton
-              id="reg-mode-email"
-              type="radio"
+          {/* переключатель режимов */}
+          <div className="btn-group w-100 mb-3" role="tablist" aria-label="Тип регистрации">
+            <Button
+              type="button"
               variant={mode === 'email' ? 'warning' : 'outline-warning'}
-              name="reg-mode"
-              value="email"
-              checked={mode === 'email'}
-              onChange={() => setMode('email')}
+              onClick={() => setMode('email')}
+              aria-pressed={mode === 'email'}
             >
               E-mail
-            </ToggleButton>
-            <ToggleButton
-              id="reg-mode-phone"
-              type="radio"
+            </Button>
+            <Button
+              type="button"
               variant={mode === 'phone' ? 'warning' : 'outline-warning'}
-              name="reg-mode"
-              value="phone"
-              checked={mode === 'phone'}
-              onChange={() => setMode('phone')}
+              onClick={() => setMode('phone')}
+              aria-pressed={mode === 'phone'}
             >
               Телефон
-            </ToggleButton>
-          </ButtonGroup>
+            </Button>
+          </div>
 
-          <Card.Text className="text-muted">
-            Временно регистрация выполняет вход. Поле пароля добавлено для дизайна и пока не проверяется.
-          </Card.Text>
+          {globalError && <Alert variant="danger">{globalError}</Alert>}
 
-          {error && <Alert variant="danger">{error}</Alert>}
+          {/* формы как отдельные блоки */}
+          {mode === 'email' ? (
+            <EmailRegisterForm onSuccess={handleSuccess} onError={setGlobalError} />
+          ) : (
+            <PhoneRegisterForm onSuccess={handleSuccess} onError={setGlobalError} />
+          )}
 
-          <Form onSubmit={handleSubmit}>
-            {mode === 'email' ? (
-              <Form.Group controlId="registerEmail" className="mb-3">
-                <Form.Label>E-mail</Form.Label>
-                <Form.Control
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  autoFocus
-                  required
-                />
-              </Form.Group>
-            ) : (
-              <Form.Group controlId="registerPhone" className="mb-3">
-                <Form.Label>Телефон</Form.Label>
-                <Form.Control
-                  type="tel"
-                  placeholder="+380XXXXXXXXX"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  autoComplete="tel"
-                  autoFocus
-                  required
-                />
-              </Form.Group>
-            )}
-
-            <Form.Group controlId="registerPassword" className="mb-3">
-              <Form.Label>Пароль</Form.Label>
-              <Form.Control
-                type="password"
-                placeholder="Придумайте пароль"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-              />
-            </Form.Group>
-
-            <div className="d-flex gap-2">
-              <Button type="submit" variant="warning">Зарегистрироваться</Button>
-              <Button type="button" variant="outline-secondary" onClick={fillDemo}>
-                Заполнить демо
-              </Button>
-            </div>
-
-            <div className="mt-3">
-              <span>Уже есть аккаунт? </span>
-              <Link to="/login">Войти</Link>
-            </div>
-          </Form>
+          <div className="mt-3">
+            Уже есть аккаунт? <Link to="/login">Войти</Link>
+          </div>
         </Card.Body>
       </Card>
     </div>
