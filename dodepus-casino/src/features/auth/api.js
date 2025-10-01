@@ -1,150 +1,246 @@
 // src/features/auth/api.js
-import { supabase } from '../../app/supabaseClient';
+// Реализация локальной авторизации без внешней БД.
 
-// Нормализация e-mail: убираем zero-width и пробелы, приводим к нижнему регистру.
-const normalizePhone = (phone) => {
-  const raw = String(phone ?? '').trim();
-  if (!raw) return '';
-
-  const digits = raw.startsWith('+') ? raw.slice(1).replace(/\D/g, '') : raw.replace(/\D/g, '');
-  if (!digits) return '';
-
-  return `+${digits}`;
-};
+const USERS_KEY = 'dodepus_local_users_v1';
+const SESSION_KEY = 'dodepus_local_session_v1';
 
 const EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 const PHONE_RE = /^\+[1-9]\d{5,14}$/;
 
-function humanizeAuthError(err) {
-  const msg = String(err?.message || err || '');
-  const code = String(err?.code || err?.name || '');
+const nowIso = () => new Date().toISOString();
+const randomId = (prefix) =>
+  (globalThis.crypto?.randomUUID?.() ?? `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`);
 
-  if (/Invalid login credentials/i.test(msg)) return 'Неверный логин или пароль.';
-  if (/already registered|already exists/i.test(msg)) return 'Такой пользователь уже зарегистрирован.';
-  if (/email_address_invalid|invalid email/i.test(msg) || code === 'email_address_invalid') return 'Некорректный адрес e-mail.';
-  if (/phone/i.test(msg) && /invalid/i.test(msg)) return 'Некорректный номер телефона.';
-  if (/signup/i.test(msg) && /disabled|not allowed/i.test(msg))
-    return 'Регистрация сейчас недоступна. Попробуйте позже или обратитесь в поддержку.';
-  if (/password/i.test(msg) && /weak|length|min/i.test(msg))
-    return 'Слабый пароль: минимум 8 символов, латинские буквы и цифра.';
-  if (/rate limit|too many|over_email_send_rate_limit/i.test(msg) || code === 'over_email_send_rate_limit')
-    return 'Слишком много попыток. Попробуйте позже.';
-  if (/otp|verification/i.test(msg)) return 'Требуется подтверждение кода (OTP).';
-  return msg || 'Ошибка авторизации';
+const tryGetStorage = () => {
+  try {
+    if (typeof globalThis === 'undefined') return null;
+    return globalThis.localStorage ?? null;
+  } catch {
+    return null;
+  }
+};
+
+const requireStorage = () => {
+  const storage = tryGetStorage();
+  if (!storage) {
+    throw new Error('Локальное хранилище недоступно. Проверьте настройки браузера.');
+  }
+  return storage;
+};
+
+const readUsers = (storage = tryGetStorage()) => {
+  if (!storage) return [];
+  try {
+    const raw = storage.getItem(USERS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeUsers = (users, storage = requireStorage()) => {
+  try {
+    storage.setItem(USERS_KEY, JSON.stringify(users));
+  } catch {
+    // ignore quota errors
+  }
+};
+
+const findByEmail = (users, email) => users.find((u) => u.email && u.email === email);
+const findByPhone = (users, phone) => users.find((u) => u.phone && u.phone === phone);
+
+const toPublicUser = (record) => {
+  if (!record) return null;
+  return {
+    id: record.id,
+    email: record.email ?? '',
+    phone: record.phone ?? '',
+    created_at: record.created_at ?? null,
+    confirmed_at: record.confirmed_at ?? null,
+    email_confirmed_at: record.email_confirmed_at ?? null,
+    phone_confirmed_at: record.phone_confirmed_at ?? null,
+    last_sign_in_at: record.last_sign_in_at ?? null,
+    app_metadata: record.app_metadata ?? {},
+    user_metadata: record.user_metadata ?? {},
+  };
+};
+
+const storeSession = (session, storage = requireStorage()) => {
+  try {
+    if (!session) {
+      storage.removeItem(SESSION_KEY);
+    } else {
+      storage.setItem(SESSION_KEY, JSON.stringify(session));
+    }
+  } catch {
+    // ignore
+  }
+};
+
+export const getStoredSession = () => {
+  const storage = tryGetStorage();
+  if (!storage) return null;
+  try {
+    const raw = storage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+export const clearStoredSession = () => {
+  const storage = tryGetStorage();
+  if (!storage) return;
+  storeSession(null, storage);
+};
+
+export const getUserById = (id) => {
+  if (!id) return null;
+  const storage = tryGetStorage();
+  const users = readUsers(storage);
+  return users.find((u) => u.id === id) ?? null;
+};
+
+const normalizePhone = (phone) => {
+  const raw = String(phone ?? '').trim();
+  if (!raw) return '';
+  const digits = raw.startsWith('+') ? raw.slice(1).replace(/\D/g, '') : raw.replace(/\D/g, '');
+  if (!digits) return '';
+  return `+${digits}`;
+};
+
+function ensurePasswordStrong(pass) {
+  if (
+    pass.length < 8 ||
+    !/\d/.test(pass) ||
+    !/[a-z]/.test(pass) ||
+    !/[A-Z]/.test(pass)
+  ) {
+    throw new Error(
+      'Пароль не соответствует требованиям: минимум 8 символов, включая цифры и буквы разного регистра.'
+    );
+  }
 }
 
-/**
- * Регистрация по e-mail + password (ручная).
- */
+function createSession(userId) {
+  return {
+    userId,
+    accessToken: `local_${randomId('token')}`,
+    token_type: 'bearer',
+    created_at: nowIso(),
+  };
+}
+
+function createUserRecord({ email, phone, password }) {
+  const ts = nowIso();
+  return {
+    id: randomId('usr'),
+    email: email ?? '',
+    phone: phone ?? '',
+    password,
+    created_at: ts,
+    confirmed_at: ts,
+    email_confirmed_at: email ? ts : null,
+    phone_confirmed_at: phone ? ts : null,
+    last_sign_in_at: ts,
+    app_metadata: {
+      provider: email ? 'email' : 'phone',
+    },
+    user_metadata: {},
+  };
+}
+
 export async function signUpEmailPassword({ email, password }) {
   const emailNorm = String(email || '').toLowerCase().trim();
   const passNorm = String(password || '').trim();
 
   if (!EMAIL_RE.test(emailNorm)) throw new Error('Некорректный адрес e-mail.');
-  if (
-    passNorm.length < 8 ||
-    !/\d/.test(passNorm) ||
-    !/[a-z]/.test(passNorm) ||
-    !/[A-Z]/.test(passNorm)
-  ) {
-    throw new Error('Пароль не соответствует требованиям: минимум 8 символов, включая цифры и буквы разного регистра.');
+  ensurePasswordStrong(passNorm);
+
+  const storage = requireStorage();
+  const users = readUsers(storage);
+  if (findByEmail(users, emailNorm)) {
+    throw new Error('Такой пользователь уже зарегистрирован.');
   }
 
-  const { data, error } = await supabase.rpc('register_user', {
-    email_input: emailNorm,
-    phone_input: null,
-    password_input: passNorm,
-  });
+  const user = createUserRecord({ email: emailNorm, password: passNorm });
+  users.push(user);
+  writeUsers(users, storage);
 
-  if (error) {
-    throw new Error(humanizeAuthError(error));
-  }
+  const session = createSession(user.id);
+  storeSession(session, storage);
 
-  // Устанавливаем сессию вручную, используя полученный JWT
-  const { error: sessionError } = await supabase.auth.setSession({
-    access_token: data.token,
-    refresh_token: '' // Наша ручная система не использует refresh токены
-  });
-
-  if (sessionError) {
-    throw new Error('Не удалось установить сессию: ' + sessionError.message);
-  }
-
-  return { user: data.user, session: { access_token: data.token }, needsEmailConfirm: false };
+  return {
+    user: toPublicUser(user),
+    session,
+    needsEmailConfirm: false,
+  };
 }
 
-/**
- * Вход по e-mail + password (ручной).
- */
 export async function signInEmailPassword({ email, password }) {
   const emailNorm = String(email || '').toLowerCase().trim();
   const passNorm = String(password || '').trim();
 
-  if (!EMAIL_RE.test(emailNorm) || !passNorm) throw new Error('Введите e-mail и пароль.');
-
-  const { data, error } = await supabase.rpc('authenticate_user', {
-    email_input: emailNorm,
-    phone_input: null,
-    password_input: passNorm,
-  });
-
-  if (error) {
-    throw new Error(humanizeAuthError(error));
+  if (!EMAIL_RE.test(emailNorm) || !passNorm) {
+    throw new Error('Введите e-mail и пароль.');
   }
 
-  // Устанавливаем сессию вручную, используя полученный JWT
-  const { error: sessionError } = await supabase.auth.setSession({
-    access_token: data.token,
-    refresh_token: '' // Наша ручная система не использует refresh токены
-  });
+  const storage = requireStorage();
+  const users = readUsers(storage);
+  const user = findByEmail(users, emailNorm);
 
-  if (sessionError) {
-    throw new Error('Не удалось установить сессию: ' + sessionError.message);
+  if (!user) {
+    throw new Error('Пользователь не найден.');
+  }
+  if (user.password !== passNorm) {
+    throw new Error('Неверный пароль.');
   }
 
-  return { user: data.user, session: { access_token: data.token } };
+  user.last_sign_in_at = nowIso();
+  writeUsers(users, storage);
+
+  const session = createSession(user.id);
+  storeSession(session, storage);
+
+  return {
+    user: toPublicUser(user),
+    session,
+  };
 }
 
-
-/**
- * Регистрация по телефону + password.
- */
 export async function signUpPhonePassword({ phone, password } = {}) {
   const phoneNorm = normalizePhone(phone);
   const passNorm = String(password || '').trim();
 
   if (!PHONE_RE.test(phoneNorm)) throw new Error('Некорректный номер телефона.');
-  // Унифицируем требования к паролю
-  if (
-    passNorm.length < 8 ||
-    !/\d/.test(passNorm) ||
-    !/[a-z]/.test(passNorm) ||
-    !/[A-Z]/.test(passNorm)
-  ) {
-    throw new Error('Пароль не соответствует требованиям: минимум 8 символов, включая цифры и буквы разного регистра.');
+  ensurePasswordStrong(passNorm);
+
+  const storage = requireStorage();
+  const users = readUsers(storage);
+  if (findByPhone(users, phoneNorm)) {
+    throw new Error('Такой номер уже зарегистрирован.');
   }
 
-  // Вызываем нашу кастомную SQL функцию `signup`
-  const { data, error } = await supabase.rpc('register_user', {
-    email_input: null, // В этой форме используется только телефон
-    phone_input: phoneNorm,
-    password_input: passNorm,
-  });
+  const user = createUserRecord({ phone: phoneNorm, password: passNorm });
+  users.push(user);
+  writeUsers(users, storage);
 
-  if (error) {
-    throw new Error(humanizeAuthError(error));
-  }
+  const session = createSession(user.id);
+  storeSession(session, storage);
 
-  // Устанавливаем сессию вручную, используя полученный JWT
-  const { error: sessionError } = await supabase.auth.setSession({
-    access_token: data.token,
-    refresh_token: '' // Наша ручная система не использует refresh токены
-  });
-
-  if (sessionError) {
-    throw new Error('Не удалось установить сессию: ' + sessionError.message);
-  }
-
-  // Возвращаем данные, полученные от RPC функции. SMS верификация не используется в ручном режиме.
-  return { user: data.user, session: { access_token: data.token }, needsSmsVerify: false };
+  return {
+    user: toPublicUser(user),
+    session,
+    needsSmsVerify: false,
+  };
 }
+
+export const __localAuthInternals = {
+  USERS_KEY,
+  SESSION_KEY,
+  readUsers,
+  writeUsers,
+  storeSession,
+};
