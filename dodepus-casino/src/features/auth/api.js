@@ -1,15 +1,12 @@
 // src/features/auth/api.js
 import { supabase } from '../../app/supabaseClient';
 
-// Жёсткая нормализация e-mail (NFKC + срез мусора)
-const normalizeEmail = (e) =>
-  String(e ?? '')
+// Нормализация e-mail: убираем zero-width и пробелы, приводим к нижнему регистру.
+export const normalizeEmail = (value) =>
+  String(value ?? '')
     .normalize('NFKC')
-    .replace(/[\u200B-\u200D\uFEFF]/g, '') // zero-width
-    .replace(/\s+/g, '') // любые пробелы
-    .replace(/[<>\u00AB\u00BB"'\(\)\[\]\{\};:]/g, '') // кавычки/скобки
-    .replace(/[^\x00-\x7F]/g, '') // только ASCII
-    .trim()
+    .replace(/[\u200B-\u200D\uFEFF]/g, '') // zero-width символы
+    .replace(/\s+/g, '')
     .toLowerCase();
 
 const normalizePhone = (phone) => {

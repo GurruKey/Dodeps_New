@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Button, Alert } from 'react-bootstrap';
 import { Eye, EyeOff } from 'lucide-react';
-import { signUpEmailPassword } from './api';
+import { normalizeEmail, signUpEmailPassword } from './api';
 
 export default function EmailRegisterForm({ onSuccess, onError }) {
   const [email, setEmail] = useState('');
@@ -21,18 +21,8 @@ export default function EmailRegisterForm({ onSuccess, onError }) {
     onError?.(text);
   };
 
-  // Жёсткая нормализация e-mail: NFKC, удаляем zero-width, все пробелы (включая NBSP),
-  // кавычки/скобки и любые не-ASCII символы.
-  const normalizedEmail = useMemo(() => {
-    return String(email ?? '')
-      .normalize('NFKC')
-      .replace(/[\u200B-\u200D\uFEFF]/g, '')             // zero-width
-      .replace(/\s+/g, '')                               // любые пробелы, в т.ч. NBSP
-      .replace(/[<>\u00AB\u00BB"'\(\)\[\]\{\};:]/g, '')  // кавычки/скобки
-      .replace(/[^\x00-\x7F]/g, '')                      // только ASCII
-      .trim()
-      .toLowerCase();
-  }, [email]);
+  // Нормализация e-mail: NFKC, удаляем zero-width и пробелы.
+  const normalizedEmail = useMemo(() => normalizeEmail(email), [email]);
 
   // Валидация ASCII-адреса с буквенным TLD
   const emailOk = useMemo(() => {
