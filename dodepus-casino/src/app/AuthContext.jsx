@@ -123,21 +123,16 @@ export function AuthProvider({ children }) {
 
   // ---------- Auth API ----------
   const signIn = async ({ email, phone, password }) => {
-    const creds = { password: String(password ?? '').trim() };
-
-    const emailNorm = typeof email === 'string' ? email.trim().toLowerCase() : '';
-    const phoneNorm = typeof phone === 'string' ? phone.trim() : '';
-
-    if (emailNorm) creds.email = emailNorm;
-    if (phoneNorm) creds.phone = phoneNorm;
-
-    if (!creds.email && !creds.phone) {
-      throw new Error('Укажите E-mail или телефон для входа.');
+    // В данный момент реализован только вход по email
+    if (email) {
+      return await signInEmailPassword({ email, password });
+    }
+    // TODO: Реализовать signInPhonePassword по аналогии, когда потребуется
+    if (phone) {
+      throw new Error('Вход по номеру телефона пока не реализован.');
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword(creds);
-    if (error) throw error;
-    return data; // user/session придут через onAuthStateChange
+    throw new Error('Укажите E-mail для входа.');
   };
 
   // регистрация вынесена в фичу

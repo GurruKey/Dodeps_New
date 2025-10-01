@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Button, Alert } from 'react-bootstrap';
 import { Eye, EyeOff } from 'lucide-react';
-import { normalizeEmail, signUpEmailPassword } from './api';
+import { signUpEmailPassword } from './api';
 
 export default function EmailRegisterForm({ onSuccess, onError }) {
   const [email, setEmail] = useState('');
@@ -21,13 +21,12 @@ export default function EmailRegisterForm({ onSuccess, onError }) {
     onError?.(text);
   };
 
-  // Нормализация e-mail: NFKC, удаляем zero-width и пробелы.
-  const normalizedEmail = useMemo(() => normalizeEmail(email), [email]);
+  const emailForValidation = useMemo(() => email.toLowerCase().trim(), [email]);
 
   // Валидация ASCII-адреса с буквенным TLD
   const emailOk = useMemo(() => {
-    return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(normalizedEmail);
-  }, [normalizedEmail]);
+    return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(emailForValidation);
+  }, [emailForValidation]);
 
   const pwdRules = useMemo(() => {
     const p = password || '';
@@ -51,14 +50,10 @@ export default function EmailRegisterForm({ onSuccess, onError }) {
 
     setSubmitting(true);
     try {
-      const { needsEmailConfirm } = await signUpEmailPassword({
-        email: normalizedEmail,
+      await signUpEmailPassword({
+        email: emailForValidation,
         password: password.trim(),
       });
-
-      if (needsEmailConfirm) {
-        setInfo('Мы отправили письмо с ссылкой для подтверждения. Проверьте почту.');
-      }
 
       onSuccess?.();
     } catch (err) {
