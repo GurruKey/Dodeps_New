@@ -61,7 +61,14 @@ export async function signUpEmailPassword({ email, password, redirectTo } = {}) 
   const passNorm = String(password || '').trim();
 
   if (!EMAIL_RE.test(emailNorm)) throw new Error('Некорректный адрес e-mail.');
-  if (passNorm.length < 6) throw new Error('Пароль должен содержать минимум 6 символов.');
+  if (
+    passNorm.length < 8 ||
+    !/\d/.test(passNorm) ||
+    !/[a-z]/.test(passNorm) ||
+    !/[A-Z]/.test(passNorm)
+  ) {
+    throw new Error('Пароль не соответствует требованиям: минимум 8 символов, включая цифры и буквы разного регистра.');
+  }
 
   const envRedirect = import.meta.env.VITE_AUTH_REDIRECT_URL;
   const finalRedirect = toAbsoluteUrl(redirectTo) || toAbsoluteUrl(envRedirect);
