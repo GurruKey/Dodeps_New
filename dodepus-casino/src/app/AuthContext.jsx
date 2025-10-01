@@ -1,6 +1,14 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { supabase } from './supabaseClient';
-import { signUpEmailPassword, signUpPhonePassword } from '../features/auth/api';
+import {
+  __localAuthInternals,
+  clearStoredSession,
+  getStoredSession,
+  getUserById,
+  signInEmailPassword,
+  signUpEmailPassword,
+  signUpPhonePassword,
+} from '../features/auth/api';
 
 const AuthCtx = createContext(null);
 export const useAuth = () => useContext(AuthCtx);
@@ -41,7 +49,8 @@ const loadExtras = (uid) => {
   try {
     const raw = localStorage.getItem(PROFILE_KEY(uid));
     return raw ? pickExtras(JSON.parse(raw)) : pickExtras();
-  } catch {
+  } catch (err) {
+    console.warn('Не удалось загрузить локальный профиль пользователя', err);
     return pickExtras();
   }
 };
@@ -49,28 +58,28 @@ const loadExtras = (uid) => {
 const saveExtras = (uid, extras) => {
   try {
     localStorage.setItem(PROFILE_KEY(uid), JSON.stringify(pickExtras(extras)));
-  } catch {}
+  } catch (err) {
+    console.warn('Не удалось сохранить локальные данные профиля', err);
+  }
 };
 
-// Собираем «итогового пользователя»: Supabase user + локальные extras
-function composeUser(sUser, extras) {
-  if (!sUser) return null;
+// Собираем «итогового пользователя»: локальная запись + локальные extras
+function composeUser(record, extras) {
+  if (!record) return null;
   const emailVerified =
-    Boolean(sUser.email_confirmed_at) ||
-    Boolean(sUser.confirmed_at) ||
+    Boolean(record.email_confirmed_at) ||
+    Boolean(record.confirmed_at) ||
     Boolean(extras?.emailVerified);
 
   return {
-    // из Supabase
-    id: sUser.id,
-    email: sUser.email ?? '',
-    phone: sUser.phone ?? '',
-    createdAt: sUser.created_at ?? null,
-    app_metadata: sUser.app_metadata ?? {},
-    user_metadata: sUser.user_metadata ?? {},
+    id: record.id,
+    email: record.email ?? '',
+    phone: record.phone ?? '',
+    createdAt: record.created_at ?? null,
+    app_metadata: record.app_metadata ?? {},
+    user_metadata: record.user_metadata ?? {},
 
-    // локальные поля проекта
-    ...pickExtras({ ...extras, emailVerified }),
+    ...pickExtras({ ...extras, emailVerified, email: record.email, phone: record.phone }),
   };
 }
 
@@ -83,41 +92,62 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let mounted = true;
 
+    if (typeof window === 'undefined') {
+      setLoading(false);
+      return () => {
+        /* noop */
+      };
+    }
+
     // подчистим легаси сторадж, чтобы не мешал
     try {
       localStorage.removeItem(LEGACY_LS_KEY);
-    } catch {}
+    } catch (err) {
+      console.warn('Не удалось очистить устаревшие данные авторизации', err);
+    }
 
-    (async () => {
-      const { data } = await supabase.auth.getSession();
+    const storedSession = getStoredSession();
+    if (!mounted) return undefined;
+
+    if (storedSession?.userId) {
+      const record = getUserById(storedSession.userId);
+      if (record) {
+        const extras = loadExtras(record.id);
+        setSession(storedSession);
+        setUser(composeUser(record, extras));
+      } else {
+        clearStoredSession();
+        setSession(null);
+        setUser(null);
+      }
+    } else {
+      setSession(null);
+      setUser(null);
+    }
+    setLoading(false);
+
+    const onStorage = (event) => {
+      if (event.key !== null && event.key !== __localAuthInternals.SESSION_KEY) return;
       if (!mounted) return;
-
-      setSession(data.session ?? null);
-      const sUser = data.session?.user ?? null;
-
-      if (sUser) {
-        const extras = loadExtras(sUser.id);
-        setUser(composeUser(sUser, extras));
-      } else {
-        setUser(null);
+      const nextSession = getStoredSession();
+      if (nextSession?.userId) {
+        const record = getUserById(nextSession.userId);
+        if (record) {
+          const extras = loadExtras(record.id);
+          setSession(nextSession);
+          setUser(composeUser(record, extras));
+          return;
+        }
       }
-      setLoading(false);
-    })();
+      setSession(null);
+      setUser(null);
+    };
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession ?? null);
-      const sUser = newSession?.user ?? null;
-      if (sUser) {
-        const extras = loadExtras(sUser.id);
-        setUser(composeUser(sUser, extras));
-      } else {
-        setUser(null);
-      }
-    });
+    window.addEventListener('storage', onStorage);
 
     return () => {
       mounted = false;
-      listener.subscription?.unsubscribe();
+      window.removeEventListener('storage', onStorage);
     };
   }, []);
 
@@ -125,7 +155,12 @@ export function AuthProvider({ children }) {
   const signIn = async ({ email, phone, password }) => {
     // В данный момент реализован только вход по email
     if (email) {
-      return await signInEmailPassword({ email, password });
+      const result = await signInEmailPassword({ email, password });
+      const extras = loadExtras(result.user.id);
+      const composedUser = composeUser(result.user, extras);
+      setSession(result.session);
+      setUser(composedUser);
+      return { ...result, user: composedUser };
     }
     // TODO: Реализовать signInPhonePassword по аналогии, когда потребуется
     if (phone) {
@@ -138,17 +173,28 @@ export function AuthProvider({ children }) {
   // регистрация вынесена в фичу
   const signUp = async ({ email, phone, password, redirectTo } = {}) => {
     if (email) {
-      return await signUpEmailPassword({ email, password, redirectTo });
+      const result = await signUpEmailPassword({ email, password, redirectTo });
+      const extras = loadExtras(result.user.id);
+      const composedUser = composeUser(result.user, extras);
+      setSession(result.session);
+      setUser(composedUser);
+      return { ...result, user: composedUser };
     }
     if (phone) {
-      return await signUpPhonePassword({ phone, password });
+      const result = await signUpPhonePassword({ phone, password });
+      const extras = loadExtras(result.user.id);
+      const composedUser = composeUser(result.user, extras);
+      setSession(result.session);
+      setUser(composedUser);
+      return { ...result, user: composedUser };
     }
     throw new Error('Укажите E-mail или телефон для регистрации.');
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    clearStoredSession();
+    setSession(null);
+    setUser(null);
   };
 
   // ---------- Локальные методы профиля (пока БД пустая) ----------
