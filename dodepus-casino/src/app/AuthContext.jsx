@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { supabase } from './supabaseClient';
-import { signUpEmailPassword } from '../features/auth/api';
+import { signUpEmailPassword, signUpPhonePassword } from '../features/auth/api';
 
 const AuthCtx = createContext(null);
 export const useAuth = () => useContext(AuthCtx);
@@ -122,15 +122,33 @@ export function AuthProvider({ children }) {
   }, []);
 
   // ---------- Auth API ----------
-  const signIn = async ({ email, password }) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const signIn = async ({ email, phone, password }) => {
+    const creds = { password: String(password ?? '').trim() };
+
+    const emailNorm = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    const phoneNorm = typeof phone === 'string' ? phone.trim() : '';
+
+    if (emailNorm) creds.email = emailNorm;
+    if (phoneNorm) creds.phone = phoneNorm;
+
+    if (!creds.email && !creds.phone) {
+      throw new Error('Укажите E-mail или телефон для входа.');
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword(creds);
     if (error) throw error;
     return data; // user/session придут через onAuthStateChange
   };
 
   // регистрация вынесена в фичу
-  const signUp = async ({ email, password }) => {
-    return await signUpEmailPassword({ email, password });
+  const signUp = async ({ email, phone, password, redirectTo } = {}) => {
+    if (email) {
+      return await signUpEmailPassword({ email, password, redirectTo });
+    }
+    if (phone) {
+      return await signUpPhonePassword({ phone, password });
+    }
+    throw new Error('Укажите E-mail или телефон для регистрации.');
   };
 
   const signOut = async () => {
