@@ -23,7 +23,7 @@ function formatRole(role) {
   if (!role) return '—';
 
   const labelMap = {
-    user: 'Юзер',
+    user: 'user',
     intern: 'Стажёр',
     moderator: 'Модератор',
     admin: 'Админ',
