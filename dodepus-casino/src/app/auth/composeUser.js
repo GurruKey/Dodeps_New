@@ -6,6 +6,7 @@ const resolveAdminFlag = (record, extras) => {
   const metadataRole = record?.user_metadata?.role;
   return (
     Boolean(extras?.isAdmin) ||
+    record?.isAdmin === true ||
     (Array.isArray(appRoles) && appRoles.includes('admin')) ||
     metadataRole === 'admin' ||
     Boolean(record?.user_metadata?.isAdmin)
@@ -21,9 +22,19 @@ export function composeUser(record, extras) {
 
   const roles = Array.isArray(record?.app_metadata?.roles)
     ? record.app_metadata.roles
+    : Array.isArray(record?.roles)
+    ? record.roles
     : Array.isArray(extras?.roles)
     ? extras.roles
     : [];
+
+  const role =
+    record?.role ||
+    record?.app_metadata?.role ||
+    record?.user_metadata?.role ||
+    extras?.role ||
+    roles[0] ||
+    'user';
 
   return {
     id: record.id,
@@ -33,6 +44,7 @@ export function composeUser(record, extras) {
     app_metadata: record.app_metadata ?? {},
     user_metadata: record.user_metadata ?? {},
     roles,
+    role,
     isAdmin: resolveAdminFlag(record, extras),
     ...pickExtras({ ...extras, emailVerified, email: record.email, phone: record.phone }),
   };
