@@ -1,4 +1,4 @@
-import { Table } from 'react-bootstrap';
+import { Alert, Badge, Spinner, Table } from 'react-bootstrap';
 
 function formatCurrency(value) {
   return new Intl.NumberFormat('ru-RU', {
@@ -9,20 +9,66 @@ function formatCurrency(value) {
   }).format(value);
 }
 
-export default function ClientsTable({ clients }) {
+const statusLabels = {
+  active: 'Активный',
+  ban: 'Бан',
+};
+
+const statusVariants = {
+  active: 'success',
+  ban: 'danger',
+};
+
+function formatRole(role) {
+  if (!role) return '—';
+
+  const labelMap = {
+    user: 'Юзер',
+    intern: 'Стажёр',
+    moderator: 'Модератор',
+    admin: 'Админ',
+    owner: 'Owner',
+  };
+
+  const base = labelMap[role.group] ?? role.group;
+  if (role.level) {
+    return `${base} ${role.level}`;
+  }
+  return base;
+}
+
+export default function ClientsTable({ clients, isLoading, error }) {
+  if (error) {
+    return (
+      <Alert variant="danger" className="mb-0">
+        Не удалось показать таблицу клиентов: {error.message}
+      </Alert>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="text-muted d-flex align-items-center gap-2">
+        <Spinner animation="border" size="sm" role="status" />
+        <span>Загружаем клиентов…</span>
+      </div>
+    );
+  }
+
   if (!clients.length) {
     return <div className="text-muted">По заданным критериям клиенты не найдены.</div>;
   }
 
   return (
-    <Table responsive hover className="mb-0">
+    <Table responsive hover className="mb-0 align-middle">
       <thead>
         <tr>
           <th style={{ width: '10%' }}>ID</th>
-          <th style={{ width: '35%' }}>E-mail</th>
-          <th style={{ width: '25%' }}>Телефон</th>
+          <th style={{ width: '30%' }}>E-mail</th>
+          <th style={{ width: '20%' }}>Телефон</th>
           <th style={{ width: '15%' }} className="text-end">Общий баланс</th>
-          <th style={{ width: '15%' }}>Статус</th>
+          <th style={{ width: '10%' }}>Статус</th>
+          <th style={{ width: '15%' }}>Роль</th>
         </tr>
       </thead>
       <tbody>
@@ -32,7 +78,12 @@ export default function ClientsTable({ clients }) {
             <td>{client.email}</td>
             <td>{client.phone}</td>
             <td className="text-end">{formatCurrency(client.totalBalance)}</td>
-            <td>{client.status}</td>
+            <td>
+              <Badge bg={statusVariants[client.status] ?? 'secondary'}>
+                {statusLabels[client.status] ?? client.status}
+              </Badge>
+            </td>
+            <td>{formatRole(client.role)}</td>
           </tr>
         ))}
       </tbody>
