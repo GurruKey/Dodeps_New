@@ -47,7 +47,7 @@ function fmtCurrency(v, curr) {
 }
 
 export default function Header() {
-  const { isAuthed, user, logout } = useAuth();
+  const { isAuthed, isAdmin, user, logout } = useAuth();
   const balance = Number(user?.balance || 0);
   const currency = user?.currency || 'USD';
 
@@ -86,9 +86,11 @@ export default function Header() {
                 Профиль
               </Button>
               {/* 🔴 Админ-панель */}
-              <Button as={Link} to="/admin" size="sm" variant="danger">
-                Админ
-              </Button>
+              {isAdmin && (
+                <Button as={Link} to="/admin" size="sm" variant="danger">
+                  Админ
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="outline-light"
