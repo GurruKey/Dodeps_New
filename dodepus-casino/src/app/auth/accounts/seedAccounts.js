@@ -12,6 +12,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Las Vegas',
       balance: 1250,
       casinoBalance: 350,
+      emailVerified: true,
     },
   },
   {
@@ -27,6 +28,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Toronto',
       balance: 980,
       casinoBalance: 120,
+      emailVerified: true,
     },
   },
   {
@@ -42,6 +44,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Singapore',
       balance: 1500,
       casinoBalance: 620,
+      emailVerified: true,
     },
   },
   {
@@ -57,6 +60,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Moscow',
       balance: 870,
       casinoBalance: 240,
+      emailVerified: true,
     },
   },
   {
@@ -72,6 +76,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Madrid',
       balance: 2100,
       casinoBalance: 875,
+      emailVerified: true,
     },
   },
   {
@@ -87,6 +92,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Seoul',
       balance: 640,
       casinoBalance: 95,
+      emailVerified: true,
     },
   },
   {
@@ -102,6 +108,7 @@ export const PRESET_ACCOUNTS = [
       city: 'London',
       balance: 1320,
       casinoBalance: 410,
+      emailVerified: true,
     },
   },
   {
@@ -117,6 +124,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Osaka',
       balance: 1880,
       casinoBalance: 530,
+      emailVerified: true,
     },
   },
   {
@@ -132,6 +140,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Da Nang',
       balance: 720,
       casinoBalance: 150,
+      emailVerified: true,
     },
   },
   {
@@ -147,6 +156,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Stockholm',
       balance: 960,
       casinoBalance: 205,
+      emailVerified: true,
     },
   },
   {
@@ -162,6 +172,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Goa',
       balance: 1430,
       casinoBalance: 480,
+      emailVerified: true,
     },
   },
   {
@@ -177,6 +188,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Sydney',
       balance: 1575,
       casinoBalance: 600,
+      emailVerified: true,
     },
   },
   {
@@ -192,6 +204,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Dubai',
       balance: 2010,
       casinoBalance: 910,
+      emailVerified: true,
     },
   },
   {
@@ -207,6 +220,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Buenos Aires',
       balance: 890,
       casinoBalance: 170,
+      emailVerified: true,
     },
   },
   {
@@ -222,6 +236,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Milan',
       balance: 1340,
       casinoBalance: 365,
+      emailVerified: true,
     },
   },
   {
@@ -237,6 +252,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Miami',
       balance: 1180,
       casinoBalance: 295,
+      emailVerified: true,
     },
   },
   {
@@ -252,6 +268,7 @@ export const PRESET_ACCOUNTS = [
       city: 'Karachi',
       balance: 760,
       casinoBalance: 130,
+      emailVerified: true,
     },
   },
   {
@@ -268,6 +285,7 @@ export const PRESET_ACCOUNTS = [
       balance: 5020,
       casinoBalance: 2450,
       mfaEnabled: true,
+      emailVerified: true,
     },
   },
   {
@@ -284,6 +302,7 @@ export const PRESET_ACCOUNTS = [
       balance: 7250,
       casinoBalance: 4100,
       mfaEnabled: true,
+      emailVerified: true,
     },
   },
   {
@@ -300,6 +319,7 @@ export const PRESET_ACCOUNTS = [
       balance: 15000,
       casinoBalance: 10000,
       mfaEnabled: true,
+      emailVerified: true,
     },
   },
 ];

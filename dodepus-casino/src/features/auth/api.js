@@ -49,8 +49,36 @@ const writeUsers = (users, storage = requireStorage()) => {
 const findByEmail = (users, email) => users.find((u) => u.email && u.email === email);
 const findByPhone = (users, phone) => users.find((u) => u.phone && u.phone === phone);
 
+const deriveRoles = (record = {}) => {
+  const collect = (value) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    return [value];
+  };
+
+  const rawRoles = [
+    collect(record?.app_metadata?.roles),
+    collect(record?.user_metadata?.roles),
+    collect(record?.app_metadata?.role),
+    collect(record?.user_metadata?.role),
+  ].flat();
+
+  const normalized = rawRoles
+    .map((role) => (typeof role === 'string' ? role.trim().toLowerCase() : ''))
+    .filter(Boolean);
+
+  return Array.from(new Set(normalized));
+};
+
 const toPublicUser = (record) => {
   if (!record) return null;
+  const roles = deriveRoles(record);
+  const primaryRole = roles[0] ?? 'user';
+  const isAdmin =
+    roles.includes('admin') ||
+    record?.user_metadata?.isAdmin === true ||
+    record?.app_metadata?.isAdmin === true;
+
   return {
     id: record.id,
     email: record.email ?? '',
@@ -62,6 +90,9 @@ const toPublicUser = (record) => {
     last_sign_in_at: record.last_sign_in_at ?? null,
     app_metadata: record.app_metadata ?? {},
     user_metadata: record.user_metadata ?? {},
+    role: primaryRole,
+    roles,
+    isAdmin,
   };
 };
 
@@ -133,6 +164,8 @@ function createSession(userId) {
 
 function createUserRecord({ email, phone, password }) {
   const ts = nowIso();
+  const role = 'user';
+  const roles = ['user'];
   return {
     id: randomId('usr'),
     email: email ?? '',
@@ -145,8 +178,14 @@ function createUserRecord({ email, phone, password }) {
     last_sign_in_at: ts,
     app_metadata: {
       provider: email ? 'email' : 'phone',
+      role,
+      roles,
     },
-    user_metadata: {},
+    user_metadata: {
+      role,
+      roles,
+      isAdmin: false,
+    },
   };
 }
 

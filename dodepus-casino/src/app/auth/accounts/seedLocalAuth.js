@@ -2,6 +2,35 @@ import { PROFILE_KEY } from '../constants';
 import { pickExtras } from '../profileExtras';
 import { PRESET_ACCOUNTS } from './seedAccounts';
 
+const ADMIN_ROLES = new Set(['admin', 'owner']);
+
+const normalizeRole = (role, fallback = '') => {
+  const raw = typeof role === 'string' ? role.trim() : '';
+  return raw ? raw.toLowerCase() : fallback;
+};
+
+const mergeRoles = (accountRole, extraRoles = []) => {
+  const baseRole = normalizeRole(accountRole, 'user');
+  const roles = new Set();
+  roles.add(baseRole);
+  extraRoles
+    .flat()
+    .filter(Boolean)
+    .map((role) => normalizeRole(role))
+    .forEach((role) => {
+      if (role) roles.add(role);
+    });
+
+  if (ADMIN_ROLES.has(baseRole)) {
+    roles.add('admin');
+  }
+
+  return {
+    baseRole,
+    roles: Array.from(roles),
+  };
+};
+
 const buildTimestamps = (index) => {
   const base = new Date(Date.UTC(2024, 0, 1, 12, index, 0));
   const iso = base.toISOString();
@@ -15,6 +44,52 @@ const buildTimestamps = (index) => {
 
 const toStoredUser = (account, index) => {
   const timestamps = buildTimestamps(index);
+  const { baseRole, roles } = mergeRoles(account.role, [
+    account.roles,
+    account.app_metadata?.roles,
+    account.user_metadata?.roles,
+  ]);
+  const isAdmin = roles.includes('admin') || Boolean(account?.user_metadata?.isAdmin);
+
+  const appMetadata = {
+    provider: account.email ? 'email' : 'phone',
+    role: baseRole,
+    roles,
+    ...account.app_metadata,
+  };
+
+  if (Array.isArray(account.app_metadata?.roles) && account.app_metadata.roles.length) {
+    const mergedAppRoles = new Set([
+      ...roles,
+      ...account.app_metadata.roles.map((role) => normalizeRole(role)).filter(Boolean),
+    ]);
+    appMetadata.roles = Array.from(mergedAppRoles);
+  }
+
+  const userMetadata = {
+    role: baseRole,
+    roles,
+    isAdmin,
+    ...account.user_metadata,
+  };
+
+  if (isAdmin) {
+    appMetadata.isAdmin = true;
+    userMetadata.isAdmin = true;
+  }
+
+  if (Array.isArray(account.user_metadata?.roles) && account.user_metadata.roles.length) {
+    const mergedUserRoles = new Set([
+      ...roles,
+      ...account.user_metadata.roles.map((role) => normalizeRole(role)).filter(Boolean),
+    ]);
+    userMetadata.roles = Array.from(mergedUserRoles);
+  }
+
+  if (!userMetadata.roles?.length) {
+    userMetadata.roles = roles;
+  }
+
   return {
     id: account.id,
     email: (account.email ?? '').toLowerCase(),
@@ -27,24 +102,23 @@ const toStoredUser = (account, index) => {
     phone_confirmed_at:
       account.phone_confirmed_at ?? (account.phone ? timestamps.phone_confirmed_at : null),
     last_sign_in_at: account.last_sign_in_at ?? null,
-    app_metadata: {
-      provider: account.email ? 'email' : 'phone',
-      role: account.role ?? 'user',
-      ...account.app_metadata,
-    },
-    user_metadata: {
-      role: account.role ?? 'user',
-      ...account.user_metadata,
-    },
+    app_metadata: appMetadata,
+    user_metadata: userMetadata,
   };
 };
 
-const toExtras = (account) =>
-  pickExtras({
+const toExtras = (account) => {
+  const emailVerified = Boolean(
+    account.email_confirmed_at ?? account.confirmed_at ?? account.extras?.emailVerified ?? false
+  );
+
+  return pickExtras({
     email: account.email,
+    emailVerified,
     ...account.extras,
     user_metadata: undefined,
   });
+};
 
 export const buildSeedUserRecords = () => PRESET_ACCOUNTS.map(toStoredUser);
 
