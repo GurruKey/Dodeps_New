@@ -45,8 +45,9 @@ export default function PhoneLoginForm({ onSuccess, onError }) {
 
     setSubmitting(true);
     try {
-      await signIn({ phone, password: password.trim() });
-      onSuccess?.();
+      const safePassword = password.trim();
+      await signIn({ phone, password: safePassword });
+      await onSuccess?.({ identifier: phone, password: safePassword });
     } catch (err) {
       setError(err?.message || 'Ошибка входа');
     } finally {

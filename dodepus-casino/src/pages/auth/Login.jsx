@@ -7,6 +7,64 @@ import { useAuth } from '../../app/AuthContext.jsx';
 import EmailLoginForm from '../../features/auth/EmailLoginForm.jsx';
 import PhoneLoginForm from '../../features/auth/PhoneLoginForm.jsx';
 
+async function offerBrowserPasswordSave(identifier, password) {
+  if (typeof window === 'undefined') return;
+  const id = identifier?.trim?.();
+  const secret = password || '';
+  if (!id || !secret) return;
+
+  const { navigator, document } = window;
+  const credentialsApi = navigator?.credentials;
+  if (!credentialsApi) return;
+
+  try {
+    if (typeof credentialsApi.create === 'function') {
+      const credential = await credentialsApi.create({
+        password: {
+          id,
+          password: secret,
+          name: id,
+        },
+      });
+      if (credential) {
+        await credentialsApi.store(credential);
+        return;
+      }
+    }
+
+    if (window.PasswordCredential) {
+      const form = document.createElement('form');
+      form.method = 'post';
+      form.style.display = 'none';
+      form.autoComplete = 'on';
+
+      const usernameInput = document.createElement('input');
+      usernameInput.type = 'text';
+      usernameInput.name = 'username';
+      usernameInput.value = id;
+      usernameInput.autocomplete = 'username';
+
+      const passwordInput = document.createElement('input');
+      passwordInput.type = 'password';
+      passwordInput.name = 'password';
+      passwordInput.value = secret;
+      passwordInput.autocomplete = 'current-password';
+
+      form.append(usernameInput, passwordInput);
+      document.body.appendChild(form);
+
+      try {
+        const credential = new window.PasswordCredential(form);
+        await credentialsApi.store(credential);
+      } finally {
+        document.body.removeChild(form);
+      }
+    }
+  } catch (err) {
+    console.error('Не удалось сохранить пароль через API браузера', err);
+  }
+}
+
 export default function Login() {
   const { isAuthed } = useAuth();
   const navigate = useNavigate();
@@ -19,8 +77,9 @@ export default function Login() {
     if (isAuthed) navigate('/lobby', { replace: true });
   }, [isAuthed, navigate]);
 
-  const handleSuccess = () => {
+  const handleSuccess = async (payload = {}) => {
     const next = location.state?.from?.pathname || '/lobby';
+    await offerBrowserPasswordSave(payload.identifier, payload.password);
     navigate(next, { replace: true });
   };
 

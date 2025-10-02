@@ -36,8 +36,10 @@ export default function EmailLoginForm({ onSuccess, onError }) {
 
     setSubmitting(true);
     try {
-      await signIn({ email: email.trim().toLowerCase(), password: password.trim() });
-      onSuccess?.();
+      const normalizedEmail = email.trim().toLowerCase();
+      const safePassword = password.trim();
+      await signIn({ email: normalizedEmail, password: safePassword });
+      await onSuccess?.({ identifier: normalizedEmail, password: safePassword });
     } catch (err) {
       setError(err?.message || 'Ошибка входа');
     } finally {
