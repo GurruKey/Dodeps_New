@@ -52,6 +52,18 @@ npm run build
 ## 3) Структура проекта (актуальная)
 
 ```
+local-sim/
+  auth/
+    api.js                 # локальный API авторизации (localStorage)
+    composeUser.js         # объединение записи пользователя и экстрас
+    profileExtras.js       # чтение/запись локальных данных профиля
+    constants.js           # ключи localStorage
+    accounts/
+      seedAccounts.js      # сид-данные пользователей
+      seedLocalAuth.js     # заполнение локального хранилища
+    session/
+      initAuthEffect.js    # восстановление сессии и подписка на изменения
+
 src/
   app/
     App.jsx                  # каркас min-vh-100 + sticky footer

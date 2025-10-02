@@ -3,7 +3,7 @@ import {
   clearStoredSession,
   getStoredSession,
   getUserById,
-} from '../../../features/auth/api';
+} from '../api';
 import { LEGACY_LS_KEY } from '../constants';
 import { composeUser } from '../composeUser';
 import { loadExtras } from '../profileExtras';
