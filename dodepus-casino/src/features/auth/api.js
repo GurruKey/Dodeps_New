@@ -1,6 +1,11 @@
 // src/features/auth/api.js
 // Реализация локальной авторизации без внешней БД.
 
+import {
+  buildSeedUserRecords,
+  ensureSeededAuthStorage,
+} from '../../app/auth/accounts/seedLocalAuth';
+
 const USERS_KEY = 'dodepus_local_users_v1';
 const SESSION_KEY = 'dodepus_local_session_v1';
 
@@ -29,15 +34,8 @@ const requireStorage = () => {
 };
 
 const readUsers = (storage = tryGetStorage()) => {
-  if (!storage) return [];
-  try {
-    const raw = storage.getItem(USERS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  if (!storage) return buildSeedUserRecords();
+  return ensureSeededAuthStorage({ storage, usersKey: USERS_KEY });
 };
 
 const writeUsers = (users, storage = requireStorage()) => {
