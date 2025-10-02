@@ -64,7 +64,7 @@ export default function EmailRegisterForm({ onSuccess, onError }) {
   };
 
   return (
-    <form onSubmit={onSubmit} noValidate>
+    <form onSubmit={onSubmit} noValidate autoComplete="on">
       {localError && <Alert variant="danger" className="mb-3" aria-live="polite">{localError}</Alert>}
       {info && <Alert variant="info" className="mb-3" aria-live="polite">{info}</Alert>}
 
@@ -77,7 +77,8 @@ export default function EmailRegisterForm({ onSuccess, onError }) {
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
+          name="email"
+          autoComplete="username"
           required
           aria-invalid={Boolean(email && !emailOk)}
         />
@@ -98,6 +99,7 @@ export default function EmailRegisterForm({ onSuccess, onError }) {
             placeholder="Минимум 8 символов"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            name="new-password"
             autoComplete="new-password"
             minLength={8}
             required

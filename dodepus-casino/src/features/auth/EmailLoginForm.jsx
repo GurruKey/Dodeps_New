@@ -46,7 +46,7 @@ export default function EmailLoginForm({ onSuccess, onError }) {
   };
 
   return (
-    <form onSubmit={onSubmit} noValidate>
+    <form onSubmit={onSubmit} noValidate autoComplete="on">
       {localError && <Alert variant="danger" className="mb-3">{localError}</Alert>}
 
       {/* E-mail */}
@@ -59,7 +59,8 @@ export default function EmailLoginForm({ onSuccess, onError }) {
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
+          name="email"
+          autoComplete="username"
           required
         />
         {!emailOk && email && (
@@ -78,6 +79,7 @@ export default function EmailLoginForm({ onSuccess, onError }) {
             placeholder="Введите пароль"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            name="password"
             autoComplete="current-password"
             required
           />
