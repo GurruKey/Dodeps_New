@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Tab, Nav, Row, Col } from 'react-bootstrap';
 import AdminOverview from './Admin/Overview.jsx';
 import AdminManagement from './Admin/Management.jsx';
+import { listClients } from '../../local-sim/admin/clients';
 
 export default function Admin() {
   const [clients, setClients] = useState([]);
@@ -12,16 +13,8 @@ export default function Admin() {
     setIsLoading(true);
     setError(null);
 
-    const sourceUrl = `${import.meta.env.BASE_URL}admin/clients.json`;
-
     try {
-      const fetchOptions = signal ? { signal } : undefined;
-      const response = await fetch(sourceUrl, fetchOptions);
-      if (!response.ok) {
-        throw new Error(`Не удалось загрузить клиентов (HTTP ${response.status})`);
-      }
-
-      const data = await response.json();
+      const data = await listClients(signal ? { signal } : undefined);
       if (!signal?.aborted) {
         setClients(Array.isArray(data) ? data : []);
       }
