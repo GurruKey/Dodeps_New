@@ -3,9 +3,9 @@ import {
   signInEmailPassword,
   signUpEmailPassword,
   signUpPhonePassword,
-} from '../../../features/auth/api';
-import { composeUser } from '../composeUser';
-import { loadExtras } from '../profileExtras';
+} from '../../../../local-sim/auth/api';
+import { composeUser } from '../../../../local-sim/auth/composeUser';
+import { loadExtras } from '../../../../local-sim/auth/profileExtras';
 
 export function createAuthActions({ setSession, setUser }) {
   const composeResult = (result) => {

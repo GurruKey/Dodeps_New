@@ -1,4 +1,4 @@
-import { pickExtras, saveExtras } from '../profileExtras';
+import { pickExtras, saveExtras } from '../../../../local-sim/auth/profileExtras';
 
 const ensureAuthed = (user) => {
   if (!user?.id) {
