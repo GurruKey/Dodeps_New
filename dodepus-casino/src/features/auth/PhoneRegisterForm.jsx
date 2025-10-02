@@ -101,7 +101,7 @@ export default function PhoneRegisterForm({ onSuccess, onError }) {
   );
 
   return (
-    <form onSubmit={onSubmit} noValidate>
+    <form onSubmit={onSubmit} noValidate autoComplete="on">
       {localError && (
         <Alert variant="danger" className="mb-3" aria-live="polite">
           {localError}
@@ -158,7 +158,8 @@ export default function PhoneRegisterForm({ onSuccess, onError }) {
             placeholder={phonePlaceholder}
             value={phoneLocal}
             onChange={(e) => setPhoneLocal(onlyDigits(e.target.value).slice(0, 14))}
-            autoComplete="tel"
+            name="phone"
+            autoComplete="username"
             maxLength={14}
             required
             aria-invalid={Boolean(phoneLocal && !phoneOk)}
@@ -181,6 +182,7 @@ export default function PhoneRegisterForm({ onSuccess, onError }) {
             placeholder="Минимум 8 символов"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            name="new-password"
             autoComplete="new-password"
             minLength={8}
             required

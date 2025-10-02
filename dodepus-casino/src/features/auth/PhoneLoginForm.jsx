@@ -72,7 +72,7 @@ export default function PhoneLoginForm({ onSuccess, onError }) {
   );
 
   return (
-    <form onSubmit={onSubmit} noValidate>
+    <form onSubmit={onSubmit} noValidate autoComplete="on">
       {localError && <Alert variant="danger" className="mb-3">{localError}</Alert>}
 
       {/* Телефон */}
@@ -116,7 +116,8 @@ export default function PhoneLoginForm({ onSuccess, onError }) {
             placeholder={formatPhonePlaceholder(country.dial)}
             value={phoneLocal}
             onChange={(e) => setPhoneLocal(onlyDigits(e.target.value))}
-            autoComplete="tel"
+            name="phone"
+            autoComplete="username"
             required
           />
         </div>
@@ -136,6 +137,7 @@ export default function PhoneLoginForm({ onSuccess, onError }) {
             placeholder="Введите пароль"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            name="password"
             autoComplete="current-password"
             required
           />
