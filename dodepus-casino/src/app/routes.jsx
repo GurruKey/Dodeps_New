@@ -32,6 +32,21 @@ function RequireAuth({ children }) {
   return children;
 }
 
+function RequireAdmin({ children }) {
+  const { isAuthed, canAccessAdminPanel } = useAuth();
+  const location = useLocation();
+
+  if (!isAuthed) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  if (!canAccessAdminPanel?.()) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -52,8 +67,14 @@ export default function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/auth" element={<Navigate to="/login" replace />} />
 
-      {/* Admin (если нужен доступ только авторизованным — оберни в RequireAuth) */}
-      <Route path="/admin" element={<Admin />} />
+      <Route
+        path="/admin"
+        element={
+          <RequireAdmin>
+            <Admin />
+          </RequireAdmin>
+        }
+      />
 
       {/* Только для авторизованных */}
       <Route

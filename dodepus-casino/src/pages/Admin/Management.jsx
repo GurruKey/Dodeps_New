@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Alert, Card, Stack } from 'react-bootstrap';
+import { useMemo, useState } from 'react';
+import { Alert, Button, Card, Stack } from 'react-bootstrap';
 import ClientSearchFilters from './clients/ClientSearchFilters.jsx';
 import ClientsTable from './clients/ClientsTable.jsx';
 import ClientStats from './clients/ClientStats.jsx';
@@ -11,65 +11,24 @@ function normalize(value) {
     .toLowerCase();
 }
 
-export default function AdminClients() {
+export default function AdminManagement({ clients = [], isLoading, error, onReload }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [balanceFilter, setBalanceFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
-  const [clientsData, setClientsData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const sourceUrl = `${import.meta.env.BASE_URL}admin/clients.json`;
-
-    async function loadClients() {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(sourceUrl);
-        if (!response.ok) {
-          throw new Error(`Не удалось загрузить клиентов (HTTP ${response.status})`);
-        }
-
-        const data = await response.json();
-        if (!cancelled) {
-          setClientsData(Array.isArray(data) ? data : []);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err : new Error('Неизвестная ошибка загрузки клиентов'));
-          setClientsData([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadClients();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const totals = useMemo(() => {
-    const totalBalance = clientsData.reduce((sum, client) => sum + client.totalBalance, 0);
+    const totalBalance = clients.reduce((sum, client) => sum + client.totalBalance, 0);
     return {
-      totalClients: clientsData.length,
+      totalClients: clients.length,
       totalBalance,
     };
-  }, [clientsData]);
+  }, [clients]);
 
   const filteredClients = useMemo(() => {
     const normalizedSearch = normalize(searchTerm);
 
-    return clientsData.filter((client) => {
+    return clients.filter((client) => {
       const matchesSearch = normalizedSearch
         ? [client.id, client.email, client.phone].some((field) =>
             normalize(String(field)).includes(normalizedSearch),
@@ -98,7 +57,7 @@ export default function AdminClients() {
 
       return matchesSearch && matchesStatus && matchesRole && matchesBalance;
     });
-  }, [balanceFilter, roleFilter, searchTerm, statusFilter, clientsData]);
+  }, [balanceFilter, roleFilter, searchTerm, statusFilter, clients]);
 
   const filteredBalance = useMemo(
     () => filteredClients.reduce((sum, client) => sum + client.totalBalance, 0),
@@ -107,6 +66,27 @@ export default function AdminClients() {
 
   return (
     <Stack gap={3}>
+      <Card>
+        <Card.Body>
+          <div className="d-flex flex-column flex-lg-row gap-3 align-items-lg-center justify-content-between">
+            <div>
+              <Card.Title as="h3" className="mb-1">
+                Управление клиентами
+              </Card.Title>
+              <Card.Text className="text-muted mb-0">
+                Настраивайте фильтры, чтобы быстро находить нужных пользователей и анализировать их
+                активность.
+              </Card.Text>
+            </div>
+            {onReload && (
+              <Button variant="outline-primary" onClick={onReload} disabled={isLoading}>
+                Обновить данные
+              </Button>
+            )}
+          </div>
+        </Card.Body>
+      </Card>
+
       <Card>
         <Card.Body>
           <Card.Title>Поиск и фильтры</Card.Title>
