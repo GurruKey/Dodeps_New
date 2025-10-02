@@ -1,4 +1,5 @@
-import { Row, Col } from 'react-bootstrap';
+import { Placeholder, Row, Col } from 'react-bootstrap';
+import { useTheme } from '../../../app/ThemeContext.jsx';
 
 function formatCurrency(value) {
   return new Intl.NumberFormat('ru-RU', {
@@ -9,31 +10,59 @@ function formatCurrency(value) {
   }).format(value);
 }
 
-function StatCard({ label, value }) {
+function StatCard({ label, value, isLoading, theme }) {
+  const content = isLoading ? (
+    <Placeholder as="span" animation="glow" className="d-inline-flex w-75">
+      <Placeholder xs={8} />
+    </Placeholder>
+  ) : (
+    value
+  );
+
+  const backgroundClass = theme === 'dark' ? 'bg-dark-subtle' : 'bg-body-tertiary';
+
   return (
-    <div className="p-3 border rounded bg-light h-100">
-      <div className="text-muted text-uppercase" style={{ fontSize: '0.75rem', letterSpacing: '0.04em' }}>
+    <div className={`p-3 border rounded h-100 border-body-tertiary ${backgroundClass}`}>
+      <div className="text-secondary text-uppercase" style={{ fontSize: '0.75rem', letterSpacing: '0.04em' }}>
         {label}
       </div>
-      <div className="fw-semibold fs-5 mt-2">{value}</div>
+      <div className="fw-semibold fs-5 mt-2 text-body">{content}</div>
     </div>
   );
 }
 
-export default function ClientStats({ totalClients, filteredClients, totalBalance, filteredBalance }) {
+export default function ClientStats({
+  totalClients,
+  filteredClients,
+  totalBalance,
+  filteredBalance,
+  isLoading,
+}) {
+  const { theme } = useTheme();
+
   return (
     <Row className="g-3">
       <Col xs={12} md={6} xl={3}>
-        <StatCard label="Всего клиентов" value={totalClients} />
+        <StatCard label="Всего клиентов" value={totalClients} isLoading={isLoading} theme={theme} />
       </Col>
       <Col xs={12} md={6} xl={3}>
-        <StatCard label="В подборке" value={filteredClients} />
+        <StatCard label="В подборке" value={filteredClients} isLoading={isLoading} theme={theme} />
       </Col>
       <Col xs={12} md={6} xl={3}>
-        <StatCard label="Общий баланс" value={formatCurrency(totalBalance)} />
+        <StatCard
+          label="Общий баланс"
+          value={formatCurrency(totalBalance)}
+          isLoading={isLoading}
+          theme={theme}
+        />
       </Col>
       <Col xs={12} md={6} xl={3}>
-        <StatCard label="Баланс подборки" value={formatCurrency(filteredBalance)} />
+        <StatCard
+          label="Баланс подборки"
+          value={formatCurrency(filteredBalance)}
+          isLoading={isLoading}
+          theme={theme}
+        />
       </Col>
     </Row>
   );

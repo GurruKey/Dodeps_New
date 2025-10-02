@@ -10,9 +10,25 @@ const balanceOptions = [
 const statusOptions = [
   { value: 'all', label: 'Все статусы' },
   { value: 'active', label: 'Активный' },
-  { value: 'vip', label: 'VIP' },
-  { value: 'review', label: 'На проверке' },
-  { value: 'suspended', label: 'Заблокирован' },
+  { value: 'ban', label: 'Бан' },
+];
+
+const roleOptions = [
+  { value: 'all', label: 'Все роли' },
+  { value: 'user', label: 'Юзер' },
+  { value: 'intern:1', label: 'Стажёр 1' },
+  { value: 'intern:2', label: 'Стажёр 2' },
+  { value: 'intern:3', label: 'Стажёр 3' },
+  { value: 'intern:4', label: 'Стажёр 4' },
+  { value: 'moderator:1', label: 'Модератор 1' },
+  { value: 'moderator:2', label: 'Модератор 2' },
+  { value: 'moderator:3', label: 'Модератор 3' },
+  { value: 'moderator:4', label: 'Модератор 4' },
+  { value: 'admin:1', label: 'Админ 1' },
+  { value: 'admin:2', label: 'Админ 2' },
+  { value: 'admin:3', label: 'Админ 3' },
+  { value: 'admin:4', label: 'Админ 4' },
+  { value: 'owner', label: 'Owner' },
 ];
 
 export default function ClientSearchFilters({
@@ -22,6 +38,8 @@ export default function ClientSearchFilters({
   onStatusChange,
   balanceFilter,
   onBalanceChange,
+  roleFilter,
+  onRoleChange,
 }) {
   return (
     <Form>
@@ -62,6 +80,19 @@ export default function ClientSearchFilters({
               onChange={(event) => onBalanceChange(event.target.value)}
             >
               {balanceOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+
+        <Col xs={12} sm={6} lg={3}>
+          <Form.Group controlId="clientRole">
+            <Form.Label>Роль</Form.Label>
+            <Form.Select value={roleFilter} onChange={(event) => onRoleChange(event.target.value)}>
+              {roleOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
