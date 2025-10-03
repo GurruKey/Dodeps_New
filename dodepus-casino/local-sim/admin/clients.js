@@ -1,71 +1,177 @@
-const CLIENT_FIXTURES = [
-  {
-    id: 'CL-001',
-    email: 'anna.ivanova@example.com',
-    phone: '+7 (999) 123-45-67',
-    totalBalance: 12500,
-    status: 'active',
-    role: { group: 'user' },
-  },
-  {
-    id: 'CL-002',
-    email: 'pavel.petrov@example.com',
-    phone: '+7 (916) 555-10-20',
-    totalBalance: 0,
-    status: 'ban',
-    role: { group: 'intern', level: 1 },
-  },
-  {
-    id: 'CL-003',
-    email: 'daria.smirnova@example.com',
-    phone: '+44 7700 900123',
-    totalBalance: 3870,
-    status: 'active',
-    role: { group: 'intern', level: 3 },
-  },
-  {
-    id: 'CL-004',
-    email: 'mark.taylor@example.com',
-    phone: '+1 (202) 555-0134',
-    totalBalance: 842,
-    status: 'active',
-    role: { group: 'moderator', level: 2 },
-  },
-  {
-    id: 'CL-005',
-    email: 'li.wang@example.com',
-    phone: '+86 10 5555 1234',
-    totalBalance: 15420,
-    status: 'active',
-    role: { group: 'admin', level: 4 },
-  },
-  {
-    id: 'CL-006',
-    email: 'maria.garcia@example.com',
-    phone: '+34 600 123 456',
-    totalBalance: 57,
-    status: 'ban',
-    role: { group: 'moderator', level: 1 },
-  },
-  {
-    id: 'CL-007',
-    email: 'samir.khan@example.com',
-    phone: '+971 50 123 4567',
-    totalBalance: 230,
-    status: 'active',
-    role: { group: 'admin', level: 2 },
-  },
-  {
-    id: 'CL-008',
-    email: 'elena.kozlova@example.com',
-    phone: '+7 (495) 777-99-00',
-    totalBalance: 5230,
-    status: 'active',
-    role: { group: 'owner' },
-  },
-];
+import { __localAuthInternals } from '../auth/api';
+import { ensureSeededAuthStorage } from '../auth/accounts/seedLocalAuth';
+import { loadExtras } from '../auth/profileExtras';
+import { composeUser } from '../auth/composeUser';
+
+const { readUsers, USERS_KEY } = __localAuthInternals;
 
 const cloneClient = (client) => JSON.parse(JSON.stringify(client));
+
+const tryGetLocalStorage = () => {
+  try {
+    if (typeof globalThis === 'undefined') return null;
+    return globalThis.localStorage ?? null;
+  } catch {
+    return null;
+  }
+};
+
+const toNumber = (value, fallback = 0) => {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+};
+
+const normalizeString = (value) => {
+  if (value == null) return '';
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value).trim();
+  }
+  return '';
+};
+
+const normalizeStatus = (value) => {
+  const normalized = normalizeString(value);
+  return normalized ? normalized.toLowerCase() : '';
+};
+
+const resolveAuthRecords = () => {
+  const storage = tryGetLocalStorage();
+
+  if (storage) {
+    return ensureSeededAuthStorage({ storage, usersKey: USERS_KEY });
+  }
+
+  return readUsers();
+};
+
+const dedupeRoles = (roles) => {
+  if (!Array.isArray(roles)) return [];
+  const unique = new Set();
+  roles
+    .map((role) => normalizeString(String(role ?? '')))
+    .filter(Boolean)
+    .forEach((role) => {
+      unique.add(role.toLowerCase());
+    });
+  return Array.from(unique);
+};
+
+const extractRoleLevel = (user) => {
+  const { user_metadata: userMeta = {}, app_metadata: appMeta = {} } = user ?? {};
+  const candidates = [
+    user?.roleLevel,
+    userMeta.roleLevel,
+    userMeta.level,
+    userMeta.adminLevel,
+    appMeta.roleLevel,
+    appMeta.level,
+  ];
+
+  for (const candidate of candidates) {
+    const level = Number(candidate);
+    if (Number.isFinite(level)) {
+      return level;
+    }
+  }
+
+  return undefined;
+};
+
+const resolveRoleGroup = (user) => {
+  const { user_metadata: userMeta = {}, app_metadata: appMeta = {} } = user ?? {};
+
+  const candidates = [user?.role, appMeta.role, userMeta.role];
+
+  if (Array.isArray(user?.roles) && user.roles.length) {
+    candidates.push(user.roles[0]);
+  }
+
+  for (const candidate of candidates) {
+    const normalized = normalizeString(candidate);
+    if (normalized) return normalized.toLowerCase();
+  }
+
+  return '';
+};
+
+const composeRole = (user) => {
+  const group = resolveRoleGroup(user);
+  if (!group) return null;
+
+  const role = { group };
+  const level = extractRoleLevel(user);
+  if (Number.isFinite(level)) {
+    role.level = level;
+  }
+  return role;
+};
+
+const resolveStatus = (record, user, extras) => {
+  const { user_metadata: userMeta = {}, app_metadata: appMeta = {} } = user ?? {};
+
+  const candidates = [
+    record?.status,
+    record?.user_metadata?.status,
+    record?.user_metadata?.accountStatus,
+    record?.user_metadata?.state,
+    record?.app_metadata?.status,
+    record?.app_metadata?.accountStatus,
+    user?.status,
+    userMeta.status,
+    userMeta.accountStatus,
+    userMeta.state,
+    appMeta.status,
+    appMeta.accountStatus,
+    extras?.status,
+    extras?.accountStatus,
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = normalizeStatus(candidate);
+    if (normalized) return normalized;
+  }
+
+  return 'active';
+};
+
+export const composeAdminClient = (record) => {
+  if (!record) return null;
+
+  const extras = loadExtras(record.id);
+  const user = composeUser(record, extras);
+  if (!user) return null;
+
+  const balances = {
+    main: toNumber(user.balance),
+    casino: toNumber(user.casinoBalance),
+  };
+
+  const totalBalance = balances.main + balances.casino;
+
+  return {
+    id: user.id,
+    email: user.email,
+    phone: user.phone,
+    totalBalance,
+    status: resolveStatus(record, user, extras),
+    role: composeRole(user),
+    roles: dedupeRoles(user.roles),
+    balances,
+    metadata: {
+      app: user.app_metadata ?? {},
+      user: user.user_metadata ?? {},
+    },
+    profile: extras,
+  };
+};
+
+export const readAdminClients = () => {
+  const records = resolveAuthRecords();
+  return records.map(composeAdminClient).filter(Boolean);
+};
 
 const createAbortError = (reason) => {
   if (reason instanceof Error) return reason;
@@ -77,17 +183,24 @@ const createAbortError = (reason) => {
   return error;
 };
 
-export const adminClients = Object.freeze(CLIENT_FIXTURES.map(cloneClient));
-
 export function listClients({ signal, delay = 200 } = {}) {
   if (signal?.aborted) {
     return Promise.reject(createAbortError(signal.reason));
   }
 
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      resolve(adminClients.map(cloneClient));
-    }, Math.max(0, delay));
+    const timeout = Math.max(0, delay);
+
+    const complete = () => {
+      try {
+        const clients = readAdminClients().map(cloneClient);
+        resolve(clients);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    const timer = setTimeout(complete, timeout);
 
     if (signal) {
       signal.addEventListener(
@@ -96,7 +209,7 @@ export function listClients({ signal, delay = 200 } = {}) {
           clearTimeout(timer);
           reject(createAbortError(signal.reason));
         },
-        { once: true }
+        { once: true },
       );
     }
   });

@@ -91,6 +91,7 @@ export default function AdminManagement({ clients = [], isLoading, error, onRelo
         <Card.Body>
           <Card.Title>Поиск и фильтры</Card.Title>
           <ClientSearchFilters
+            clients={clients}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
             statusFilter={statusFilter}

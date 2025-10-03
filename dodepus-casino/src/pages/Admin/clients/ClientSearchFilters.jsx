@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
 import { getRoleOptions, getStatusOptions } from '../../../../local-sim/admin/filters';
 
@@ -13,11 +14,6 @@ const statusLabelMap = {
   ban: 'Бан',
 };
 
-const statusOptions = getStatusOptions({
-  allLabel: 'Все статусы',
-  formatLabel: (status) => statusLabelMap[status] ?? status,
-});
-
 const rolePrefixMap = {
   intern: 'Ст',
   moderator: 'Мод',
@@ -29,19 +25,8 @@ const roleFallbackLabels = {
   user: 'User',
 };
 
-const roleOptions = getRoleOptions({
-  allLabel: 'Все роли',
-  formatLabel: (role) => {
-    if (role.level != null) {
-      const prefix = rolePrefixMap[role.group] ?? role.group;
-      return `${prefix}_${role.level}_lvl`;
-    }
-
-    return roleFallbackLabels[role.group] ?? role.group;
-  },
-});
-
 export default function ClientSearchFilters({
+  clients = [],
   searchTerm,
   onSearchChange,
   statusFilter,
@@ -51,6 +36,33 @@ export default function ClientSearchFilters({
   roleFilter,
   onRoleChange,
 }) {
+  const statusOptions = useMemo(
+    () =>
+      getStatusOptions({
+        clients,
+        allLabel: 'Все статусы',
+        formatLabel: (status) => statusLabelMap[status] ?? status,
+      }),
+    [clients],
+  );
+
+  const roleOptions = useMemo(
+    () =>
+      getRoleOptions({
+        clients,
+        allLabel: 'Все роли',
+        formatLabel: (role) => {
+          if (role.level != null) {
+            const prefix = rolePrefixMap[role.group] ?? role.group;
+            return `${prefix}_${role.level}_lvl`;
+          }
+
+          return roleFallbackLabels[role.group] ?? role.group;
+        },
+      }),
+    [clients],
+  );
+
   return (
     <Form>
       <Row className="g-3">
@@ -69,10 +81,7 @@ export default function ClientSearchFilters({
         <Col xs={12} sm={6} lg={3}>
           <Form.Group controlId="clientStatus">
             <Form.Label>Статус</Form.Label>
-            <Form.Select
-              value={statusFilter}
-              onChange={(event) => onStatusChange(event.target.value)}
-            >
+            <Form.Select value={statusFilter} onChange={(event) => onStatusChange(event.target.value)}>
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -85,10 +94,7 @@ export default function ClientSearchFilters({
         <Col xs={12} sm={6} lg={3}>
           <Form.Group controlId="clientBalance">
             <Form.Label>Баланс</Form.Label>
-            <Form.Select
-              value={balanceFilter}
-              onChange={(event) => onBalanceChange(event.target.value)}
-            >
+            <Form.Select value={balanceFilter} onChange={(event) => onBalanceChange(event.target.value)}>
               {balanceOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}

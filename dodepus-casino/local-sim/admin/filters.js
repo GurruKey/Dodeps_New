@@ -1,15 +1,18 @@
-import { adminClients } from './clients';
-
 const defaultStatusLabel = (status) => status;
 
 export function getStatusOptions({
+  clients = [],
   includeAll = true,
   allLabel = 'all',
   formatLabel = defaultStatusLabel,
 } = {}) {
   const labelFor = typeof formatLabel === 'function' ? formatLabel : defaultStatusLabel;
+
   const statuses = Array.from(
-    adminClients.reduce((acc, client) => acc.add(client.status), new Set()),
+    clients.reduce((acc, client) => {
+      if (!client?.status) return acc;
+      return acc.add(client.status);
+    }, new Set()),
   ).sort((a, b) => a.localeCompare(b));
 
   const options = statuses.map((status) => ({
@@ -36,6 +39,7 @@ const createRoleValue = (role) =>
   role.level != null ? `${role.group}:${role.level}` : role.group;
 
 export function getRoleOptions({
+  clients = [],
   includeAll = true,
   allLabel = 'all',
   formatLabel = defaultRoleLabel,
@@ -44,8 +48,8 @@ export function getRoleOptions({
 
   const uniqueRoles = new Map();
 
-  adminClients.forEach((client) => {
-    if (!client.role?.group) return;
+  clients.forEach((client) => {
+    if (!client?.role?.group) return;
 
     const role = normalizeRole(client.role);
     const value = createRoleValue(role);
