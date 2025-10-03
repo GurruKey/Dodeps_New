@@ -25,8 +25,12 @@ export default function ChatPanel({ heading, thread, placeholder }) {
   };
 
   return (
-    <Card className="h-100">
-      <Card.Body as={Form} onSubmit={handleSend} className="d-flex flex-column gap-3">
+    <Card className="h-100 bg-body-tertiary border-0 shadow-sm">
+      <Card.Body
+        as={Form}
+        onSubmit={handleSend}
+        className="d-flex flex-column gap-3 text-body"
+      >
         <div className="d-flex flex-wrap gap-2 align-items-center justify-content-between">
           <div>
             <Card.Title as="h3" className="mb-1">
@@ -41,7 +45,10 @@ export default function ChatPanel({ heading, thread, placeholder }) {
 
         <Stack gap={3} className="flex-grow-1 overflow-auto" style={{ maxHeight: 320 }}>
           {messages.map((message) => (
-            <Card key={message.id} className="border-0 bg-light">
+            <Card
+              key={message.id}
+              className="border-0 bg-body-secondary text-body"
+            >
               <Card.Body className="py-2">
                 <div className="d-flex justify-content-between align-items-start">
                   <span className="fw-semibold">{message.author}</span>
