@@ -1,34 +1,13 @@
-import { Card, Nav, Stack } from 'react-bootstrap';
-import { NavLink, Outlet, useOutletContext } from 'react-router-dom';
+import { Card, Col, Row, Stack } from 'react-bootstrap';
+import { useOutletContext } from 'react-router-dom';
+import RolesMatrix from './blocks/RolesMatrix.jsx';
+import AssignRole from './blocks/AssignRole/AssignRole.jsx';
+import EditRolePermissions from './blocks/EditRole/EditRolePermissions.jsx';
+import TransactionsHistory from './blocks/Transactions/TransactionsHistory.jsx';
+import VerificationQueue from './blocks/Verification/VerificationQueue.jsx';
+import ModerationChat from './blocks/Chat/ModerationChat.jsx';
 
-const navSections = [
-  {
-    id: 'roles-management',
-    label: 'Управление ролями',
-    items: [
-      { to: 'assign', label: 'Выдать роль' },
-      { to: 'edit', label: 'Изменить роль' },
-    ],
-  },
-  {
-    id: 'control',
-    label: 'Контроль доступа',
-    items: [
-      { to: 'transactions', label: 'Транзакции' },
-      { to: 'verification', label: 'Верификация' },
-    ],
-  },
-  {
-    id: 'communication',
-    label: 'Коммуникации',
-    items: [
-      { to: 'moderation-chat', label: 'Чат модераторов' },
-      { to: 'admin-chat', label: 'Чат администраторов' },
-    ],
-  },
-];
-
-export default function RolesLayout() {
+export default function Roles() {
   const { isLoading } = useOutletContext() ?? {};
 
   return (
@@ -39,39 +18,32 @@ export default function RolesLayout() {
             Роли и права доступа
           </Card.Title>
           <Card.Text className="text-muted mb-0">
-            Управление доступом сотрудников к разделам панели.{' '}
-            {isLoading ? 'Синхронизация с данными выполняется…' : ''}
+            Управление доступом сотрудников к разделам панели. {isLoading ? 'Синхронизация с данными выполняется…' : ''}
           </Card.Text>
         </Card.Body>
       </Card>
 
-      <Card>
-        <Card.Body>
-          <Stack gap={3}>
-            {navSections.map((section) => (
-              <div key={section.id}>
-                <div className="text-uppercase text-muted small fw-semibold mb-2">
-                  {section.label}
-                </div>
-                <Nav variant="pills" className="flex-wrap gap-2">
-                  {section.items.map((item) => (
-                    <Nav.Link
-                      key={item.to}
-                      as={NavLink}
-                      to={item.to}
-                      className="px-3"
-                    >
-                      {item.label}
-                    </Nav.Link>
-                  ))}
-                </Nav>
-              </div>
-            ))}
-          </Stack>
-        </Card.Body>
-      </Card>
+      <Row className="g-3">
+        <Col xs={12} xl={6}>
+          <AssignRole />
+        </Col>
+        <Col xs={12} xl={6}>
+          <EditRolePermissions />
+        </Col>
+      </Row>
 
-      <Outlet />
+      <RolesMatrix />
+
+      <Row className="g-3">
+        <Col xs={12} xxl={6}>
+          <TransactionsHistory />
+        </Col>
+        <Col xs={12} xxl={6}>
+          <VerificationQueue />
+        </Col>
+      </Row>
+
+      <ModerationChat />
     </Stack>
   );
 }
