@@ -1,16 +1,14 @@
-import { Card } from 'react-bootstrap';
+import ChatPanel from '../components/ChatPanel.jsx';
+import { administratorsChatThreads } from '../roles/data/roleConfigs.js';
 
 export default function AdministratorsChat() {
+  const activeThread = administratorsChatThreads[0];
+
   return (
-    <Card>
-      <Card.Body>
-        <Card.Title as="h3" className="mb-1">
-          Чат Администраторов
-        </Card.Title>
-        <Card.Text className="text-muted mb-0">
-          Раздел находится в разработке.
-        </Card.Text>
-      </Card.Body>
-    </Card>
+    <ChatPanel
+      heading="Админ Чат"
+      thread={activeThread}
+      placeholder="Напишите ответ администраторам…"
+    />
   );
 }

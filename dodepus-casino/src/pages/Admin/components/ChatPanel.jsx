@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { Badge, Button, Card, Form, Stack } from 'react-bootstrap';
-import { chatThreads } from '../../data/roleConfigs.js';
 
-const activeThread = chatThreads[0];
-
-export default function ModerationChat() {
+export default function ChatPanel({ heading, thread, placeholder }) {
   const [draftMessage, setDraftMessage] = useState('');
-  const [messages, setMessages] = useState(activeThread?.messages ?? []);
+  const [messages, setMessages] = useState(thread?.messages ?? []);
+  const participantsCount = thread?.participants?.length ?? 0;
 
   const handleSend = (event) => {
     event.preventDefault();
@@ -31,14 +29,14 @@ export default function ModerationChat() {
       <Card.Body as={Form} onSubmit={handleSend} className="d-flex flex-column gap-3">
         <div className="d-flex flex-wrap gap-2 align-items-center justify-content-between">
           <div>
-            <Card.Title as="h4" className="mb-1">
-              Чат модераторов
+            <Card.Title as="h3" className="mb-1">
+              {heading}
             </Card.Title>
-            <Card.Text className="text-muted mb-0">
-              {activeThread?.title}
-            </Card.Text>
+            {thread?.title ? (
+              <Card.Text className="text-muted mb-0">{thread.title}</Card.Text>
+            ) : null}
           </div>
-          <Badge bg="secondary">Участников: {activeThread?.participants.length ?? 0}</Badge>
+          <Badge bg="secondary">Участников: {participantsCount}</Badge>
         </div>
 
         <Stack gap={3} className="flex-grow-1 overflow-auto" style={{ maxHeight: 320 }}>
@@ -59,7 +57,7 @@ export default function ModerationChat() {
           <Form.Control
             as="textarea"
             rows={2}
-            placeholder="Напишите ответ модераторам…"
+            placeholder={placeholder}
             value={draftMessage}
             onChange={(event) => setDraftMessage(event.target.value)}
           />

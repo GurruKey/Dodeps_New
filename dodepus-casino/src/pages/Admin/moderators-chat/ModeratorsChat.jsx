@@ -1,16 +1,14 @@
-import { Card } from 'react-bootstrap';
+import ChatPanel from '../components/ChatPanel.jsx';
+import { moderatorsChatThreads } from '../roles/data/roleConfigs.js';
 
 export default function ModeratorsChat() {
+  const activeThread = moderatorsChatThreads[0];
+
   return (
-    <Card>
-      <Card.Body>
-        <Card.Title as="h3" className="mb-1">
-          Чат модераторов
-        </Card.Title>
-        <Card.Text className="text-muted mb-0">
-          Раздел находится в разработке.
-        </Card.Text>
-      </Card.Body>
-    </Card>
+    <ChatPanel
+      heading="Чат модераторов"
+      thread={activeThread}
+      placeholder="Напишите ответ модераторам…"
+    />
   );
 }
