@@ -1,14 +1,7 @@
-const getAdminStatus = (user) => {
-  if (!user) return false;
-  if (typeof user.isAdmin === 'boolean') return user.isAdmin;
-  if (Array.isArray(user.roles) && user.roles.includes('admin')) return true;
-  if (Array.isArray(user?.app_metadata?.roles) && user.app_metadata.roles.includes('admin')) return true;
-  if (user?.user_metadata?.role === 'admin') return true;
-  return Boolean(user?.user_metadata?.isAdmin);
-};
+import { isAdminUser } from '../../../../local-sim/auth/composeUser';
 
 export function createAdminPanelActions({ user }) {
-  const isAdmin = getAdminStatus(user);
+  const isAdmin = isAdminUser(user);
 
   const requireAdminAccess = () => {
     if (!user) {
