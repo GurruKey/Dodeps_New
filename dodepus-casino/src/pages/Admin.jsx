@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Tab, Nav, Row, Col } from 'react-bootstrap';
-import AdminOverview from './Admin/Overview.jsx';
-import AdminManagement from './Admin/Management.jsx';
+import AdminLayout from './Admin/AdminLayout.jsx';
 import { listClients } from '../../local-sim/admin/clients';
 
 export default function Admin() {
@@ -40,35 +38,11 @@ export default function Admin() {
   }, [loadClients]);
 
   return (
-    <>
-      <h2 className="mb-3">Админ-панель</h2>
-
-      <Tab.Container defaultActiveKey="overview">
-        <Row className="g-3">
-          <Col xs={12} md={3} lg={2}>
-            <Nav variant="pills" className="flex-column">
-              <Nav.Item><Nav.Link eventKey="overview">Просмотр</Nav.Link></Nav.Item>
-              <Nav.Item><Nav.Link eventKey="management">Управление</Nav.Link></Nav.Item>
-            </Nav>
-          </Col>
-
-          <Col xs={12} md={9} lg={10}>
-            <Tab.Content>
-              <Tab.Pane eventKey="overview">
-                <AdminOverview clients={clients} isLoading={isLoading} error={error} />
-              </Tab.Pane>
-              <Tab.Pane eventKey="management">
-                <AdminManagement
-                  clients={clients}
-                  isLoading={isLoading}
-                  error={error}
-                  onReload={handleReload}
-                />
-              </Tab.Pane>
-            </Tab.Content>
-          </Col>
-        </Row>
-      </Tab.Container>
-    </>
+    <AdminLayout
+      clients={clients}
+      isLoading={isLoading}
+      error={error}
+      onReload={handleReload}
+    />
   );
 }

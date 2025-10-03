@@ -1,20 +1,12 @@
 import { useMemo } from 'react';
-import { Alert, Card, Col, ListGroup, Placeholder, Row, Stack } from 'react-bootstrap';
+import { Alert, Card, Col, Row, Stack } from 'react-bootstrap';
+import { useOutletContext } from 'react-router-dom';
+import StatCard from './blocks/StatCard.jsx';
+import TopClientsList from './blocks/TopClientsList.jsx';
 
-function StatCard({ title, value, isLoading }) {
-  return (
-    <Card className="h-100">
-      <Card.Body>
-        <Card.Title className="text-uppercase text-secondary" style={{ fontSize: '0.75rem', letterSpacing: '0.04em' }}>
-          {title}
-        </Card.Title>
-        <Card.Text className="fs-4 fw-semibold text-body">{isLoading ? <Placeholder xs={6} /> : value}</Card.Text>
-      </Card.Body>
-    </Card>
-  );
-}
+export default function AdminOverview() {
+  const { clients = [], isLoading, error } = useOutletContext() ?? {};
 
-export default function AdminOverview({ clients = [], isLoading, error }) {
   const stats = useMemo(() => {
     if (!clients.length) {
       return {
@@ -88,40 +80,7 @@ export default function AdminOverview({ clients = [], isLoading, error }) {
         </Col>
       </Row>
 
-      <Card>
-        <Card.Body>
-          <Card.Title>Топ-5 по балансу</Card.Title>
-          {isLoading ? (
-            <div className="d-flex flex-column gap-2">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <Placeholder key={index} as="div" animation="glow">
-                  <Placeholder xs={12} />
-                </Placeholder>
-              ))}
-            </div>
-          ) : topClients.length ? (
-            <ListGroup variant="flush">
-              {topClients.map((client) => (
-                <ListGroup.Item key={client.id} className="d-flex justify-content-between align-items-center">
-                  <span className="text-truncate" style={{ maxWidth: '70%' }}>
-                    {client.email}
-                  </span>
-                  <span className="fw-semibold">
-                    {new Intl.NumberFormat('ru-RU', {
-                      style: 'currency',
-                      currency: 'RUB',
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    }).format(client.totalBalance)}
-                  </span>
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-          ) : (
-            <div className="text-muted">Нет данных для отображения.</div>
-          )}
-        </Card.Body>
-      </Card>
+      <TopClientsList clients={topClients} isLoading={isLoading} />
     </Stack>
   );
 }
