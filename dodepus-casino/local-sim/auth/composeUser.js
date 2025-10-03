@@ -1,5 +1,10 @@
 import { pickExtras } from './profileExtras';
 
+export const isAdminUser = (user) =>
+  Boolean(
+    user?.isAdmin || (Array.isArray(user?.roles) && user.roles.includes('admin'))
+  );
+
 const resolveAdminFlag = (record, extras) => {
   if (!record) return Boolean(extras?.isAdmin);
   const appRoles = record?.app_metadata?.roles;
