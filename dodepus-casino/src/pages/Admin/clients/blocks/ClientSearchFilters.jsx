@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Form, Row, Col } from 'react-bootstrap';
-import { getRoleOptions, getStatusOptions } from '../../../../local-sim/admin/filters';
+import { getRoleOptions, getStatusOptions } from '../../../../../local-sim/admin/filters';
 
 const balanceOptions = [
   { value: 'all', label: 'Все балансы' },

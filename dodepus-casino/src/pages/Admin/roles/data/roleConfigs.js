@@ -80,10 +80,10 @@ export const roleMatrixLegend = {
   overview: 'Обзор',
   clients: 'Клиенты',
   promocodes: 'Промокоды',
-  roles: 'Роли и доступы',
+  roles: 'Выдать роль',
   transactions: 'Транзакции',
   verification: 'Верификация',
-  chat: 'Чат модерации',
+  chat: 'Чат модераторов',
 };
 
 export const transactionHistory = [
