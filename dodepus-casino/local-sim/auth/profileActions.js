@@ -7,6 +7,21 @@ const toNumber = (value, fallback = 0) => {
 
 const ensurePositive = (value) => Math.max(0, value);
 
+const getRandomUuid = () => {
+  if (typeof globalThis === 'object' && globalThis) {
+    const { crypto } = globalThis;
+    if (crypto && typeof crypto.randomUUID === 'function') {
+      try {
+        return crypto.randomUUID();
+      } catch (error) {
+        // ignore errors and fall back to manual generation below
+      }
+    }
+  }
+
+  return null;
+};
+
 const persistExtras = (uid, computeNext) => {
   const current = pickExtras(loadExtras(uid));
   const next = pickExtras(computeNext(current));
@@ -53,7 +68,7 @@ export const createProfileActions = (uid) => {
 
   const setNickname = (nickname) =>
     patchExtras({
-      nickname: nickname ?? '',
+      nickname: nickname == null ? '' : nickname,
     });
 
   const updateProfile = (patch = {}) => patchExtras({ ...patch });
@@ -86,10 +101,10 @@ export const createProfileActions = (uid) => {
       const entry = {
         id:
           file.id ||
-          globalThis.crypto?.randomUUID?.() ??
+          getRandomUuid() ||
           `vf_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`,
-        name: file.name ?? 'document',
-        type: file.type ?? '',
+        name: file.name == null ? 'document' : file.name,
+        type: file.type == null ? '' : file.type,
         size: toNumber(file.size, 0),
         uploadedAt: file.uploadedAt || new Date().toISOString(),
       };
