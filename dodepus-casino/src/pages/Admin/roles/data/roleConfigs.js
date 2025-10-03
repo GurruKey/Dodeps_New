@@ -139,7 +139,7 @@ export const verificationQueue = [
 
 export const chatThreads = [
   {
-    id: 'thread-main',
+    id: 'moderators',
     title: 'Общий чат модерации',
     participants: ['Алина', 'Константин', 'Влад'],
     messages: [
@@ -160,6 +160,31 @@ export const chatThreads = [
         author: 'Влад',
         text: 'Заберу проверку!',
         createdAt: '12.03.2024 15:05',
+      },
+    ],
+  },
+  {
+    id: 'administrators',
+    title: 'Рабочий канал администраторов',
+    participants: ['Марина', 'Сергей', 'Дмитрий'],
+    messages: [
+      {
+        id: 'msg-10',
+        author: 'Марина',
+        text: 'Финализировала отчёт по промокодам, он в папке /Reports.',
+        createdAt: '12.03.2024 10:42',
+      },
+      {
+        id: 'msg-11',
+        author: 'Сергей',
+        text: 'Аптайм сервера игр восстановлен, инцидент закрыт.',
+        createdAt: '12.03.2024 09:58',
+      },
+      {
+        id: 'msg-12',
+        author: 'Дмитрий',
+        text: 'Сегодня в 17:00 созвон по обновлению правил для стажёров.',
+        createdAt: '12.03.2024 09:15',
       },
     ],
   },
