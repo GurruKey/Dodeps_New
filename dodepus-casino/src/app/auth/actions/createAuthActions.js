@@ -4,16 +4,12 @@ import {
   signUpEmailPassword,
   signUpPhonePassword,
 } from '../../../../local-sim/auth/api';
-import { composeUser } from '../../../../local-sim/auth/composeUser';
-import { loadExtras } from '../../../../local-sim/auth/profileExtras';
 
 export function createAuthActions({ setSession, setUser }) {
   const composeResult = (result) => {
-    const extras = loadExtras(result.user.id);
-    const composedUser = composeUser(result.user, extras);
     setSession(result.session);
-    setUser(composedUser);
-    return { ...result, user: composedUser };
+    setUser(result.user);
+    return result;
   };
 
   const signIn = async ({ email, phone, password }) => {
