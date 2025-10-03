@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo } from 'react';
 import { createAuthActions } from '../actions/createAuthActions';
-import { createAdminPanelActions } from '../admin/createAdminPanelActions';
+import { createAdminPanelActions } from '../../../../local-sim/auth/admin/createAdminPanelActions';
 import { createUserProfileActions } from '../user/createUserProfileActions';
 import { useAuthState } from '../hooks/useAuthState';
 
