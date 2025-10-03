@@ -137,7 +137,7 @@ export const verificationQueue = [
   },
 ];
 
-export const chatThreads = [
+export const moderatorsChatThreads = [
   {
     id: 'thread-main',
     title: 'Общий чат модерации',
@@ -160,6 +160,34 @@ export const chatThreads = [
         author: 'Влад',
         text: 'Заберу проверку!',
         createdAt: '12.03.2024 15:05',
+      },
+    ],
+  },
+];
+
+export const administratorsChatThreads = [
+  {
+    id: 'thread-admins',
+    title: 'Рабочий канал администраторов',
+    participants: ['Мария', 'Артём', 'София'],
+    messages: [
+      {
+        id: 'admin-msg-1',
+        author: 'Мария',
+        text: 'Обновила лимиты по VIP-клиентам, проверьте отчёт.',
+        createdAt: '12.03.2024 14:45',
+      },
+      {
+        id: 'admin-msg-2',
+        author: 'Артём',
+        text: 'Нужно обсудить новую акцию, соберёмся в 17:00.',
+        createdAt: '12.03.2024 13:58',
+      },
+      {
+        id: 'admin-msg-3',
+        author: 'София',
+        text: 'Проверила отчёт по безопасности — без инцидентов.',
+        createdAt: '12.03.2024 13:12',
       },
     ],
   },

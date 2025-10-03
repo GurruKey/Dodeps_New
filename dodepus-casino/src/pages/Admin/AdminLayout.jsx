@@ -35,7 +35,7 @@ export default function AdminLayout({ clients, isLoading, error, onReload }) {
                   Чат модераторов
                 </Nav.Link>
                 <Nav.Link as={NavLink} to="administrators-chat" end>
-                  Чат Администраторов
+                  Админ Чат
                 </Nav.Link>
               </Nav>
             </Card.Body>
