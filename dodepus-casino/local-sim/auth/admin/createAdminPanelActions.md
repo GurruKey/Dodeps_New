@@ -1,4 +1,4 @@
-# admin/createAdminPanelActions.js
+# local-sim/auth/admin/createAdminPanelActions.js
 
 Модуль отвечает за взаимодействие с административными разделами:
 - вычисляет признак `isAdmin` по данным пользователя;
