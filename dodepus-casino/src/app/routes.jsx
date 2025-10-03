@@ -5,6 +5,10 @@ import Home from '../pages/Home.jsx';
 import Lobby from '../pages/Lobby.jsx';
 import Game from '../pages/Game.jsx';
 import Admin from '../pages/Admin.jsx';
+import AdminOverview from '../pages/Admin/overview';
+import AdminClients from '../pages/Admin/clients';
+import AdminPromoCodes from '../pages/Admin/promocodes';
+import AdminRoles from '../pages/Admin/roles';
 import ProviderPage from '../pages/Provider.jsx';
 import ProvidersPage from '../pages/Providers.jsx';
 import CategoriesPage from '../pages/Categories.jsx';
@@ -74,7 +78,13 @@ export default function AppRoutes() {
             <Admin />
           </RequireAdmin>
         }
-      />
+      >
+        <Route index element={<Navigate to="overview" replace />} />
+        <Route path="overview" element={<AdminOverview />} />
+        <Route path="clients" element={<AdminClients />} />
+        <Route path="promocodes" element={<AdminPromoCodes />} />
+        <Route path="roles" element={<AdminRoles />} />
+      </Route>
 
       {/* Только для авторизованных */}
       <Route

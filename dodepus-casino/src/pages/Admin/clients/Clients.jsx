@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Alert, Button, Card, Stack } from 'react-bootstrap';
-import ClientSearchFilters from './clients/ClientSearchFilters.jsx';
-import ClientsTable from './clients/ClientsTable.jsx';
-import ClientStats from './clients/ClientStats.jsx';
+import ClientSearchFilters from './blocks/ClientSearchFilters.jsx';
+import ClientsTable from './blocks/ClientsTable.jsx';
+import ClientStats from './blocks/ClientStats.jsx';
 
 function normalize(value) {
   return String(value ?? '')
@@ -11,7 +12,8 @@ function normalize(value) {
     .toLowerCase();
 }
 
-export default function AdminManagement({ clients = [], isLoading, error, onReload }) {
+export default function Clients() {
+  const { clients = [], isLoading, error, onReload } = useOutletContext() ?? {};
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [balanceFilter, setBalanceFilter] = useState('all');
