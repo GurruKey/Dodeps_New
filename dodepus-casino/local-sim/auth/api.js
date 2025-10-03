@@ -5,6 +5,8 @@ import {
   buildSeedUserRecords,
   ensureSeededAuthStorage,
 } from './accounts/seedLocalAuth';
+import { composeUser } from './composeUser';
+import { loadExtras } from './profileExtras';
 
 const USERS_KEY = 'dodepus_local_users_v1';
 const SESSION_KEY = 'dodepus_local_session_v1';
@@ -49,51 +51,9 @@ const writeUsers = (users, storage = requireStorage()) => {
 const findByEmail = (users, email) => users.find((u) => u.email && u.email === email);
 const findByPhone = (users, phone) => users.find((u) => u.phone && u.phone === phone);
 
-const deriveRoles = (record = {}) => {
-  const collect = (value) => {
-    if (!value) return [];
-    if (Array.isArray(value)) return value;
-    return [value];
-  };
-
-  const rawRoles = [
-    collect(record?.app_metadata?.roles),
-    collect(record?.user_metadata?.roles),
-    collect(record?.app_metadata?.role),
-    collect(record?.user_metadata?.role),
-  ].flat();
-
-  const normalized = rawRoles
-    .map((role) => (typeof role === 'string' ? role.trim().toLowerCase() : ''))
-    .filter(Boolean);
-
-  return Array.from(new Set(normalized));
-};
-
-const toPublicUser = (record) => {
+const composeUserWithExtras = (record) => {
   if (!record) return null;
-  const roles = deriveRoles(record);
-  const primaryRole = roles[0] ?? 'user';
-  const isAdmin =
-    roles.includes('admin') ||
-    record?.user_metadata?.isAdmin === true ||
-    record?.app_metadata?.isAdmin === true;
-
-  return {
-    id: record.id,
-    email: record.email ?? '',
-    phone: record.phone ?? '',
-    created_at: record.created_at ?? null,
-    confirmed_at: record.confirmed_at ?? null,
-    email_confirmed_at: record.email_confirmed_at ?? null,
-    phone_confirmed_at: record.phone_confirmed_at ?? null,
-    last_sign_in_at: record.last_sign_in_at ?? null,
-    app_metadata: record.app_metadata ?? {},
-    user_metadata: record.user_metadata ?? {},
-    role: primaryRole,
-    roles,
-    isAdmin,
-  };
+  return composeUser(record, loadExtras(record.id));
 };
 
 const storeSession = (session, storage = requireStorage()) => {
@@ -210,7 +170,7 @@ export async function signUpEmailPassword({ email, password }) {
   storeSession(session, storage);
 
   return {
-    user: toPublicUser(user),
+    user: composeUserWithExtras(user),
     session,
     needsEmailConfirm: false,
   };
@@ -242,7 +202,7 @@ export async function signInEmailPassword({ email, password }) {
   storeSession(session, storage);
 
   return {
-    user: toPublicUser(user),
+    user: composeUserWithExtras(user),
     session,
   };
 }
@@ -268,7 +228,7 @@ export async function signUpPhonePassword({ phone, password } = {}) {
   storeSession(session, storage);
 
   return {
-    user: toPublicUser(user),
+    user: composeUserWithExtras(user),
     session,
     needsSmsVerify: false,
   };
