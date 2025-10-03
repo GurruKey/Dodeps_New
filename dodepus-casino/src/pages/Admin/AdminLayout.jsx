@@ -20,7 +20,22 @@ export default function AdminLayout({ clients, isLoading, error, onReload }) {
                   Промокоды
                 </Nav.Link>
                 <Nav.Link as={NavLink} to="roles" end>
-                  Роли и доступы
+                  Выдать роль
+                </Nav.Link>
+                <Nav.Link as={NavLink} to="role-edit" end>
+                  Изменить роль
+                </Nav.Link>
+                <Nav.Link as={NavLink} to="transactions" end>
+                  Транзакции
+                </Nav.Link>
+                <Nav.Link as={NavLink} to="verification" end>
+                  Верификация
+                </Nav.Link>
+                <Nav.Link as={NavLink} to="moderators-chat" end>
+                  Чат модераторов
+                </Nav.Link>
+                <Nav.Link as={NavLink} to="administrators-chat" end>
+                  Чат Администраторов
                 </Nav.Link>
               </Nav>
             </Card.Body>

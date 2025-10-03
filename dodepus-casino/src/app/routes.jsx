@@ -9,6 +9,11 @@ import AdminOverview from '../pages/Admin/overview';
 import AdminClients from '../pages/Admin/clients';
 import AdminPromoCodes from '../pages/Admin/promocodes';
 import AdminRoles from '../pages/Admin/roles';
+import AdminRoleEdit from '../pages/Admin/role-edit';
+import AdminTransactions from '../pages/Admin/transactions';
+import AdminVerification from '../pages/Admin/verification';
+import AdminModeratorsChat from '../pages/Admin/moderators-chat';
+import AdminAdministratorsChat from '../pages/Admin/administrators-chat';
 import ProviderPage from '../pages/Provider.jsx';
 import ProvidersPage from '../pages/Providers.jsx';
 import CategoriesPage from '../pages/Categories.jsx';
@@ -84,6 +89,11 @@ export default function AppRoutes() {
         <Route path="clients" element={<AdminClients />} />
         <Route path="promocodes" element={<AdminPromoCodes />} />
         <Route path="roles" element={<AdminRoles />} />
+        <Route path="role-edit" element={<AdminRoleEdit />} />
+        <Route path="transactions" element={<AdminTransactions />} />
+        <Route path="verification" element={<AdminVerification />} />
+        <Route path="moderators-chat" element={<AdminModeratorsChat />} />
+        <Route path="administrators-chat" element={<AdminAdministratorsChat />} />
       </Route>
 
       {/* Только для авторизованных */}
