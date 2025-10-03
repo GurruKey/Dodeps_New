@@ -12,7 +12,7 @@ import { availableRoles } from '../../data/roleConfigs.js';
 
 const idPlaceholderExamples = ['ID-10192', 'ID-20204', 'ID-30881'];
 
-export default function AssignRole() {
+export default function AssignRole({ statusMessage = '' }) {
   const [searchId, setSearchId] = useState('');
   const [selectedRole, setSelectedRole] = useState(availableRoles[0]?.id ?? '');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -48,7 +48,7 @@ export default function AssignRole() {
               Выдать роль
             </Card.Title>
             <Card.Text className="text-muted mb-0">
-              Найдите сотрудника по внутреннему ID и закрепите новую роль.
+              Найдите сотрудника по внутреннему ID и закрепите новую роль. {statusMessage}
             </Card.Text>
           </div>
 
