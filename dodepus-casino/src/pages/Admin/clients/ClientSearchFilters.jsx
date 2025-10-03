@@ -1,4 +1,5 @@
 import { Form, Row, Col } from 'react-bootstrap';
+import { getRoleOptions, getStatusOptions } from '../../../../local-sim/admin/filters';
 
 const balanceOptions = [
   { value: 'all', label: 'Все балансы' },
@@ -7,29 +8,38 @@ const balanceOptions = [
   { value: 'negative', label: 'Отрицательный баланс' },
 ];
 
-const statusOptions = [
-  { value: 'all', label: 'Все статусы' },
-  { value: 'active', label: 'Активный' },
-  { value: 'ban', label: 'Бан' },
-];
+const statusLabelMap = {
+  active: 'Активный',
+  ban: 'Бан',
+};
 
-const roleOptions = [
-  { value: 'all', label: 'Все роли' },
-  { value: 'user', label: 'User' },
-  { value: 'intern:1', label: 'Ст_1_lvl' },
-  { value: 'intern:2', label: 'Ст_2_lvl' },
-  { value: 'intern:3', label: 'Ст_3_lvl' },
-  { value: 'intern:4', label: 'Ст_4_lvl' },
-  { value: 'moderator:1', label: 'Мод_1_lvl' },
-  { value: 'moderator:2', label: 'Мод_2_lvl' },
-  { value: 'moderator:3', label: 'Мод_3_lvl' },
-  { value: 'moderator:4', label: 'Мод_4_lvl' },
-  { value: 'admin:1', label: 'Админ_1_lvl' },
-  { value: 'admin:2', label: 'Админ_2_lvl' },
-  { value: 'admin:3', label: 'Админ_3_lvl' },
-  { value: 'admin:4', label: 'Админ_4_lvl' },
-  { value: 'owner', label: 'Owner' },
-];
+const statusOptions = getStatusOptions({
+  allLabel: 'Все статусы',
+  formatLabel: (status) => statusLabelMap[status] ?? status,
+});
+
+const rolePrefixMap = {
+  intern: 'Ст',
+  moderator: 'Мод',
+  admin: 'Админ',
+};
+
+const roleFallbackLabels = {
+  owner: 'Owner',
+  user: 'User',
+};
+
+const roleOptions = getRoleOptions({
+  allLabel: 'Все роли',
+  formatLabel: (role) => {
+    if (role.level != null) {
+      const prefix = rolePrefixMap[role.group] ?? role.group;
+      return `${prefix}_${role.level}_lvl`;
+    }
+
+    return roleFallbackLabels[role.group] ?? role.group;
+  },
+});
 
 export default function ClientSearchFilters({
   searchTerm,
