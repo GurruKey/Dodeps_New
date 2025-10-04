@@ -118,11 +118,6 @@ export const resolveCurrencyCode = (extras = {}) => {
     return rawCurrency.toUpperCase();
   }
 
-  const country = typeof extras.country === 'string' ? extras.country.trim().toUpperCase() : '';
-  if (country && COUNTRY_TO_CURRENCY[country]) {
-    return COUNTRY_TO_CURRENCY[country];
-  }
-
   return 'USD';
 };
 
