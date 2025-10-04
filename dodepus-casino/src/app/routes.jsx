@@ -9,6 +9,7 @@ import AdminOverview from '../pages/Admin/overview/index.js';
 import AdminClients from '../pages/Admin/clients/index.js';
 import AdminPromoCodes from '../pages/Admin/promocodes/index.js';
 import AdminPromoCodeCreate from '../pages/Admin/PromoCodeCreate/index.js';
+import AdminPromoArchive from '../pages/Admin/PromoArchive/index.js';
 import AdminRoles from '../pages/Admin/roles/index.js';
 import AdminRoleEdit from '../pages/Admin/RoleEdit/index.js';
 import AdminTransactions from '../pages/Admin/transactions/index.js';
@@ -92,6 +93,7 @@ export default function AppRoutes() {
         <Route path="clients" element={<AdminClients />} />
         <Route path="promocodes" element={<AdminPromoCodes />} />
         <Route path="promocode-create" element={<AdminPromoCodeCreate />} />
+        <Route path="promocode-archive" element={<AdminPromoArchive />} />
         <Route path="roles" element={<AdminRoles />} />
         <Route path="role-edit" element={<AdminRoleEdit />} />
         <Route path="transactions" element={<AdminTransactions />} />

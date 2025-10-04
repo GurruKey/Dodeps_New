@@ -3,6 +3,7 @@ import { CLIENTS_LOGS } from './clients.js';
 import { MODERATORS_CHAT_LOGS } from './moderatorsChat.js';
 import { PROMOCODE_CREATE_LOGS } from './promocodeCreate.js';
 import { PROMOCODES_LOGS } from './promocodes.js';
+import { PROMO_ARCHIVE_LOGS } from './promoArchive.js';
 import { ROLE_EDIT_LOGS } from './roleEdit.js';
 import { ROLES_LOGS } from './roles.js';
 import { STAFF_CHAT_LOGS } from './staffChat.js';
@@ -17,8 +18,9 @@ import { VERIFICATION_LOGS } from './verification.js';
 const ADMIN_LOG_SECTIONS = Object.freeze([
   { value: 'overview', label: 'Обзор' },
   { value: 'clients', label: 'Клиенты' },
-  { value: 'promocodes', label: 'Промокоды' },
-  { value: 'promocode-create', label: 'Создать Промокод' },
+  { value: 'promocodes', label: 'Promo' },
+  { value: 'promocode-create', label: 'Создать Promo' },
+  { value: 'promocode-archive', label: 'Архив Promo' },
   { value: 'roles', label: 'Выдать роль' },
   { value: 'role-edit', label: 'Изменить роль' },
   { value: 'transactions', label: 'Транзакции' },
@@ -56,6 +58,7 @@ const STATIC_SECTION_LOGS = Object.freeze([
   ...CLIENTS_LOGS,
   ...PROMOCODES_LOGS,
   ...PROMOCODE_CREATE_LOGS,
+  ...PROMO_ARCHIVE_LOGS,
   ...ROLES_LOGS,
   ...ROLE_EDIT_LOGS,
   ...VERIFICATION_LOGS,
