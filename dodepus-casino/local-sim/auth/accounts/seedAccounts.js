@@ -1,4 +1,6 @@
-export const PRESET_ACCOUNTS = [
+import { enrichAccountsWithTransactions } from './transactionsSeed';
+
+const BASE_ACCOUNTS = [
   {
     id: 'seed-user-01',
     email: 'user01@dodepus.com',
@@ -323,3 +325,5 @@ export const PRESET_ACCOUNTS = [
     },
   },
 ];
+
+export const PRESET_ACCOUNTS = enrichAccountsWithTransactions(BASE_ACCOUNTS);
