@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
   Alert,
@@ -12,11 +12,6 @@ import {
 } from 'react-bootstrap';
 import { availableRoles } from '../../data/roleConfigs.js';
 import { assignUserRole } from '../../../../../features/auth/api.js';
-import {
-  ADMIN_PANEL_VISIBILITY_EVENT,
-  loadAdminPanelVisibility,
-  setAdminPanelVisibilityForRole,
-} from '../../../../../../local-sim/auth/admin/adminPanelVisibility';
 
 const idPlaceholderExamples = ['ID-10192', 'ID-20204', 'ID-30881'];
 
@@ -26,7 +21,6 @@ export default function AssignRole({ statusMessage = '' }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastIssuedRole, setLastIssuedRole] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
-  const [adminVisibility, setAdminVisibility] = useState(() => loadAdminPanelVisibility());
   const { onReload } = useOutletContext() ?? {};
 
   const placeholder = useMemo(() => {
@@ -38,35 +32,6 @@ export default function AssignRole({ statusMessage = '' }) {
     () => availableRoles.find((role) => role.id === selectedRole) ?? null,
     [selectedRole]
   );
-
-  const canSelectedRoleSeeAdminPanel = selectedRole
-    ? adminVisibility[selectedRole] ?? false
-    : false;
-
-  useEffect(() => {
-    const target = typeof window !== 'undefined' ? window : globalThis;
-    if (!target?.addEventListener) return undefined;
-
-    const handleVisibilityChange = (event) => {
-      const next = event?.detail?.visibility;
-      if (next && typeof next === 'object') {
-        setAdminVisibility((prev) => ({ ...prev, ...next }));
-      } else {
-        setAdminVisibility(loadAdminPanelVisibility());
-      }
-    };
-
-    target.addEventListener(ADMIN_PANEL_VISIBILITY_EVENT, handleVisibilityChange);
-    return () => {
-      target.removeEventListener(ADMIN_PANEL_VISIBILITY_EVENT, handleVisibilityChange);
-    };
-  }, []);
-
-  const handleAdminPanelSwitch = (nextValue) => {
-    if (!selectedRole) return;
-    const nextVisibility = setAdminPanelVisibilityForRole(selectedRole, nextValue);
-    setAdminVisibility(nextVisibility);
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -156,25 +121,6 @@ export default function AssignRole({ statusMessage = '' }) {
               <Form.Text>
                 {selectedRoleConfig?.description ?? ''}
               </Form.Text>
-              <div className="mt-3">
-                <Form.Check
-                  type="switch"
-                  id="assign-role-admin-panel"
-                  label={
-                    canSelectedRoleSeeAdminPanel
-                      ? 'Админ-панель доступна'
-                      : 'Админ-панель скрыта'
-                  }
-                  checked={canSelectedRoleSeeAdminPanel}
-                  onChange={(event) => handleAdminPanelSwitch(event.target.checked)}
-                  disabled={!selectedRole}
-                />
-                <Form.Text>
-                  Переключатель сохраняется в локальной симуляции и управляет тем,
-                  видят ли сотрудники с ролью «{selectedRoleConfig?.name ?? selectedRole}»
-                  раздел админ-панели.
-                </Form.Text>
-              </div>
             </Col>
           </Row>
 
