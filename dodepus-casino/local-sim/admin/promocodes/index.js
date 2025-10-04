@@ -80,6 +80,25 @@ const clampUsage = (used, limit) => {
 
 const nowIso = () => new Date().toISOString();
 
+const toIsoDateTimeOrNull = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+};
+
+const normalizeSchedule = (schedule) => {
+  if (!schedule || typeof schedule !== 'object') {
+    return { startsAt: null, endsAt: null };
+  }
+
+  const startsAt =
+    toIsoDateTimeOrNull(schedule.startsAt ?? schedule.start ?? schedule.from) ?? null;
+  const endsAt = toIsoDateTimeOrNull(schedule.endsAt ?? schedule.end ?? schedule.until) ?? null;
+
+  return { startsAt, endsAt };
+};
+
 const seedRecords = () =>
   promoTypeDefinitions.map((type, index) => {
     const seed = type?.seed ?? {};
@@ -89,6 +108,8 @@ const seedRecords = () =>
 
     const limit = coerceLimit(seed.limit);
     const used = clampUsage(seed.used, limit);
+
+    const seedSchedule = normalizeSchedule(seed.schedule ?? seed.params?.schedule ?? {});
 
     return {
       id: seed.id ?? `seed-${type.id}-${index}`,
@@ -112,7 +133,9 @@ const seedRecords = () =>
       wager: toNullableNumber(seed.wager, DEFAULT_PROMOCODE_WAGER),
       cashoutCap: toNullableNumber(seed.cashoutCap, DEFAULT_PROMOCODE_CASHOUT_CAP),
       notes: typeof seed.notes === 'string' ? seed.notes.trim() : '',
-      params: seed.params ?? {},
+      params: seed.params ? { ...seed.params } : {},
+      startsAt: seed.startsAt ? toIsoDateTimeOrNull(seed.startsAt) : seedSchedule.startsAt,
+      endsAt: seed.endsAt ? toIsoDateTimeOrNull(seed.endsAt) : seedSchedule.endsAt,
       createdAt,
       updatedAt,
     };
@@ -149,6 +172,8 @@ const composePromocode = (record) => {
     type?.seed?.cashoutCap ?? DEFAULT_PROMOCODE_CASHOUT_CAP,
   );
 
+  const schedule = normalizeSchedule(record.schedule ?? record.params?.schedule ?? {});
+
   return {
     id: record.id,
     code: record.code,
@@ -162,6 +187,8 @@ const composePromocode = (record) => {
     cashoutCap,
     notes: record.notes ?? '',
     params: record.params ?? {},
+    startsAt: record.startsAt ?? schedule.startsAt ?? null,
+    endsAt: record.endsAt ?? schedule.endsAt ?? null,
     type: type
       ? {
           id: type.id,
@@ -293,7 +320,16 @@ export const createAdminPromocode = (input) => {
   const wager = toNullableNumber(input?.wager, DEFAULT_PROMOCODE_WAGER);
   const cashoutCap = toNullableNumber(input?.cashoutCap, DEFAULT_PROMOCODE_CASHOUT_CAP);
   const notes = typeof input?.notes === 'string' ? input.notes.trim() : '';
-  const params = input?.params ?? {};
+  const params = input?.params && typeof input.params === 'object' ? { ...input.params } : {};
+
+  const scheduleFromInput = normalizeSchedule(input?.schedule ?? params.schedule ?? {});
+  const startsAt = toIsoDateTimeOrNull(input?.startsAt) ?? scheduleFromInput.startsAt ?? null;
+  const endsAt = toIsoDateTimeOrNull(input?.endsAt) ?? scheduleFromInput.endsAt ?? null;
+
+  if (startsAt || endsAt) {
+    params.schedule = { startsAt, endsAt };
+  }
+
   const now = nowIso();
 
   const record = {
@@ -309,6 +345,8 @@ export const createAdminPromocode = (input) => {
     cashoutCap,
     notes,
     params,
+    startsAt,
+    endsAt,
     createdAt: now,
     updatedAt: now,
   };
