@@ -8,12 +8,14 @@ import Admin from '../pages/Admin.jsx';
 import AdminOverview from '../pages/Admin/overview/index.js';
 import AdminClients from '../pages/Admin/clients/index.js';
 import AdminPromoCodes from '../pages/Admin/promocodes/index.js';
+import AdminPromoCodeCreate from '../pages/Admin/PromoCodeCreate/index.js';
 import AdminRoles from '../pages/Admin/roles/index.js';
 import AdminRoleEdit from '../pages/Admin/RoleEdit/index.js';
 import AdminTransactions from '../pages/Admin/transactions/index.js';
 import AdminVerification from '../pages/Admin/verification/index.js';
 import AdminModeratorsChat from '../pages/Admin/ModeratorsChat/index.js';
 import AdminAdministratorsChat from '../pages/Admin/AdministratorsChat/index.js';
+import AdminStaffChat from '../pages/Admin/StaffChat/index.js';
 import AdminLogAdmin from '../pages/Admin/LogAdmin/index.js';
 import ProviderPage from '../pages/Provider.jsx';
 import ProvidersPage from '../pages/Providers.jsx';
@@ -89,12 +91,14 @@ export default function AppRoutes() {
         <Route path="overview" element={<AdminOverview />} />
         <Route path="clients" element={<AdminClients />} />
         <Route path="promocodes" element={<AdminPromoCodes />} />
+        <Route path="promocode-create" element={<AdminPromoCodeCreate />} />
         <Route path="roles" element={<AdminRoles />} />
         <Route path="role-edit" element={<AdminRoleEdit />} />
         <Route path="transactions" element={<AdminTransactions />} />
         <Route path="verification" element={<AdminVerification />} />
         <Route path="moderators-chat" element={<AdminModeratorsChat />} />
         <Route path="administrators-chat" element={<AdminAdministratorsChat />} />
+        <Route path="staff-chat" element={<AdminStaffChat />} />
         <Route path="log-admin" element={<AdminLogAdmin />} />
       </Route>
 

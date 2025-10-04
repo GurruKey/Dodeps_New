@@ -8,13 +8,24 @@ import { availableRoles, rolePermissionMatrix } from './roles/data/roleConfigs.j
 const NAV_ITEMS = [
   { key: 'overview', to: 'overview', label: 'Обзор', permission: 'overview' },
   { key: 'clients', to: 'clients', label: 'Клиенты', permission: 'clients' },
-  { key: 'promocodes', to: 'promocodes', label: 'Промокоды', permission: 'promocodes' },
-  { key: 'roles', to: 'roles', label: 'Выдать роль', permission: 'roles' },
-  { key: 'role-edit', to: 'role-edit', label: 'Изменить роль', permission: 'roles' },
   { key: 'transactions', to: 'transactions', label: 'Транзакции', permission: 'transactions' },
   { key: 'verification', to: 'verification', label: 'Верификация', permission: 'verification' },
-  { key: 'moderators-chat', to: 'moderators-chat', label: 'Чат модераторов', permission: 'chat' },
+  { key: 'divider-1', type: 'divider' },
+  { key: 'promocodes', to: 'promocodes', label: 'Промокоды', permission: 'promocodes' },
+  {
+    key: 'promocode-create',
+    to: 'promocode-create',
+    label: 'Создать Промокод',
+    permission: 'promocodes',
+  },
+  { key: 'divider-2', type: 'divider' },
+  { key: 'roles', to: 'roles', label: 'Выдать роль', permission: 'roles' },
+  { key: 'role-edit', to: 'role-edit', label: 'Изменить роль', permission: 'roles' },
+  { key: 'divider-3', type: 'divider' },
+  { key: 'moderators-chat', to: 'moderators-chat', label: 'Модератор Чат', permission: 'chat' },
   { key: 'administrators-chat', to: 'administrators-chat', label: 'Админ Чат', permission: 'chat' },
+  { key: 'staff-chat', to: 'staff-chat', label: 'Стаф Чат', permission: 'chat' },
+  { key: 'divider-4', type: 'divider' },
   { key: 'log-admin', to: 'log-admin', label: 'Log Admin', permission: 'adminPanel' },
 ];
 
@@ -122,6 +133,10 @@ export default function AdminLayout({ clients, isLoading, error, onReload }) {
 
   const visibleNavItems = useMemo(() => {
     const allowedItems = NAV_ITEMS.filter((item) => {
+      if (item.type === 'divider') {
+        return true;
+      }
+
       if (!item.permission) return true;
 
       if (permissions) {
@@ -135,8 +150,31 @@ export default function AdminLayout({ clients, isLoading, error, onReload }) {
       return false;
     });
 
-    if (allowedItems.length > 0) {
-      return allowedItems;
+    const cleanedItems = allowedItems.reduce((acc, item, index) => {
+      if (item.type !== 'divider') {
+        acc.push(item);
+        return acc;
+      }
+
+      if (acc.length === 0) {
+        return acc;
+      }
+
+      const hasNextSection = allowedItems.slice(index + 1).some((candidate) => candidate.type !== 'divider');
+      if (!hasNextSection) {
+        return acc;
+      }
+
+      if (acc[acc.length - 1]?.type === 'divider') {
+        return acc;
+      }
+
+      acc.push(item);
+      return acc;
+    }, []);
+
+    if (cleanedItems.length > 0) {
+      return cleanedItems;
     }
 
     return NAV_ITEMS.filter((item) => item.key === 'overview');
@@ -150,11 +188,15 @@ export default function AdminLayout({ clients, isLoading, error, onReload }) {
           <Card className="h-100">
             <Card.Body className="p-3">
               <Nav variant="pills" className="flex-column gap-1">
-                {visibleNavItems.map((item) => (
-                  <Nav.Link key={item.key} as={NavLink} to={item.to} end>
-                    {item.label}
-                  </Nav.Link>
-                ))}
+                {visibleNavItems.map((item) =>
+                  item.type === 'divider' ? (
+                    <div key={item.key} className="border-top my-2" role="presentation" />
+                  ) : (
+                    <Nav.Link key={item.key} as={NavLink} to={item.to} end>
+                      {item.label}
+                    </Nav.Link>
+                  ),
+                )}
               </Nav>
             </Card.Body>
           </Card>

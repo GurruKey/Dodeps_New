@@ -276,7 +276,7 @@ export const roleMatrixLegend = {
   roles: 'Выдать роль',
   transactions: 'Транзакции',
   verification: 'Верификация',
-  chat: 'Чат модераторов',
+  chat: 'Модератор Чат',
 };
 
 export const verificationQueue = [
@@ -354,6 +354,34 @@ export const administratorsChatThreads = [
         author: 'София',
         text: 'Проверила отчёт по безопасности — без инцидентов.',
         createdAt: '12.03.2024 13:12',
+      },
+    ],
+  },
+];
+
+export const staffChatThreads = [
+  {
+    id: 'thread-staff',
+    title: 'Канал стафа',
+    participants: ['Илья', 'Кира', 'Максим'],
+    messages: [
+      {
+        id: 'staff-msg-1',
+        author: 'Илья',
+        text: 'Проверил ночную смену — всё спокойно.',
+        createdAt: '12.03.2024 09:45',
+      },
+      {
+        id: 'staff-msg-2',
+        author: 'Кира',
+        text: 'Обновила инструкции по приёму VIP-клиентов.',
+        createdAt: '12.03.2024 09:12',
+      },
+      {
+        id: 'staff-msg-3',
+        author: 'Максим',
+        text: 'Напоминаю про созвон в 18:00 по новому турниру.',
+        createdAt: '12.03.2024 08:59',
       },
     ],
   },
