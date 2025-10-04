@@ -8,6 +8,7 @@ import {
   loadAdminPanelVisibility,
   setAdminPanelVisibilityForRole,
 } from '../../../../../../local-sim/auth/admin/adminPanelVisibility';
+import BackendSynergyNotice from '../../../components/BackendSynergyNotice.jsx';
 
 const permissionKeys = Object.keys(roleMatrixLegend);
 
@@ -64,6 +65,8 @@ export default function EditRolePermissions() {
     <Card>
       <Card.Body>
         <Stack gap={3}>
+          <BackendSynergyNotice className="mb-0" />
+
           <div>
             <Card.Title as="h4" className="mb-1">
               Изменить роль

@@ -16,6 +16,7 @@ import {
   loadAdminPanelVisibility,
   setAdminPanelVisibilityForRole,
 } from '../../../../../../local-sim/auth/admin/adminPanelVisibility';
+import BackendSynergyNotice from '../../../components/BackendSynergyNotice.jsx';
 
 const idPlaceholderExamples = ['ID-10192', 'ID-20204', 'ID-30881'];
 
@@ -91,6 +92,8 @@ export default function AssignRole({ statusMessage = '' }) {
     <Card>
       <Card.Body as={Form} onSubmit={handleSubmit}>
         <Stack gap={3}>
+          <BackendSynergyNotice className="mb-0" />
+
           <div>
             <Card.Title as="h4" className="mb-1">
               Выдать роль
