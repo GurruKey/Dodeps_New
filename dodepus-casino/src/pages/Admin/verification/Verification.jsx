@@ -4,6 +4,7 @@ import { useAuth } from '../../../app/AuthContext.jsx';
 import {
   updateVerificationRequestStatus,
 } from '../../../../local-sim/admin/verification';
+import { appendAdminLog } from '../../../../local-sim/admin/logs/index.js';
 import { useAdminVerificationRequests } from './hooks/useAdminVerificationRequests.js';
 import VerificationRequestsBlock from './blocks/VerificationRequestsBlock.jsx';
 import VerificationPartialBlock from './blocks/VerificationPartialBlock.jsx';
@@ -103,6 +104,42 @@ export default function Verification() {
 
   const displayError = actionError || error;
 
+  const handleViewSection = useCallback(
+    (sectionKey) => {
+      if (!sectionKey) {
+        return;
+      }
+
+      const sectionActionMap = {
+        pending: 'Запросил просмотр очереди запросов на верификацию',
+        partial: 'Запросил просмотр частично подтверждённых заявок на верификацию',
+        rejected: 'Запросил просмотр отклонённых заявок на верификацию',
+        approved: 'Запросил просмотр подтверждённых заявок на верификацию',
+      };
+
+      const action = sectionActionMap[sectionKey] ?? 'Запросил просмотр раздела верификации';
+
+      try {
+        appendAdminLog({
+          section: 'verification',
+          action,
+          adminId: reviewer.id,
+          adminName: reviewer.name,
+          role: reviewer.role,
+          context: `verification-view:${sectionKey}`,
+        });
+      } catch (err) {
+        console.warn('Не удалось записать лог просмотра раздела верификации', err);
+      }
+
+      const maybePromise = reload?.();
+      if (maybePromise && typeof maybePromise.catch === 'function') {
+        maybePromise.catch(() => {});
+      }
+    },
+    [reload, reviewer],
+  );
+
   return (
     <Stack gap={3}>
       {displayError && (
@@ -115,6 +152,7 @@ export default function Verification() {
         requests={grouped.pending}
         loading={loading}
         onReload={reload}
+        onView={() => handleViewSection('pending')}
         onConfirm={handleConfirm}
         onReject={handleReject}
         busyId={busyId}
@@ -126,11 +164,20 @@ export default function Verification() {
         onConfirm={handleConfirm}
         onReject={handleReject}
         busyId={busyId}
+        onView={() => handleViewSection('partial')}
       />
 
-      <VerificationRejectedBlock requests={grouped.rejected} loading={loading} />
+      <VerificationRejectedBlock
+        requests={grouped.rejected}
+        loading={loading}
+        onView={() => handleViewSection('rejected')}
+      />
 
-      <VerificationApprovedBlock requests={grouped.approved} loading={loading} />
+      <VerificationApprovedBlock
+        requests={grouped.approved}
+        loading={loading}
+        onView={() => handleViewSection('approved')}
+      />
     </Stack>
   );
 }
