@@ -17,6 +17,7 @@ export const pickExtras = (u = {}) => ({
   casinoBalance: Number.isFinite(Number(u.casinoBalance)) ? Number(u.casinoBalance) : 0,
   transactions: Array.isArray(u.transactions) ? u.transactions : [],
   verificationUploads: Array.isArray(u.verificationUploads) ? u.verificationUploads : [],
+  verificationRequests: Array.isArray(u.verificationRequests) ? u.verificationRequests : [],
 });
 
 export const loadExtras = (uid) => {
