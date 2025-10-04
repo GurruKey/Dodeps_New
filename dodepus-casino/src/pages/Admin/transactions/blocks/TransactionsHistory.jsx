@@ -45,9 +45,9 @@ const formatAmount = (transaction) => {
 };
 
 const formatDateTime = (iso) => {
-  if (!iso) return '—';
+  if (!iso) return 'â€”';
   const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '—';
+  if (Number.isNaN(date.getTime())) return 'â€”';
   return date.toLocaleString('ru-RU', {
     year: 'numeric',
     month: '2-digit',
@@ -59,7 +59,7 @@ const formatDateTime = (iso) => {
 
 const formatMethod = (method) => {
   const normalized = typeof method === 'string' ? method.trim().toLowerCase() : '';
-  if (!normalized) return '—';
+  if (!normalized) return 'â€”';
   return METHOD_LABELS[normalized] ?? method;
 };
 
@@ -179,7 +179,7 @@ export default function TransactionsHistory() {
           <td>
             <div className="fw-semibold">{transaction.userId}</div>
             <div className="text-muted small text-truncate" title={transaction.userEmail || transaction.userNickname}>
-              {transaction.userEmail || transaction.userNickname || '—'}
+          <td className="text-end fw-semibold">
             </div>
           </td>
           <td>
