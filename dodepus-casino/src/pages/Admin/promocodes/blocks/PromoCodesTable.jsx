@@ -8,6 +8,35 @@ const statusVariantMap = {
   draft: 'dark',
 };
 
+const formatDateTime = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleString('ru-RU', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  });
+};
+
+const formatSchedule = (startsAt, endsAt) => {
+  const startText = formatDateTime(startsAt);
+  const endText = formatDateTime(endsAt);
+
+  if (!startText && !endText) {
+    return '—';
+  }
+
+  if (startText && endText) {
+    return `${startText} — ${endText}`;
+  }
+
+  if (startText) {
+    return `с ${startText}`;
+  }
+
+  return `до ${endText}`;
+};
+
 const formatLimit = (limit) => {
   if (limit == null) return '—';
   return limit.toLocaleString('ru-RU');
@@ -48,6 +77,7 @@ export default function PromoCodesTable({ promocodes, isLoading }) {
               <th style={{ width: '20%' }}>Название</th>
               <th style={{ width: '20%' }}>Вознаграждение</th>
               <th style={{ width: '10%' }}>Лимит</th>
+              <th style={{ width: '12%' }}>Период</th>
               <th style={{ width: '10%' }}>Использовано</th>
               <th style={{ width: '10%' }}>Статус</th>
             </tr>
@@ -55,7 +85,7 @@ export default function PromoCodesTable({ promocodes, isLoading }) {
           {isLoading ? (
             <tbody>
               <tr>
-                <td colSpan={7} className="text-center py-4">
+                <td colSpan={8} className="text-center py-4">
                   <Spinner animation="border" size="sm" role="status" className="me-2" />
                   Загрузка промокодов…
                 </td>
@@ -75,6 +105,7 @@ export default function PromoCodesTable({ promocodes, isLoading }) {
                       {requirements && <div className="small text-muted">{requirements}</div>}
                     </td>
                     <td>{formatLimit(promo.limit)}</td>
+                    <td>{formatSchedule(promo.startsAt, promo.endsAt)}</td>
                     <td>{formatUsed(promo.used, promo.limit)}</td>
                     <td>
                       <Badge bg={statusVariantMap[promo.status] ?? 'secondary'}>{
@@ -88,7 +119,7 @@ export default function PromoCodesTable({ promocodes, isLoading }) {
           ) : (
             <tbody>
               <tr>
-                <td colSpan={7} className="text-center py-4 text-muted">
+                <td colSpan={8} className="text-center py-4 text-muted">
                   Промокоды ещё не созданы. Добавьте первый через раздел «Создать промокод».
                 </td>
               </tr>
