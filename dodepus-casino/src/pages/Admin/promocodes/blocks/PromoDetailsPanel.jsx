@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Badge, Button, ButtonGroup, Card, Stack, Table } from 'react-bootstrap';
+import { Alert, Badge, Button, ButtonGroup, Modal, Stack, Table } from 'react-bootstrap';
 import ActivationChart from './ActivationChart.jsx';
 
 const formatDateTime = (value) => {
@@ -72,6 +72,7 @@ const formatActivationClient = (activation, index) => {
 
 export default function PromoDetailsPanel({
   promo,
+  show = false,
   onClose,
   onPause,
   onResume,
@@ -100,20 +101,20 @@ export default function PromoDetailsPanel({
   const isArchived = promo.status === 'archived';
 
   return (
-    <Card className="promo-details-panel">
-      <Card.Header className="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+    <Modal show={show} onHide={onClose} size="lg" centered>
+      <Modal.Header
+        closeButton
+        className="d-flex justify-content-between align-items-start gap-3 flex-wrap"
+      >
         <div>
           <div className="small text-muted">Promo ID</div>
           <div className="h5 mb-0">{promo.id}</div>
         </div>
-        <div className="d-flex align-items-center gap-2 flex-wrap">
-          <Badge bg="secondary">{promo.statusLabel}</Badge>
-          <Button variant="outline-secondary" size="sm" onClick={onClose}>
-            Закрыть
-          </Button>
-        </div>
-      </Card.Header>
-      <Card.Body>
+        <Badge bg="secondary" className="mt-1">
+          {promo.statusLabel}
+        </Badge>
+      </Modal.Header>
+      <Modal.Body className="promo-details-panel">
         <Stack gap={4}>
           <section>
             <div className="d-flex flex-column flex-lg-row gap-4">
@@ -218,7 +219,7 @@ export default function PromoDetailsPanel({
             )}
           </section>
         </Stack>
-      </Card.Body>
-    </Card>
+      </Modal.Body>
+    </Modal>
   );
 }

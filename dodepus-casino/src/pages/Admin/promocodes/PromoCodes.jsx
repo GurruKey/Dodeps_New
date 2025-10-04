@@ -19,7 +19,6 @@ export default function PromoCodes() {
   const [error, setError] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedPromo, setSelectedPromo] = useState(null);
-  const [autoSelectEnabled, setAutoSelectEnabled] = useState(true);
   const [isActionPending, setIsActionPending] = useState(false);
   const [actionError, setActionError] = useState(null);
 
@@ -82,7 +81,6 @@ export default function PromoCodes() {
   }, [loadPromocodes]);
 
   const handleReload = useCallback(() => {
-    setAutoSelectEnabled(true);
     loadPromocodes();
   }, [loadPromocodes]);
 
@@ -93,25 +91,17 @@ export default function PromoCodes() {
       return;
     }
 
-    if (selectedId) {
-      const existing = promocodes.find((promo) => promo.id === selectedId);
-      if (existing) {
-        setSelectedPromo(existing);
-        return;
-      }
-      if (!autoSelectEnabled) {
-        setSelectedId(null);
-        setSelectedPromo(null);
-        return;
-      }
+    if (!selectedId) return;
+
+    const existing = promocodes.find((promo) => promo.id === selectedId);
+    if (existing) {
+      setSelectedPromo(existing);
+      return;
     }
 
-    if (autoSelectEnabled) {
-      const first = promocodes[0];
-      setSelectedId(first?.id ?? null);
-      setSelectedPromo(first ?? null);
-    }
-  }, [promocodes, selectedId, autoSelectEnabled]);
+    setSelectedId(null);
+    setSelectedPromo(null);
+  }, [promocodes, selectedId]);
 
   const applyUpdatedPromo = useCallback((updated) => {
     if (!updated) return;
@@ -130,13 +120,11 @@ export default function PromoCodes() {
     });
 
     if (updated.status === 'archived') {
-      setSelectedId(null);
-      setSelectedPromo(null);
-      setAutoSelectEnabled(true);
+      setSelectedId((currentId) => (currentId === updated.id ? null : currentId));
+      setSelectedPromo((current) => (current?.id === updated.id ? null : current));
     } else {
       setSelectedId(updated.id);
       setSelectedPromo(updated);
-      setAutoSelectEnabled(true);
     }
   }, []);
 
@@ -160,7 +148,6 @@ export default function PromoCodes() {
   const handleSelectPromo = useCallback((promo) => {
     setSelectedId(promo?.id ?? null);
     setSelectedPromo(promo ?? null);
-    setAutoSelectEnabled(true);
   }, []);
 
   useEffect(() => {
@@ -170,7 +157,6 @@ export default function PromoCodes() {
   const handleCloseDetails = useCallback(() => {
     setSelectedId(null);
     setSelectedPromo(null);
-    setAutoSelectEnabled(false);
   }, []);
 
   const handlePause = useCallback((id) => runAction(() => pauseAdminPromocode(id)), [runAction]);
@@ -178,9 +164,7 @@ export default function PromoCodes() {
   const handleArchive = useCallback(
     (id) =>
       runAction(() => {
-        const archived = archiveAdminPromocode(id);
-        setAutoSelectEnabled(true);
-        return archived;
+        return archiveAdminPromocode(id);
       }),
     [runAction],
   );
@@ -197,30 +181,23 @@ export default function PromoCodes() {
           {error.message}
         </Alert>
       )}
-      <div className="row g-3">
-        <div className="col-12 col-xl-6">
-          <PromoCodesTable
-            promocodes={promocodes}
-            isLoading={isLoading}
-            onSelect={handleSelectPromo}
-            selectedId={selectedId}
-          />
-        </div>
-        <div className="col-12 col-xl-6">
-          {selectedPromo && (
-            <PromoDetailsPanel
-              promo={selectedPromo}
-              onClose={handleCloseDetails}
-              onPause={handlePause}
-              onResume={handleResume}
-              onArchive={handleArchive}
-              onExtend={handleExtend}
-              isActionPending={isActionPending}
-              actionError={actionError}
-            />
-          )}
-        </div>
-      </div>
+      <PromoCodesTable
+        promocodes={promocodes}
+        isLoading={isLoading}
+        onSelect={handleSelectPromo}
+        selectedId={selectedId}
+      />
+      <PromoDetailsPanel
+        promo={selectedPromo}
+        show={Boolean(selectedPromo)}
+        onClose={handleCloseDetails}
+        onPause={handlePause}
+        onResume={handleResume}
+        onArchive={handleArchive}
+        onExtend={handleExtend}
+        isActionPending={isActionPending}
+        actionError={actionError}
+      />
     </Stack>
   );
 }
