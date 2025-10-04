@@ -9,12 +9,13 @@ export default function PromoCodesHeader({ onReload, isLoading }) {
             Управление промокодами
           </Card.Title>
           <Card.Text className="text-muted mb-0">
-            Здесь появится синхронизация с реальным API. Пока используем демо-данные.
+            Данные берутся из локального симулятора (local-sim). Создавайте, тестируйте и обновляйте
+            различные типы промо до подключения реального API.
           </Card.Text>
         </div>
         {onReload && (
           <Button variant="outline-primary" onClick={onReload} disabled={isLoading}>
-            Обновить данные
+            {isLoading ? 'Обновляем…' : 'Обновить данные'}
           </Button>
         )}
       </Card.Body>
