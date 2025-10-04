@@ -1,5 +1,5 @@
 import { pickExtras } from './profileExtras';
-import { availableRoles } from '../../src/pages/Admin/Roles/data/roleConfigs.js';
+import { availableRoles } from '../../src/pages/Admin/roles/data/roleConfigs.js';
 
 export const isAdminUser = (user) =>
   Boolean(

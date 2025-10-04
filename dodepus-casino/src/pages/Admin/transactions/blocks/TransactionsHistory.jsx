@@ -7,22 +7,22 @@ import {
 } from '../../../../../local-sim/admin/transactions';
 
 const STATUS_VARIANTS = {
-  success: { label: '???????', variant: 'success' },
-  pending: { label: '? ????????', variant: 'warning' },
-  failed: { label: '??????', variant: 'danger' },
+  success: { label: 'Успешно', variant: 'success' },
+  pending: { label: 'В ожидании', variant: 'warning' },
+  failed: { label: 'Ошибка', variant: 'danger' },
 };
 
 const TYPE_VARIANTS = {
-  deposit: { label: '??????????', variant: 'success' },
-  withdraw: { label: '?????', variant: 'danger' },
-  other: { label: '????????', variant: 'secondary' },
+  deposit: { label: 'Пополнение', variant: 'success' },
+  withdraw: { label: 'Вывод', variant: 'danger' },
+  other: { label: 'Прочее', variant: 'secondary' },
 };
 
 const METHOD_LABELS = {
-  card: '?????',
-  bank: '?????????? ???????',
-  crypto: '????????????',
-  other: '??????',
+  card: 'Карта',
+  bank: 'Банковский перевод',
+  crypto: 'Криптовалюта',
+  other: 'Другое',
 };
 
 const formatCurrency = (value, currency) => {
@@ -69,12 +69,11 @@ export default function TransactionsHistory() {
   const [error, setError] = useState(null);
   const isMountedRef = useRef(true);
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    return () => {
       isMountedRef.current = false;
-    },
-    [],
-  );
+    };
+  }, []);
 
   const loadTransactions = useCallback(
     async ({ signal, silent = false } = {}) => {
@@ -90,13 +89,23 @@ export default function TransactionsHistory() {
 
       try {
         const data = await listAdminTransactions(params);
-        if (!isMountedRef.current) return;
+        if (!isMountedRef.current) {
+          return;
+        }
+
         setTransactions(Array.isArray(data) ? data : []);
         setError(null);
       } catch (err) {
-        if (err?.name === 'AbortError') return;
-        if (!isMountedRef.current) return;
-        setError(err instanceof Error ? err : new Error('?? ??????? ????????? ??????????'));
+        if (err?.name === 'AbortError') {
+          return;
+        }
+        if (!isMountedRef.current) {
+          return;
+        }
+
+        const normalizedError =
+          err instanceof Error ? err : new Error('Не удалось загрузить транзакции');
+        setError(normalizedError);
       } finally {
         if (!silent && isMountedRef.current) {
           setLoading(false);
@@ -126,8 +135,13 @@ export default function TransactionsHistory() {
     }
 
     const handleStorage = (event) => {
-      if (typeof event?.key !== 'string') return;
-      if (!event.key.startsWith('dodepus_profile_v1:')) return;
+      if (typeof event?.key !== 'string') {
+        return;
+      }
+      if (!event.key.startsWith('dodepus_profile_v1:')) {
+        return;
+      }
+
       loadTransactions({ silent: true }).catch(() => {});
     };
 
@@ -157,7 +171,7 @@ export default function TransactionsHistory() {
       return (
         <tr>
           <td colSpan={6} className="py-4 text-center text-muted">
-            ??? ??? ????????.
+            Нет доступных транзакций.
           </td>
         </tr>
       );
@@ -170,16 +184,22 @@ export default function TransactionsHistory() {
       };
       const type = TYPE_VARIANTS[transaction.type] ?? TYPE_VARIANTS.other;
       const isWithdraw = transaction.type === 'withdraw';
+      const userName = transaction.userId || '—';
+      const userDetails = transaction.userEmail || transaction.userNickname || '—';
+      const amountClassName = ['text-end', 'fw-semibold', isWithdraw ? 'text-danger' : 'text-success']
+        .filter(Boolean)
+        .join(' ');
+      const entryKey = transaction.entryId ?? transaction.id ?? `${transaction.createdAt}-${transaction.type}`;
 
       return (
-        <tr key={transaction.entryId}>
+        <tr key={entryKey}>
           <td className="fw-medium text-nowrap">
             <code>{transaction.id}</code>
           </td>
           <td>
-            <div className="fw-semibold">{transaction.userId}</div>
-            <div className="text-muted small text-truncate" title={transaction.userEmail || transaction.userNickname}>
-          <td className="text-end fw-semibold">
+            <div className="fw-semibold">{userName}</div>
+            <div className="text-muted small text-truncate" title={userDetails}>
+              {userDetails}
             </div>
           </td>
           <td>
@@ -188,9 +208,7 @@ export default function TransactionsHistory() {
               <span className="text-muted small">{formatMethod(transaction.method)}</span>
             </div>
           </td>
-          <td className={	ext-end fw-semibold }>
-            {formatAmount(transaction)}
-          </td>
+          <td className={amountClassName}>{formatAmount(transaction)}</td>
           <td>
             <Badge bg={status.variant}>{status.label}</Badge>
           </td>
@@ -206,23 +224,23 @@ export default function TransactionsHistory() {
         <div className="d-flex flex-column flex-lg-row gap-3 align-items-lg-center justify-content-between mb-3">
           <div>
             <Card.Title as="h4" className="mb-1">
-              ??????????
+              История транзакций
             </Card.Title>
             <Card.Text className="text-muted mb-0">
-              ????????? ???????? ? ?????. ?????? ??????????? ? ???????? ???????.
+              Просматривайте операции в реальном времени. Данные синхронизируются автоматически при изменениях.
             </Card.Text>
           </div>
           <div className="d-flex align-items-center gap-2">
             {loading && transactions.length > 0 ? <Spinner animation="border" role="status" size="sm" /> : null}
             <Button variant="outline-primary" onClick={handleManualReload} disabled={loading}>
-              ????????
+              Обновить
             </Button>
           </div>
         </div>
 
         {error ? (
           <Alert variant="danger" className="mb-3">
-            ?? ??????? ????????? ????????: {error.message}
+            Не удалось обновить список транзакций: {error.message}
           </Alert>
         ) : null}
 
@@ -231,13 +249,13 @@ export default function TransactionsHistory() {
             <thead>
               <tr>
                 <th style={{ minWidth: 130 }}>ID</th>
-                <th style={{ minWidth: 160 }}>??????</th>
-                <th style={{ minWidth: 150 }}>???</th>
+                <th style={{ minWidth: 160 }}>Пользователь</th>
+                <th style={{ minWidth: 150 }}>Тип</th>
                 <th style={{ minWidth: 140 }} className="text-end">
-                  ?????
+                  Сумма
                 </th>
-                <th style={{ minWidth: 130 }}>??????</th>
-                <th style={{ minWidth: 150 }}>???????</th>
+                <th style={{ minWidth: 130 }}>Статус</th>
+                <th style={{ minWidth: 150 }}>Создана</th>
               </tr>
             </thead>
             <tbody>{renderBodyRows()}</tbody>
@@ -247,10 +265,3 @@ export default function TransactionsHistory() {
     </Card>
   );
 }
-
-
-
-
-
-
-
