@@ -1,6 +1,27 @@
 import { availableRoles } from '../../../src/pages/Admin/roles/data/roleConfigs.js';
 
 const STORAGE_KEY = 'dodepus_admin_panel_visibility_v1';
+export const ADMIN_PANEL_VISIBILITY_EVENT = 'dodepus:admin-panel-visibility-change';
+
+const getEventTarget = () => {
+  if (typeof window !== 'undefined') return window;
+  if (typeof globalThis !== 'undefined' && globalThis?.addEventListener) {
+    return globalThis;
+  }
+  return null;
+};
+
+const emitVisibilityChange = (visibility) => {
+  const target = getEventTarget();
+  if (!target?.dispatchEvent || typeof CustomEvent !== 'function') return;
+
+  try {
+    const detail = { visibility: normalizeVisibilityMap(visibility) };
+    target.dispatchEvent(new CustomEvent(ADMIN_PANEL_VISIBILITY_EVENT, { detail }));
+  } catch (error) {
+    console.warn('Не удалось оповестить об изменении доступа к админ-панели', error);
+  }
+};
 
 const getStorage = () => {
   try {
@@ -53,6 +74,7 @@ export const saveAdminPanelVisibility = (visibility, storage = getStorage()) => 
   try {
     const normalized = normalizeVisibilityMap(visibility);
     storage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+    emitVisibilityChange(normalized);
   } catch (error) {
     console.warn('Не удалось сохранить настройки админ-панели', error);
   }
