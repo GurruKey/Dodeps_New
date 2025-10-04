@@ -279,33 +279,6 @@ export const roleMatrixLegend = {
   chat: 'Чат модераторов',
 };
 
-export const transactionHistory = [
-  {
-    id: 'TXN-82039',
-    user: 'ID-10192',
-    amount: '+ 2 500 ₽',
-    method: 'Банковская карта',
-    status: 'completed',
-    createdAt: '12.03.2024 15:18',
-  },
-  {
-    id: 'TXN-82012',
-    user: 'ID-10177',
-    amount: '- 1 200 ₽',
-    method: 'Вывод на карту',
-    status: 'pending',
-    createdAt: '12.03.2024 14:02',
-  },
-  {
-    id: 'TXN-81987',
-    user: 'ID-10192',
-    amount: '+ 700 ₽',
-    method: 'Криптокошелёк',
-    status: 'failed',
-    createdAt: '11.03.2024 22:46',
-  },
-];
-
 export const verificationQueue = [
   {
     id: 'VRF-3007',

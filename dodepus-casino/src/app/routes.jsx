@@ -5,16 +5,16 @@ import Home from '../pages/Home.jsx';
 import Lobby from '../pages/Lobby.jsx';
 import Game from '../pages/Game.jsx';
 import Admin from '../pages/Admin.jsx';
-import AdminOverview from '../pages/Admin/overview';
-import AdminClients from '../pages/Admin/clients';
-import AdminPromoCodes from '../pages/Admin/promocodes';
-import AdminRoles from '../pages/Admin/roles';
-import AdminRoleEdit from '../pages/Admin/role-edit';
-import AdminTransactions from '../pages/Admin/transactions';
-import AdminVerification from '../pages/Admin/verification';
-import AdminModeratorsChat from '../pages/Admin/moderators-chat';
-import AdminAdministratorsChat from '../pages/Admin/administrators-chat';
-import AdminLogAdmin from '../pages/Admin/log-admin';
+import AdminOverview from '../pages/Admin/Overview';
+import AdminClients from '../pages/Admin/Clients';
+import AdminPromoCodes from '../pages/Admin/PromoCodes';
+import AdminRoles from '../pages/Admin/Roles';
+import AdminRoleEdit from '../pages/Admin/RoleEdit';
+import AdminTransactions from '../pages/Admin/Transactions';
+import AdminVerification from '../pages/Admin/Verification';
+import AdminModeratorsChat from '../pages/Admin/ModeratorsChat';
+import AdminAdministratorsChat from '../pages/Admin/AdministratorsChat';
+import AdminLogAdmin from '../pages/Admin/LogAdmin';
 import ProviderPage from '../pages/Provider.jsx';
 import ProvidersPage from '../pages/Providers.jsx';
 import CategoriesPage from '../pages/Categories.jsx';
@@ -134,3 +134,4 @@ export default function AppRoutes() {
     </Routes>
   );
 }
+

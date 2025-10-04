@@ -1,5 +1,5 @@
 import { pickExtras } from './profileExtras';
-import { availableRoles } from '../../src/pages/Admin/roles/data/roleConfigs.js';
+import { availableRoles } from '../../src/pages/Admin/Roles/data/roleConfigs.js';
 
 export const isAdminUser = (user) =>
   Boolean(
@@ -103,3 +103,4 @@ export function composeUser(record, extras) {
     ...pickExtras({ ...extras, emailVerified, email: record.email, phone: record.phone }),
   };
 }
+

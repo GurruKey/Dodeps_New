@@ -3,7 +3,7 @@ import { Container, Row, Col, Nav, Card } from 'react-bootstrap';
 import { NavLink, Outlet } from 'react-router-dom';
 
 import { useAuth } from '../../app/AuthContext.jsx';
-import { availableRoles, rolePermissionMatrix } from './roles/data/roleConfigs.js';
+import { availableRoles, rolePermissionMatrix } from './Roles/data/roleConfigs.js';
 
 const NAV_ITEMS = [
   { key: 'overview', to: 'overview', label: 'Обзор', permission: 'overview' },
@@ -167,3 +167,4 @@ export default function AdminLayout({ clients, isLoading, error, onReload }) {
     </Container>
   );
 }
+

@@ -1,5 +1,5 @@
-import { Stack } from 'react-bootstrap';
-import TransactionsHistory from '../roles/blocks/Transactions/TransactionsHistory.jsx';
+﻿import { Stack } from 'react-bootstrap';
+import TransactionsHistory from './blocks/TransactionsHistory.jsx';
 
 export default function Transactions() {
   return (
@@ -8,3 +8,5 @@ export default function Transactions() {
     </Stack>
   );
 }
+
+

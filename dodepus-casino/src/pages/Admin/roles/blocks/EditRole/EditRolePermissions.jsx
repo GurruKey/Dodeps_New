@@ -9,7 +9,7 @@ import {
   resolveCategoryKey,
   roleGroups,
   roleGroupsByKey,
-} from './roleGroups/index.js';
+} from './RoleGroups/index.js';
 import {
   ADMIN_PANEL_VISIBILITY_EVENT,
   loadAdminPanelVisibility,
@@ -325,3 +325,4 @@ function ConfirmChangeModal({ pendingChange, onCancel, onConfirm }) {
     </Modal>
   );
 }
+

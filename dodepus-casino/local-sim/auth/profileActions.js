@@ -1,4 +1,5 @@
 import { loadExtras, saveExtras, pickExtras } from './profileExtras';
+import { notifyAdminTransactionsChanged } from '../admin/transactions';
 
 const toNumber = (value, fallback = 0) => {
   const numeric = Number(value);
@@ -73,8 +74,10 @@ export const createProfileActions = (uid) => {
 
   const updateProfile = (patch = {}) => patchExtras({ ...patch });
 
-  const addTransaction = (txn = {}) =>
-    persistExtras(uid, (current) => {
+  const addTransaction = (txn = {}) => {
+    let addedTransaction = null;
+
+    const nextExtras = persistExtras(uid, (current) => {
       const id =
         txn.id ||
         `tx_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -88,11 +91,24 @@ export const createProfileActions = (uid) => {
         amount: toNumber(txn.amount, 0),
       };
 
+      addedTransaction = nextTxn;
+
       return {
         ...current,
         transactions: [nextTxn, ...(current.transactions || [])],
       };
     });
+
+    if (addedTransaction) {
+      try {
+        notifyAdminTransactionsChanged({ userId: uid, transaction: addedTransaction });
+      } catch (error) {
+        console.warn('Failed to broadcast admin transactions change', error);
+      }
+    }
+
+    return nextExtras;
+  };
 
   const addVerificationUpload = (file) =>
     persistExtras(uid, (current) => {

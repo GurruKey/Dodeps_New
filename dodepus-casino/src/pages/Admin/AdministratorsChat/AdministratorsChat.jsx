@@ -1,5 +1,5 @@
 import ChatPanel from '../components/ChatPanel.jsx';
-import { administratorsChatThreads } from '../roles/data/roleConfigs.js';
+import { administratorsChatThreads } from '../Roles/data/roleConfigs.js';
 
 export default function AdministratorsChat() {
   const activeThread = administratorsChatThreads[0];
@@ -12,3 +12,4 @@ export default function AdministratorsChat() {
     />
   );
 }
+
