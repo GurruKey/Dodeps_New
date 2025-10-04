@@ -32,7 +32,7 @@ const emptyRewardForm = {
   freeSpins: '',
   freeSpinsValue: '',
   freeSpinsGame: '',
-  currency: '₽',
+  currency: '$',
   balanceType: 'main',
   customText: '',
 };
@@ -99,7 +99,7 @@ const composeRewardPreview = (rewardForm) => {
   if (!rewardForm) return '';
 
   const parts = [];
-  const currency = rewardForm.currency || '₽';
+  const currency = rewardForm.currency || '$';
   const balanceLabel = balanceLabelMap[rewardForm.balanceType] ?? 'баланс';
 
   if (rewardForm.depositPercent) {
@@ -178,7 +178,7 @@ const normalizeRewardParams = (rewardForm) => {
     normalized.freeSpinsGame = freeSpinsGame;
   }
 
-  const currency = rewardForm.currency || '₽';
+  const currency = rewardForm.currency || '$';
   if (currency) {
     normalized.currency = currency;
   }
@@ -526,7 +526,7 @@ export default function PromoCodeCreate() {
                         type="text"
                         value={rewardForm.currency}
                         onChange={handleRewardFormChange('currency')}
-                        placeholder="₽"
+                        placeholder="$"
                       />
                     </Form.Group>
                   </Col>

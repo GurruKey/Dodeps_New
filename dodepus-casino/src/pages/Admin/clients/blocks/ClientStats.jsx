@@ -4,7 +4,7 @@ import { useTheme } from '../../../../app/ThemeContext.jsx';
 function formatCurrency(value) {
   return new Intl.NumberFormat('ru-RU', {
     style: 'currency',
-    currency: 'RUB',
+    currency: 'USD',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
