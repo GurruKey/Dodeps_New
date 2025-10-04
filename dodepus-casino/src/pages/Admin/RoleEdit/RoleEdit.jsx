@@ -1,4 +1,4 @@
-import EditRolePermissions from '../Roles/blocks/EditRole/EditRolePermissions.jsx';
+import EditRolePermissions from '../roles/blocks/EditRole/EditRolePermissions.jsx';
 
 export default function RoleEdit() {
   return <EditRolePermissions />;

@@ -1,5 +1,5 @@
 import ChatPanel from '../components/ChatPanel.jsx';
-import { moderatorsChatThreads } from '../Roles/data/roleConfigs.js';
+import { moderatorsChatThreads } from '../roles/data/roleConfigs.js';
 
 export default function ModeratorsChat() {
   const activeThread = moderatorsChatThreads[0];

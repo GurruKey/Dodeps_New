@@ -9,7 +9,7 @@ import {
   resolveCategoryKey,
   roleGroups,
   roleGroupsByKey,
-} from './RoleGroups/index.js';
+} from './roleGroups/index.js';
 import {
   ADMIN_PANEL_VISIBILITY_EVENT,
   loadAdminPanelVisibility,
