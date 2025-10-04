@@ -18,7 +18,7 @@ import {
   getAdminLogSectionLabel,
   getAdminLogSections,
   listAdminLogs,
-} from '../../../../local-sim/admin/logs';
+} from '../../../../local-sim/admin/logs/index.js';
 
 const formatDateTime = (value) => {
   if (!value) return '';
