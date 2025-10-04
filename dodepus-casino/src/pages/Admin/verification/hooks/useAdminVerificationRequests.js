@@ -10,6 +10,7 @@ export function useAdminVerificationRequests() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [initialized, setInitialized] = useState(false);
   const isMountedRef = useRef(true);
   const activeRequestsRef = useRef(0);
 
@@ -68,12 +69,10 @@ export function useAdminVerificationRequests() {
   );
 
   useEffect(() => {
-    const controller = new AbortController();
-    loadRequests({ signal: controller.signal, showLoader: true }).catch(() => {});
-    return () => controller.abort();
-  }, [loadRequests]);
+    if (!initialized) {
+      return () => {};
+    }
 
-  useEffect(() => {
     const unsubscribe = subscribeToAdminVerificationRequests(() => {
       loadRequests({ showLoader: false }).catch(() => {});
     });
@@ -103,9 +102,23 @@ export function useAdminVerificationRequests() {
       unsubscribe();
       target.removeEventListener('storage', handleStorage);
     };
-  }, [loadRequests]);
+  }, [initialized, loadRequests]);
 
-  const reload = useCallback(() => loadRequests({ showLoader: true }), [loadRequests]);
+  const startLoading = useCallback(
+    async (options = {}) => {
+      if (!initialized) {
+        setInitialized(true);
+      }
 
-  return { requests, loading, error, reload };
+      const showLoader = options?.showLoader ?? true;
+
+      return loadRequests({ ...options, showLoader });
+    },
+    [initialized, loadRequests],
+  );
+
+  const ensureLoaded = useCallback(() => startLoading(), [startLoading]);
+  const reload = useCallback(() => startLoading(), [startLoading]);
+
+  return { requests, loading, error, reload, ensureLoaded, initialized };
 }
