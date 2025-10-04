@@ -1,4 +1,4 @@
-import { Badge, Button, Card, Spinner, Stack } from 'react-bootstrap';
+import { Badge, Card, Spinner, Stack } from 'react-bootstrap';
 
 const formatDateTime = (value) => {
   if (!value) return '—';
@@ -118,11 +118,6 @@ export default function PromoCodesTable({ promocodes, isLoading, onSelect, selec
                 <div className="text-muted small">
                   <div className="text-uppercase text-muted mb-1">Тип</div>
                   <div>{promo.type?.name ?? '—'}</div>
-                </div>
-                <div className="ms-auto">
-                  <Button variant="outline-primary" size="sm" onClick={() => onSelect?.(promo)}>
-                    Открыть
-                  </Button>
                 </div>
               </div>
             </Card.Body>

@@ -3,6 +3,7 @@ import { Alert, Stack } from 'react-bootstrap';
 
 import PromoArchiveHeader from './blocks/PromoArchiveHeader.jsx';
 import PromoCodesTable from '../promocodes/blocks/PromoCodesTable.jsx';
+import PromoDetailsPanel from '../promocodes/blocks/PromoDetailsPanel.jsx';
 import {
   listAdminArchivedPromocodes,
   subscribeToAdminPromocodes,
@@ -12,6 +13,8 @@ export default function PromoArchive() {
   const [promocodes, setPromocodes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  const [selectedPromo, setSelectedPromo] = useState(null);
 
   const loadPromocodes = useCallback(
     async (signal) => {
@@ -76,6 +79,35 @@ export default function PromoArchive() {
     loadPromocodes();
   }, [loadPromocodes]);
 
+  useEffect(() => {
+    if (!promocodes.length) {
+      setSelectedId(null);
+      setSelectedPromo(null);
+      return;
+    }
+
+    if (!selectedId) return;
+
+    const existing = promocodes.find((promo) => promo.id === selectedId);
+    if (existing) {
+      setSelectedPromo(existing);
+      return;
+    }
+
+    setSelectedId(null);
+    setSelectedPromo(null);
+  }, [promocodes, selectedId]);
+
+  const handleSelectPromo = useCallback((promo) => {
+    setSelectedId(promo?.id ?? null);
+    setSelectedPromo(promo ?? null);
+  }, []);
+
+  const handleCloseDetails = useCallback(() => {
+    setSelectedId(null);
+    setSelectedPromo(null);
+  }, []);
+
   return (
     <Stack gap={3}>
       <PromoArchiveHeader isLoading={isLoading} onReload={handleReload} />
@@ -84,7 +116,17 @@ export default function PromoArchive() {
           {error.message}
         </Alert>
       )}
-      <PromoCodesTable promocodes={promocodes} isLoading={isLoading} />
+      <PromoCodesTable
+        promocodes={promocodes}
+        isLoading={isLoading}
+        onSelect={handleSelectPromo}
+        selectedId={selectedId}
+      />
+      <PromoDetailsPanel
+        promo={selectedPromo}
+        show={Boolean(selectedPromo)}
+        onClose={handleCloseDetails}
+      />
     </Stack>
   );
 }
