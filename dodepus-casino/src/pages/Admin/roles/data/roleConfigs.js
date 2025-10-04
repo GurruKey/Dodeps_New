@@ -102,6 +102,7 @@ export const rolePermissionMatrix = [
     roleId: 'intern-l1',
     roleName: 'Стажёр 1 lvl',
     permissions: {
+      adminPanel: false,
       overview: true,
       clients: false,
       promocodes: false,
@@ -115,6 +116,7 @@ export const rolePermissionMatrix = [
     roleId: 'intern-l2',
     roleName: 'Стажёр 2 lvl',
     permissions: {
+      adminPanel: false,
       overview: true,
       clients: true,
       promocodes: false,
@@ -128,6 +130,7 @@ export const rolePermissionMatrix = [
     roleId: 'moderator-l1',
     roleName: 'Модератор 1 lvl',
     permissions: {
+      adminPanel: false,
       overview: true,
       clients: true,
       promocodes: false,
@@ -141,6 +144,7 @@ export const rolePermissionMatrix = [
     roleId: 'moderator-l2',
     roleName: 'Модератор 2 lvl',
     permissions: {
+      adminPanel: false,
       overview: true,
       clients: true,
       promocodes: false,
@@ -154,6 +158,7 @@ export const rolePermissionMatrix = [
     roleId: 'moderator-l3',
     roleName: 'Модератор 3 lvl',
     permissions: {
+      adminPanel: false,
       overview: true,
       clients: true,
       promocodes: true,
@@ -167,6 +172,7 @@ export const rolePermissionMatrix = [
     roleId: 'moderator-l4',
     roleName: 'Модератор 4 lvl',
     permissions: {
+      adminPanel: false,
       overview: true,
       clients: true,
       promocodes: true,
@@ -180,6 +186,7 @@ export const rolePermissionMatrix = [
     roleId: 'admin-l1',
     roleName: 'Админ 1 lvl',
     permissions: {
+      adminPanel: true,
       overview: true,
       clients: true,
       promocodes: true,
@@ -193,6 +200,7 @@ export const rolePermissionMatrix = [
     roleId: 'admin-l2',
     roleName: 'Админ 2 lvl',
     permissions: {
+      adminPanel: true,
       overview: true,
       clients: true,
       promocodes: true,
@@ -206,6 +214,7 @@ export const rolePermissionMatrix = [
     roleId: 'admin-l3',
     roleName: 'Админ 3 lvl',
     permissions: {
+      adminPanel: true,
       overview: true,
       clients: true,
       promocodes: true,
@@ -219,6 +228,7 @@ export const rolePermissionMatrix = [
     roleId: 'admin-l4',
     roleName: 'Админ 4 lvl',
     permissions: {
+      adminPanel: true,
       overview: true,
       clients: true,
       promocodes: true,
@@ -232,6 +242,7 @@ export const rolePermissionMatrix = [
     roleId: 'op',
     roleName: 'OP',
     permissions: {
+      adminPanel: true,
       overview: true,
       clients: true,
       promocodes: true,
@@ -245,6 +256,7 @@ export const rolePermissionMatrix = [
     roleId: 'owner',
     roleName: 'Owner',
     permissions: {
+      adminPanel: true,
       overview: true,
       clients: true,
       promocodes: true,
@@ -257,6 +269,7 @@ export const rolePermissionMatrix = [
 ];
 
 export const roleMatrixLegend = {
+  adminPanel: 'Админ-панель',
   overview: 'Обзор',
   clients: 'Клиенты',
   promocodes: 'Промокоды',
