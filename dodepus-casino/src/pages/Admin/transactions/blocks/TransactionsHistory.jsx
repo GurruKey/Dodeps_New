@@ -7,9 +7,67 @@ import TransactionsTable from '../components/TransactionsTable.jsx';
 import { METHOD_LABELS, STATUS_VARIANTS, TYPE_VARIANTS } from '../constants.js';
 import { formatMethod, normalizeMethodValue } from '../utils.js';
 import { useAdminTransactions } from '../hooks/useAdminTransactions.js';
+import { useAuth } from '../../../../app/AuthContext.jsx';
+import { appendAdminLog } from '../../../../../local-sim/admin/logs/index.js';
+
+const TRANSACTIONS_VIEW_CONTEXT = 'transactions-view';
+
+const getAdminDisplayName = (user) => {
+  const fullName = [user?.firstName, user?.lastName]
+    .filter((part) => typeof part === 'string' && part.trim())
+    .join(' ')
+    .trim();
+
+  if (fullName) {
+    return fullName;
+  }
+
+  if (typeof user?.nickname === 'string' && user.nickname.trim()) {
+    return user.nickname.trim();
+  }
+
+  if (typeof user?.email === 'string' && user.email.trim()) {
+    return user.email.trim();
+  }
+
+  return 'Неизвестный админ';
+};
+
+const getAdminRole = (user) => {
+  if (typeof user?.role === 'string' && user.role.trim()) {
+    return user.role.trim();
+  }
+
+  if (Array.isArray(user?.roles) && user.roles.length) {
+    const candidate = user.roles.find((role) => typeof role === 'string' && role.trim());
+    if (candidate) {
+      return candidate.trim();
+    }
+  }
+
+  return 'admin';
+};
+
+const getAdminId = (user) => {
+  if (typeof user?.id === 'string' && user.id.trim()) {
+    return user.id.trim();
+  }
+
+  return 'UNKNOWN';
+};
+
+const buildViewLogDetails = (user) => ({
+  section: 'transactions',
+  action: 'Запросил просмотр истории транзакций',
+  adminId: getAdminId(user),
+  adminName: getAdminDisplayName(user),
+  role: getAdminRole(user),
+  context: TRANSACTIONS_VIEW_CONTEXT,
+});
 
 export default function TransactionsHistory() {
-  const { transactions, loading, error, reload } = useAdminTransactions();
+  const { user } = useAuth();
+  const { transactions, loading, error, reload, activate, isActivated } = useAdminTransactions();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -120,6 +178,19 @@ export default function TransactionsHistory() {
     setMethodFilter('all');
   }, []);
 
+  const handleViewClick = useCallback(() => {
+    try {
+      appendAdminLog(buildViewLogDetails(user));
+    } catch (err) {
+      console.warn('Не удалось записать лог просмотра транзакций', err);
+    }
+
+    const maybePromise = activate();
+    if (maybePromise && typeof maybePromise.catch === 'function') {
+      maybePromise.catch(() => {});
+    }
+  }, [activate, user]);
+
   return (
     <Card>
       <Card.Body>
@@ -129,47 +200,78 @@ export default function TransactionsHistory() {
               История транзакций
             </Card.Title>
             <Card.Text className="text-muted mb-0">
-              Просматривайте операции в реальном времени. Данные синхронизируются автоматически при изменениях.
+              Загрузите и обновляйте список операций аккаунтов вручную при необходимости.
             </Card.Text>
           </div>
-          <div className="d-flex align-items-center gap-2">
-            {loading && transactions.length > 0 ? <Spinner animation="border" role="status" size="sm" /> : null}
-            <Button variant="outline-primary" onClick={handleManualReload} disabled={loading}>
-              Обновить
-            </Button>
-          </div>
+          {isActivated ? (
+            <div className="d-flex align-items-center gap-2">
+              {loading && transactions.length > 0 ? (
+                <Spinner animation="border" role="status" size="sm" />
+              ) : null}
+              <Button variant="outline-primary" onClick={handleManualReload} disabled={loading}>
+                Обновить
+              </Button>
+            </div>
+          ) : (
+            <div className="d-flex align-items-center gap-2">
+              <Button variant="primary" onClick={handleViewClick} disabled={loading}>
+                {loading ? (
+                  <span className="d-inline-flex align-items-center gap-2">
+                    <Spinner animation="border" role="status" size="sm" />
+                    Загрузка…
+                  </span>
+                ) : (
+                  'Просмотреть транзакции'
+                )}
+              </Button>
+            </div>
+          )}
         </div>
 
-        {error ? (
-          <Alert variant="danger" className="mb-3">
-            Не удалось обновить список транзакций: {error.message}
+        {!isActivated ? (
+          <Alert variant="info" className="mb-4">
+            История транзакций будет загружена после нажатия кнопки «Просмотреть транзакции».
           </Alert>
         ) : null}
 
-        <div className="d-flex flex-column gap-3 mb-4">
-          <TransactionsSummary totals={totalsByCurrency} />
-          <TransactionsFilters
-            search={search}
-            onSearchChange={setSearch}
-            typeFilter={typeFilter}
-            onTypeChange={setTypeFilter}
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            methodFilter={methodFilter}
-            onMethodChange={setMethodFilter}
-            methodsOptions={methodsOptions}
-            filtersApplied={filtersApplied}
-            onReset={handleResetFilters}
-            totalCount={transactions.length}
-            filteredCount={filteredTransactions.length}
-          />
-        </div>
+        {isActivated ? (
+          <>
+            {error ? (
+              <Alert variant="danger" className="mb-3">
+                Не удалось обновить список транзакций: {error.message}
+              </Alert>
+            ) : null}
 
-        <TransactionsTable
-          transactions={transactions}
-          filteredTransactions={filteredTransactions}
-          loading={loading}
-        />
+            <div className="d-flex flex-column gap-3 mb-4">
+              <TransactionsSummary totals={totalsByCurrency} />
+              <TransactionsFilters
+                search={search}
+                onSearchChange={setSearch}
+                typeFilter={typeFilter}
+                onTypeChange={setTypeFilter}
+                statusFilter={statusFilter}
+                onStatusChange={setStatusFilter}
+                methodFilter={methodFilter}
+                onMethodChange={setMethodFilter}
+                methodsOptions={methodsOptions}
+                filtersApplied={filtersApplied}
+                onReset={handleResetFilters}
+                totalCount={transactions.length}
+                filteredCount={filteredTransactions.length}
+              />
+            </div>
+
+            <TransactionsTable
+              transactions={transactions}
+              filteredTransactions={filteredTransactions}
+              loading={loading}
+            />
+          </>
+        ) : (
+          <div className="py-5 text-center text-muted">
+            Нажмите «Просмотреть транзакции», чтобы загрузить текущую историю операций и включить обновления.
+          </div>
+        )}
       </Card.Body>
     </Card>
   );
