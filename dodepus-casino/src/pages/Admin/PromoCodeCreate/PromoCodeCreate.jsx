@@ -18,6 +18,7 @@ const STATUS_OPTIONS = [
   { value: 'scheduled', label: 'Запланирован' },
   { value: 'paused', label: 'Пауза' },
   { value: 'expired', label: 'Истёк' },
+  { value: 'archived', label: 'Архив' },
 ];
 
 const BALANCE_OPTIONS = [
@@ -54,6 +55,8 @@ const emptyForm = {
   notes: '',
   startsAt: '',
   endsAt: '',
+  repeatLimit: '',
+  repeatDelayHours: '',
 };
 
 const formatNumberInput = (value) => {
@@ -241,6 +244,7 @@ export default function PromoCodeCreate() {
     if (!targetType) return;
 
     const seedSchedule = targetType?.seed?.schedule ?? targetType?.seed?.params?.schedule ?? {};
+    const repeatSeed = targetType?.seed?.params?.repeat ?? targetType?.seed?.repeat ?? {};
 
     setFormValues((prev) => {
       if (prev.typeId === typeId) {
@@ -268,6 +272,14 @@ export default function PromoCodeCreate() {
         endsAt:
           prev.endsAt ||
           formatDateInputValue(targetType?.seed?.endsAt ?? seedSchedule.endsAt ?? null),
+        repeatLimit:
+          prev.repeatLimit !== '' && prev.repeatLimit !== null
+            ? prev.repeatLimit
+            : formatNumberInput(repeatSeed?.limit ?? ''),
+        repeatDelayHours:
+          prev.repeatDelayHours !== '' && prev.repeatDelayHours !== null
+            ? prev.repeatDelayHours
+            : formatNumberInput(repeatSeed?.delayHours ?? ''),
       };
     });
 
@@ -361,6 +373,34 @@ export default function PromoCodeCreate() {
         params.schedule = schedule;
       }
 
+      const repeatLimitValue =
+        formValues.repeatLimit === '' || formValues.repeatLimit == null
+          ? null
+          : Number(formValues.repeatLimit);
+      const repeatDelayValue =
+        formValues.repeatDelayHours === '' || formValues.repeatDelayHours == null
+          ? null
+          : Number(formValues.repeatDelayHours);
+
+      if (
+        (repeatLimitValue != null && Number.isFinite(repeatLimitValue)) ||
+        (repeatDelayValue != null && Number.isFinite(repeatDelayValue))
+      ) {
+        const repeat = {};
+        if (repeatLimitValue != null && Number.isFinite(repeatLimitValue)) {
+          repeat.limit = Math.max(0, Math.floor(repeatLimitValue));
+        }
+        if (repeatDelayValue != null && Number.isFinite(repeatDelayValue)) {
+          const safeDelay = Math.max(0, repeatDelayValue);
+          repeat.delayHours = Number.isInteger(safeDelay)
+            ? safeDelay
+            : Number(safeDelay.toFixed(2));
+        }
+        if (Object.keys(repeat).length > 0) {
+          params.repeat = repeat;
+        }
+      }
+
       const payload = {
         typeId: formValues.typeId,
         code: formValues.code,
@@ -393,6 +433,10 @@ export default function PromoCodeCreate() {
           notes: selectedType?.seed?.notes ?? '',
           startsAt: formatDateInputValue(selectedType?.seed?.startsAt),
           endsAt: formatDateInputValue(selectedType?.seed?.endsAt),
+          repeatLimit: formatNumberInput(selectedType?.seed?.params?.repeat?.limit ?? ''),
+          repeatDelayHours: formatNumberInput(
+            selectedType?.seed?.params?.repeat?.delayHours ?? '',
+          ),
         }));
         setRewardForm(emptyRewardForm);
         setRewardTouched(false);
@@ -698,6 +742,43 @@ export default function PromoCodeCreate() {
                         onChange={handleFieldChange('endsAt')}
                         placeholder="Не ограничено"
                       />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </section>
+
+              <section>
+                <h5 className="mb-3">Повторные активации</h5>
+                <Row className="g-3">
+                  <Col md={6}>
+                    <Form.Group controlId="promo-repeat-limit">
+                      <Form.Label>Количество повторов на игрока</Form.Label>
+                      <Form.Control
+                        type="number"
+                        min="0"
+                        value={formValues.repeatLimit}
+                        onChange={handleFieldChange('repeatLimit')}
+                        placeholder="Без ограничений"
+                      />
+                      <Form.Text className="text-muted">
+                        Оставьте пустым, чтобы разрешить бесконечное количество повторных активаций.
+                      </Form.Text>
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group controlId="promo-repeat-delay">
+                      <Form.Label>Задержка между активациями (ч)</Form.Label>
+                      <Form.Control
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={formValues.repeatDelayHours}
+                        onChange={handleFieldChange('repeatDelayHours')}
+                        placeholder="Например: 24"
+                      />
+                      <Form.Text className="text-muted">
+                        Задайте минимальное время между активациями. 24 часа — раз в день.
+                      </Form.Text>
                     </Form.Group>
                   </Col>
                 </Row>

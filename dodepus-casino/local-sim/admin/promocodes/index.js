@@ -99,6 +99,91 @@ const normalizeSchedule = (schedule) => {
   return { startsAt, endsAt };
 };
 
+const normalizeActivations = (activations, code) => {
+  if (!Array.isArray(activations)) return [];
+
+  return activations
+    .map((item, index) => {
+      const activatedAt = toIsoDateTimeOrNull(item?.activatedAt ?? item?.createdAt ?? null);
+      if (!activatedAt) return null;
+
+      const clientId =
+        typeof item?.clientId === 'string' && item.clientId.trim()
+          ? item.clientId.trim()
+          : typeof item?.playerId === 'string' && item.playerId.trim()
+          ? item.playerId.trim()
+          : null;
+
+      const activationId =
+        typeof item?.id === 'string' && item.id.trim()
+          ? item.id.trim()
+          : `${code ?? 'promo'}-activation-${index + 1}`;
+
+      return {
+        id: activationId,
+        clientId,
+        activatedAt,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => Date.parse(b.activatedAt) - Date.parse(a.activatedAt));
+};
+
+const createSeedActivations = (code, used, limit) => {
+  const count = Math.max(0, Math.min(toNullablePositiveInt(used, 0), limit ?? Infinity));
+  const now = Date.now();
+  const maxOffset = 90 * 24 * 60 * 60 * 1000; // 90 days
+
+  return Array.from({ length: count }).map((_, index) => {
+    const offset = Math.floor(Math.random() * maxOffset);
+    const activatedAt = new Date(now - offset).toISOString();
+    const clientIndex = Math.floor(Math.random() * 9000) + 1000;
+    return {
+      id: `${code ?? 'promo'}-activation-${index + 1}`,
+      clientId: `client-${clientIndex}`,
+      activatedAt,
+    };
+  });
+};
+
+const normalizeRepeatParams = (repeat) => {
+  if (!repeat || typeof repeat !== 'object') return null;
+
+  const limit = toNullablePositiveInt(
+    repeat.limit ?? repeat.max ?? repeat.times ?? repeat.repeatLimit ?? repeat.allowed,
+    null,
+  );
+
+  const delayHoursRaw =
+    repeat.delayHours ??
+    repeat.delay ??
+    repeat.cooldownHours ??
+    (typeof repeat.cooldownDays === 'number' ? repeat.cooldownDays * 24 : null) ??
+    null;
+
+  let delayHours = toNullablePositiveInt(delayHoursRaw, null);
+
+  if (delayHours == null && typeof repeat.delayMinutes === 'number') {
+    delayHours = Math.max(0, Math.round((repeat.delayMinutes / 60) * 100) / 100);
+  }
+
+  if (delayHours == null && typeof repeat.delaySeconds === 'number') {
+    delayHours = Math.max(0, Math.round((repeat.delaySeconds / 3600) * 100) / 100);
+  }
+
+  if (limit == null && delayHours == null) return null;
+
+  const normalized = {};
+  if (limit != null) {
+    normalized.limit = limit;
+  }
+  if (delayHours != null) {
+    normalized.delayHours = delayHours;
+  }
+
+  return normalized;
+};
+
 const seedRecords = () =>
   promoTypeDefinitions.map((type, index) => {
     const seed = type?.seed ?? {};
@@ -107,14 +192,41 @@ const seedRecords = () =>
     const status = normalizeStatus(seed.status ?? 'active');
 
     const limit = coerceLimit(seed.limit);
-    const used = clampUsage(seed.used, limit);
+    const code = normalizeCode(seed.code ?? type.shortName ?? `PROMO-${index + 1}`);
+    const baseUsed = clampUsage(seed.used, limit);
 
     const seedSchedule = normalizeSchedule(seed.schedule ?? seed.params?.schedule ?? {});
 
+    const params = seed.params ? { ...seed.params } : {};
+    const repeatFromSeed = normalizeRepeatParams(seed.repeat ?? seed.params?.repeat ?? null);
+    if (repeatFromSeed) {
+      params.repeat = repeatFromSeed;
+    } else if (params.repeat) {
+      const normalizedRepeat = normalizeRepeatParams(params.repeat);
+      if (normalizedRepeat) {
+        params.repeat = normalizedRepeat;
+      } else {
+        delete params.repeat;
+      }
+    }
+
+    const seedActivations = normalizeActivations(
+      seed.activations ?? params.activations ?? [],
+      code,
+    );
+    const generatedActivations =
+      seedActivations.length > 0 ? seedActivations : createSeedActivations(code, baseUsed, limit);
+    const activations = normalizeActivations(generatedActivations, code);
+    const used = activations.length > 0 ? clampUsage(activations.length, limit) : baseUsed;
+
+    if (params.activations) {
+      delete params.activations;
+    }
+
     return {
-      id: seed.id ?? `seed-${type.id}-${index}`,
+      id: code,
       typeId: type.id,
-      code: normalizeCode(seed.code ?? type.shortName ?? `PROMO-${index + 1}`),
+      code,
       title:
         typeof seed.title === 'string' && seed.title.trim()
           ? seed.title.trim()
@@ -133,11 +245,12 @@ const seedRecords = () =>
       wager: toNullableNumber(seed.wager, DEFAULT_PROMOCODE_WAGER),
       cashoutCap: toNullableNumber(seed.cashoutCap, DEFAULT_PROMOCODE_CASHOUT_CAP),
       notes: typeof seed.notes === 'string' ? seed.notes.trim() : '',
-      params: seed.params ? { ...seed.params } : {},
+      params,
       startsAt: seed.startsAt ? toIsoDateTimeOrNull(seed.startsAt) : seedSchedule.startsAt,
       endsAt: seed.endsAt ? toIsoDateTimeOrNull(seed.endsAt) : seedSchedule.endsAt,
       createdAt,
       updatedAt,
+      activations,
     };
   });
 
@@ -161,7 +274,8 @@ const composePromocode = (record) => {
   const type = getPromoTypeById(record.typeId);
   const status = normalizeStatus(record.status);
   const limit = coerceLimit(record.limit);
-  const used = clampUsage(record.used, limit);
+  const activations = normalizeActivations(record.activations ?? record.params?.activations ?? [], record.code);
+  const used = Math.max(activations.length, clampUsage(record.used, limit));
 
   const wager = toNullableNumber(
     record.wager,
@@ -174,8 +288,23 @@ const composePromocode = (record) => {
 
   const schedule = normalizeSchedule(record.schedule ?? record.params?.schedule ?? {});
 
+  const repeatParams = normalizeRepeatParams(record.params?.repeat ?? record.repeat ?? null);
+  const params = record.params ? { ...record.params } : {};
+  if (params.repeat) {
+    if (repeatParams) {
+      params.repeat = repeatParams;
+    } else {
+      delete params.repeat;
+    }
+  } else if (repeatParams) {
+    params.repeat = repeatParams;
+  }
+  if (params.activations) {
+    delete params.activations;
+  }
+
   return {
-    id: record.id,
+    id: record.code ?? record.id,
     code: record.code,
     title: record.title,
     reward: record.reward,
@@ -186,9 +315,12 @@ const composePromocode = (record) => {
     wager,
     cashoutCap,
     notes: record.notes ?? '',
-    params: record.params ?? {},
+    params,
     startsAt: record.startsAt ?? schedule.startsAt ?? null,
     endsAt: record.endsAt ?? schedule.endsAt ?? null,
+    repeatLimit: repeatParams?.limit ?? null,
+    repeatDelayHours: repeatParams?.delayHours ?? null,
+    activations,
     type: type
       ? {
           id: type.id,
@@ -290,7 +422,7 @@ export const listAdminPromocodes = ({ signal, delay = 200 } = {}) => {
   });
 };
 
-const ARCHIVED_PROMOCODE_STATUSES = new Set(['expired', 'paused']);
+const ARCHIVED_PROMOCODE_STATUSES = new Set(['expired', 'paused', 'archived']);
 
 export const listAdminArchivedPromocodes = async ({ signal, delay = 200 } = {}) => {
   const data = await listAdminPromocodes({ signal, delay });
@@ -328,6 +460,17 @@ export const createAdminPromocode = (input) => {
   const cashoutCap = toNullableNumber(input?.cashoutCap, DEFAULT_PROMOCODE_CASHOUT_CAP);
   const notes = typeof input?.notes === 'string' ? input.notes.trim() : '';
   const params = input?.params && typeof input.params === 'object' ? { ...input.params } : {};
+  const repeatParams = normalizeRepeatParams(input?.repeat ?? input?.params?.repeat ?? null);
+  if (repeatParams) {
+    params.repeat = repeatParams;
+  } else if (params.repeat) {
+    const normalizedRepeat = normalizeRepeatParams(params.repeat);
+    if (normalizedRepeat) {
+      params.repeat = normalizedRepeat;
+    } else {
+      delete params.repeat;
+    }
+  }
 
   const scheduleFromInput = normalizeSchedule(input?.schedule ?? params.schedule ?? {});
   const startsAt = toIsoDateTimeOrNull(input?.startsAt) ?? scheduleFromInput.startsAt ?? null;
@@ -340,7 +483,7 @@ export const createAdminPromocode = (input) => {
   const now = nowIso();
 
   const record = {
-    id: `promo-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`,
+    id: code,
     typeId: type.id,
     code,
     title,
@@ -356,6 +499,7 @@ export const createAdminPromocode = (input) => {
     endsAt,
     createdAt: now,
     updatedAt: now,
+    activations: [],
   };
 
   const next = [...existing, record];
@@ -364,6 +508,71 @@ export const createAdminPromocode = (input) => {
   emitPromocodesChanged({ action: 'create', promocode: composed });
   return composed;
 };
+
+const updatePromocodeRecord = (idOrCode, mutator) => {
+  const records = ensureSeededRecords();
+  const index = records.findIndex((record) => record.code === idOrCode || record.id === idOrCode);
+  if (index === -1) {
+    throw new Error('Промокод не найден');
+  }
+
+  const current = records[index];
+  const draft = { ...current };
+  const result = typeof mutator === 'function' ? mutator(draft) : draft;
+  const nextRecord = result && typeof result === 'object' ? result : draft;
+
+  records[index] = nextRecord;
+  storageAdapter.writeToStorage(records);
+  const composed = composePromocode(nextRecord);
+  emitPromocodesChanged({ action: 'update', promocode: composed });
+  return composed;
+};
+
+export const getAdminPromocodeById = (idOrCode) => {
+  const records = ensureSeededRecords();
+  const record = records.find((item) => item.code === idOrCode || item.id === idOrCode);
+  if (!record) return null;
+  return composePromocode(record);
+};
+
+export const pauseAdminPromocode = (idOrCode) =>
+  updatePromocodeRecord(idOrCode, (draft) => {
+    draft.status = 'paused';
+    draft.updatedAt = nowIso();
+    return draft;
+  });
+
+export const resumeAdminPromocode = (idOrCode) =>
+  updatePromocodeRecord(idOrCode, (draft) => {
+    draft.status = 'active';
+    draft.updatedAt = nowIso();
+    return draft;
+  });
+
+export const archiveAdminPromocode = (idOrCode) =>
+  updatePromocodeRecord(idOrCode, (draft) => {
+    draft.status = 'archived';
+    draft.updatedAt = nowIso();
+    return draft;
+  });
+
+export const extendAdminPromocodeEndsAt = (idOrCode, { hours = 24 } = {}) =>
+  updatePromocodeRecord(idOrCode, (draft) => {
+    const now = new Date();
+    const base = draft.endsAt ? new Date(draft.endsAt) : now;
+    if (Number.isNaN(base.getTime())) {
+      base.setTime(now.getTime());
+    }
+    base.setTime(base.getTime() + Math.max(1, Number(hours) || 0) * 60 * 60 * 1000);
+    const nextEndsAt = base.toISOString();
+    draft.endsAt = nextEndsAt;
+    draft.params = draft.params && typeof draft.params === 'object' ? { ...draft.params } : {};
+    if (draft.params.schedule && typeof draft.params.schedule === 'object') {
+      draft.params.schedule = { ...draft.params.schedule, endsAt: nextEndsAt };
+    }
+    draft.updatedAt = nowIso();
+    return draft;
+  });
 
 export const __internals = Object.freeze({
   normalizeCode,

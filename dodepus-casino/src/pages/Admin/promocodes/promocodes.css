@@ -1,0 +1,79 @@
+.promo-codes-list .card {
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.promo-codes-list .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.promo-codes-list .card.active {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.activation-chart {
+  width: 100%;
+}
+
+.activation-chart__grid {
+  min-height: 220px;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  padding: 1.5rem 1rem;
+  background: var(--bs-body-bg);
+}
+
+.activation-chart__column {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 1.5rem;
+}
+
+.activation-chart__bar-track {
+  width: 100%;
+  height: 160px;
+  background: var(--bs-secondary-bg);
+  border-radius: var(--bs-border-radius);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.activation-chart__bar-fill {
+  width: 100%;
+  background: var(--bs-primary);
+  border-radius: var(--bs-border-radius);
+  transition: height 0.3s ease;
+}
+
+.activation-chart__bar-value {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.activation-chart__bar-label {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+.promo-details-panel .table {
+  font-size: 0.9rem;
+}
+
+.promo-details-panel .table thead th {
+  color: var(--bs-secondary-color);
+  font-weight: 500;
+}
+
+.promo-details-panel .table tbody tr:last-child td {
+  border-bottom: none;
+}
