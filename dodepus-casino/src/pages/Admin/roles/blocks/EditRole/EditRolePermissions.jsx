@@ -113,25 +113,10 @@ export default function EditRolePermissions() {
     return groups;
   }, [matrix, roleMetadata]);
 
-  useEffect(() => {
-    const roles = categorizedRoles[activeCategory] ?? [];
-    setExpandedRoles((prev) => {
-      if (!roles.length) {
-        return [];
-      }
-
-      const hasActive = prev.some((roleId) => roles.some((role) => role.roleId === roleId));
-      if (hasActive) {
-        return prev;
-      }
-
-      return [roles[0].roleId];
-    });
-  }, [activeCategory, categorizedRoles]);
-
   const handleCategoryChange = (categoryKey) => {
     if (categoryKey === activeCategory) return;
     setActiveCategory(categoryKey);
+    setExpandedRoles([]);
   };
 
   const handleAccordionSelect = (eventKey) => {
