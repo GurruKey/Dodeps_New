@@ -6,7 +6,7 @@ import {
   DEFAULT_COUNTRY,
   formatPhonePlaceholder,
 } from './country-codes';
-import { signUpPhonePassword } from './api';
+import { useAuth } from '../../app/AuthContext.jsx';
 
 // утилиты
 const onlyDigits = (s) => (s || '').replace(/\D/g, '');
@@ -17,6 +17,7 @@ const toE164 = (dial, local) => {
 };
 
 export default function PhoneRegisterForm({ onSuccess, onError }) {
+  const { signUp } = useAuth();
   const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [phoneLocal, setPhoneLocal] = useState('');
   const [password, setPassword] = useState('');
@@ -65,7 +66,7 @@ export default function PhoneRegisterForm({ onSuccess, onError }) {
 
     setSubmitting(true);
     try {
-      const { needsSmsVerify } = await signUpPhonePassword({
+      const { needsSmsVerify } = await signUp({
         phone: phoneE164,
         password: password.trim(),
         // TODO: promo можно сохранить позже в профиле/БД

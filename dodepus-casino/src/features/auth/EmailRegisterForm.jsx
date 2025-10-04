@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Button, Alert } from 'react-bootstrap';
 import { Eye, EyeOff } from 'lucide-react';
-import { signUpEmailPassword } from './api';
+import { useAuth } from '../../app/AuthContext.jsx';
 
 export default function EmailRegisterForm({ onSuccess, onError }) {
+  const { signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -50,7 +51,7 @@ export default function EmailRegisterForm({ onSuccess, onError }) {
 
     setSubmitting(true);
     try {
-      await signUpEmailPassword({
+      await signUp({
         email: emailForValidation,
         password: password.trim(),
       });
