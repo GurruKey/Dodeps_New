@@ -1,5 +1,6 @@
 import { loadExtras, saveExtras, pickExtras } from './profileExtras';
 import { notifyAdminTransactionsChanged } from '../admin/transactions';
+import { notifyAdminVerificationRequestsChanged } from '../admin/verification';
 
 const toNumber = (value, fallback = 0) => {
   const numeric = Number(value);
@@ -14,7 +15,7 @@ const getRandomUuid = () => {
     if (crypto && typeof crypto.randomUUID === 'function') {
       try {
         return crypto.randomUUID();
-      } catch (error) {
+      } catch {
         // ignore errors and fall back to manual generation below
       }
     }
@@ -131,6 +132,83 @@ export const createProfileActions = (uid) => {
       };
     });
 
+  const submitVerificationRequest = (statusMap = {}) => {
+    let createdRequest = null;
+
+    const nextExtras = persistExtras(uid, (current) => {
+      const fields = {
+        email: Boolean(statusMap.email),
+        phone: Boolean(statusMap.phone),
+        address: Boolean(statusMap.address),
+        doc: Boolean(statusMap.doc),
+      };
+
+      const totalFields = Object.keys(fields).length || 4;
+      const completedCount = Object.values(fields).filter(Boolean).length;
+      const nowIso = new Date().toISOString();
+
+      const baseRequest = {
+        id:
+          statusMap.id ||
+          getRandomUuid() ||
+          `vrf_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`,
+        userId: uid,
+        status: 'pending',
+        submittedAt: nowIso,
+        updatedAt: nowIso,
+        completedFields: fields,
+        completedCount,
+        totalFields,
+      };
+
+      const requests = Array.isArray(current.verificationRequests)
+        ? current.verificationRequests.slice()
+        : [];
+
+      const openIndex = requests.findIndex(
+        (request) => request && request.status !== 'approved' && request.status !== 'rejected',
+      );
+
+      if (openIndex >= 0) {
+        const existing = requests[openIndex];
+        const updatedRequest = {
+          ...existing,
+          ...baseRequest,
+          id: existing.id || baseRequest.id,
+          submittedAt: nowIso,
+        };
+
+        createdRequest = updatedRequest;
+        const remaining = requests.filter((_, index) => index !== openIndex);
+        return {
+          ...current,
+          verificationRequests: [updatedRequest, ...remaining],
+        };
+      }
+
+      createdRequest = baseRequest;
+      return {
+        ...current,
+        verificationRequests: [baseRequest, ...requests],
+      };
+    });
+
+    if (createdRequest) {
+      try {
+        notifyAdminVerificationRequestsChanged({
+          type: 'created',
+          userId: uid,
+          requestId: createdRequest.id,
+          status: createdRequest.status,
+        });
+      } catch (error) {
+        console.warn('Failed to broadcast admin verification request change', error);
+      }
+    }
+
+    return nextExtras;
+  };
+
   const setEmailVerified = (flag = true) =>
     patchExtras({
       emailVerified: Boolean(flag),
@@ -147,6 +225,7 @@ export const createProfileActions = (uid) => {
     updateProfile,
     addTransaction,
     addVerificationUpload,
+    submitVerificationRequest,
     setEmailVerified,
   };
 };

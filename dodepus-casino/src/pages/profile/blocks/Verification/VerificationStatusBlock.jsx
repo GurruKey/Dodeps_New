@@ -1,11 +1,15 @@
-import { Row, Col, Card, Button } from 'react-bootstrap';
+import { useState } from 'react';
+import { Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import { Circle, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../app/AuthContext.jsx';
 
 export default function VerificationStatusBlock() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, submitVerificationRequest } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   // Локальные правила готовности (без БД)
   const emailDone = Boolean(user?.emailVerified);
@@ -19,6 +23,40 @@ export default function VerificationStatusBlock() {
     { key: 'address', label: 'Адрес',    done: addressDone },
     { key: 'doc',     label: 'Документ', done: docDone },
   ];
+
+  const hasAnyCompleted = items.some((item) => item.done);
+
+  const handleSubmit = async () => {
+    setSubmitError(null);
+    setSubmitSuccess(false);
+
+    if (!submitVerificationRequest) {
+      setSubmitError('Отправка доступна только авторизованным пользователям.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await Promise.resolve(
+        submitVerificationRequest({
+          email: emailDone,
+          phone: phoneDone,
+          address: addressDone,
+          doc: docDone,
+        }),
+      );
+      setSubmitSuccess(true);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Не удалось отправить запрос. Попробуйте ещё раз.';
+      setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Card>
@@ -53,6 +91,34 @@ export default function VerificationStatusBlock() {
             </Col>
           ))}
         </Row>
+
+        <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between gap-3 mt-4">
+          <div className="text-secondary small">
+            {hasAnyCompleted
+              ? 'После заполнения полей отправьте заявку на проверку.'
+              : 'Заполните хотя бы один пункт, чтобы отправить заявку.'}
+          </div>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={!hasAnyCompleted || isSubmitting}
+          >
+            {isSubmitting ? 'Отправка…' : 'Подтвердить'}
+          </Button>
+        </div>
+
+        {submitSuccess && (
+          <Alert variant="success" className="mt-3 mb-0">
+            Запрос отправлен в админ-панель на проверку.
+          </Alert>
+        )}
+
+        {submitError && (
+          <Alert variant="danger" className="mt-3 mb-0">
+            {submitError}
+          </Alert>
+        )}
       </Card.Body>
     </Card>
   );
