@@ -12,7 +12,7 @@ const COUNTRY_TO_CURRENCY = {
   JP: 'JPY',
   KR: 'KRW',
   PK: 'PKR',
-  RU: 'RUB',
+  RU: 'USD',
   SE: 'SEK',
   SG: 'SGD',
   UK: 'GBP',

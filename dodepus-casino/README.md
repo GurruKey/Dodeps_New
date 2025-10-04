@@ -174,7 +174,7 @@ gender: 'male' | 'female' | 'unspecified'
 dob: 'YYYY-MM-DD' | null
 socialStatus: 'employed' | 'retired' | 'student' | 'unemployed'
 country: string, city: string, address: string
-balance: number, currency: 'USD' | 'UAH' | ...
+balance: number, currency: 'USD'
 transactions: Array<{
   id: string,
   amount: number,
