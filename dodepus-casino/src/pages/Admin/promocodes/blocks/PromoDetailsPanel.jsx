@@ -132,49 +132,51 @@ export default function PromoDetailsPanel({
             <ActivationChart key={promo.id} activations={activationList} />
           </section>
 
-          <section>
-            <div className="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
-              <div>
-                <h5 className="mb-1">Управление промо</h5>
-                <p className="text-muted mb-0">Контролируйте статус и продлевайте срок действия.</p>
+          {!isArchived && (
+            <section>
+              <div className="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
+                <div>
+                  <h5 className="mb-1">Управление промо</h5>
+                  <p className="text-muted mb-0">Контролируйте статус и продлевайте срок действия.</p>
+                </div>
+                <ButtonGroup>
+                  <Button
+                    variant="outline-warning"
+                    disabled={!canPause || isActionPending}
+                    onClick={() => onPause?.(promo.id)}
+                  >
+                    Пауза
+                  </Button>
+                  <Button
+                    variant="outline-success"
+                    disabled={!canResume || isActionPending}
+                    onClick={() => onResume?.(promo.id)}
+                  >
+                    Возобновить
+                  </Button>
+                  <Button
+                    variant="outline-primary"
+                    disabled={isArchived || isActionPending}
+                    onClick={() => onExtend?.(promo.id)}
+                  >
+                    Добавить время
+                  </Button>
+                  <Button
+                    variant="outline-danger"
+                    disabled={isArchived || isActionPending}
+                    onClick={() => onArchive?.(promo.id)}
+                  >
+                    Архив
+                  </Button>
+                </ButtonGroup>
               </div>
-              <ButtonGroup>
-                <Button
-                  variant="outline-warning"
-                  disabled={!canPause || isActionPending}
-                  onClick={() => onPause?.(promo.id)}
-                >
-                  Пауза
-                </Button>
-                <Button
-                  variant="outline-success"
-                  disabled={!canResume || isActionPending}
-                  onClick={() => onResume?.(promo.id)}
-                >
-                  Возобновить
-                </Button>
-                <Button
-                  variant="outline-primary"
-                  disabled={isArchived || isActionPending}
-                  onClick={() => onExtend?.(promo.id)}
-                >
-                  Добавить время
-                </Button>
-                <Button
-                  variant="outline-danger"
-                  disabled={isArchived || isActionPending}
-                  onClick={() => onArchive?.(promo.id)}
-                >
-                  Архив
-                </Button>
-              </ButtonGroup>
-            </div>
-            {actionError && (
-              <Alert variant="danger" className="mt-3 mb-0">
-                {actionError.message}
-              </Alert>
-            )}
-          </section>
+              {actionError && (
+                <Alert variant="danger" className="mt-3 mb-0">
+                  {actionError.message}
+                </Alert>
+              )}
+            </section>
+          )}
 
           <section>
             <h5 className="mb-1">Повторные активации</h5>
