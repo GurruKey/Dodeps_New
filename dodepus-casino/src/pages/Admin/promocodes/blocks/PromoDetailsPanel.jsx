@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Alert, Badge, Button, ButtonGroup, Modal, Stack, Table } from 'react-bootstrap';
 import ActivationChart from './ActivationChart.jsx';
 
@@ -81,12 +81,6 @@ export default function PromoDetailsPanel({
   isActionPending = false,
   actionError = null,
 }) {
-  const [chartRange, setChartRange] = useState('day');
-
-  useEffect(() => {
-    setChartRange('day');
-  }, [promo?.id]);
-
   const activationList = useMemo(() => promo?.activations ?? [], [promo]);
   const conditions = useMemo(() => (promo ? describeConditions(promo) : ''), [promo]);
   const repeatInfo = useMemo(
@@ -135,11 +129,7 @@ export default function PromoDetailsPanel({
           </section>
 
           <section>
-            <ActivationChart
-              activations={activationList}
-              range={chartRange}
-              onRangeChange={setChartRange}
-            />
+            <ActivationChart key={promo.id} activations={activationList} />
           </section>
 
           <section>
