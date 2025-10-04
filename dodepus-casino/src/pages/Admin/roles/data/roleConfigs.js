@@ -272,7 +272,7 @@ export const roleMatrixLegend = {
   adminPanel: 'Админ-панель',
   overview: 'Обзор',
   clients: 'Клиенты',
-  promocodes: 'Промокоды',
+  promocodes: 'Promo',
   roles: 'Выдать роль',
   transactions: 'Транзакции',
   verification: 'Верификация',

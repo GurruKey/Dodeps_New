@@ -290,6 +290,13 @@ export const listAdminPromocodes = ({ signal, delay = 200 } = {}) => {
   });
 };
 
+const ARCHIVED_PROMOCODE_STATUSES = new Set(['expired', 'paused']);
+
+export const listAdminArchivedPromocodes = async ({ signal, delay = 200 } = {}) => {
+  const data = await listAdminPromocodes({ signal, delay });
+  return data.filter((promocode) => ARCHIVED_PROMOCODE_STATUSES.has(promocode.status));
+};
+
 export const createAdminPromocode = (input) => {
   const type = getPromoTypeById(input?.typeId ?? input?.type);
   if (!type) {

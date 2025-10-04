@@ -407,11 +407,11 @@ export default function PromoCodeCreate() {
   );
 
   return (
-    <Stack gap={3} as="section" aria-label="Создание промокода">
+    <Stack gap={3} as="section" aria-label="Создание Promo">
       <Card>
         <Card.Body>
           <Card.Title as="h3" className="mb-2">
-            Создать промокод
+            Создать Promo
           </Card.Title>
           <Card.Text className="text-muted mb-0">
             Выберите тип промо, заполните поля и сохраните его в локальном симуляторе (local-sim).
@@ -730,7 +730,7 @@ export default function PromoCodeCreate() {
 
               <div className="d-flex justify-content-end">
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Сохраняем…' : 'Создать промокод'}
+                  {isSubmitting ? 'Сохраняем…' : 'Создать Promo'}
                 </Button>
               </div>
             </Stack>

@@ -120,7 +120,7 @@ export default function PromoCodesTable({ promocodes, isLoading }) {
             <tbody>
               <tr>
                 <td colSpan={8} className="text-center py-4 text-muted">
-                  Промокоды ещё не созданы. Добавьте первый через раздел «Создать промокод».
+                  Promo ещё не созданы. Добавьте первый через раздел «Создать Promo».
                 </td>
               </tr>
             </tbody>
