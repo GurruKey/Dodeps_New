@@ -255,18 +255,13 @@ const seedRecords = () =>
   });
 
 const ensureSeededRecords = () => {
+  const records = storageAdapter.readFromStorage();
+
   if (!memory.isSeeded) {
-    const existing = storageAdapter.readFromStorage();
-    if (existing.length === 0) {
-      const seeded = seedRecords();
-      storageAdapter.writeToStorage(seeded);
-      memory.isSeeded = true;
-      return seeded;
-    }
     memory.isSeeded = true;
-    return existing;
   }
-  return storageAdapter.readFromStorage();
+
+  return records;
 };
 
 const composePromocode = (record) => {
