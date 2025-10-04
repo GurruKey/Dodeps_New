@@ -11,6 +11,7 @@ export function useAdminTransactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [activated, setActivated] = useState(false);
   const isMountedRef = useRef(true);
   const activeRequestsRef = useRef(0);
 
@@ -65,22 +66,32 @@ export function useAdminTransactions() {
   );
 
   useEffect(() => {
+    if (!activated) {
+      return undefined;
+    }
+
     const controller = new AbortController();
     loadTransactions({ signal: controller.signal, showLoader: true }).catch(() => {});
 
     return () => {
       controller.abort();
     };
-  }, [loadTransactions]);
+  }, [activated, loadTransactions]);
 
   useEffect(() => {
+    if (!activated) {
+      return undefined;
+    }
+
     const unsubscribe = subscribeToAdminTransactions(() => {
       loadTransactions({ showLoader: false }).catch(() => {});
     });
 
     const target = typeof window !== 'undefined' ? window : null;
     if (!target?.addEventListener) {
-      return unsubscribe;
+      return () => {
+        unsubscribe();
+      };
     }
 
     const handleStorage = (event) => {
@@ -101,11 +112,25 @@ export function useAdminTransactions() {
       unsubscribe();
       target.removeEventListener('storage', handleStorage);
     };
-  }, [loadTransactions]);
+  }, [activated, loadTransactions]);
+
+  const activate = useCallback(() => {
+    if (activated) {
+      return loadTransactions({ showLoader: true });
+    }
+
+    setActivated(true);
+    return Promise.resolve();
+  }, [activated, loadTransactions]);
 
   const reload = useCallback(() => {
-    return loadTransactions({ showLoader: true });
-  }, [loadTransactions]);
+    if (!activated) {
+      setActivated(true);
+      return Promise.resolve();
+    }
 
-  return { transactions, loading, error, reload };
+    return loadTransactions({ showLoader: true });
+  }, [activated, loadTransactions]);
+
+  return { transactions, loading, error, reload, activate, isActivated: activated };
 }

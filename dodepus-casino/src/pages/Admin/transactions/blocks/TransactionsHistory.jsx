@@ -1,19 +1,87 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Card, Spinner } from 'react-bootstrap';
 
 import TransactionsFilters from '../components/TransactionsFilters.jsx';
 import TransactionsSummary from '../components/TransactionsSummary.jsx';
 import TransactionsTable from '../components/TransactionsTable.jsx';
 import { METHOD_LABELS, STATUS_VARIANTS, TYPE_VARIANTS } from '../constants.js';
-import { formatMethod, normalizeMethodValue } from '../utils.js';
+import { formatDateTime, formatMethod, normalizeMethodValue } from '../utils.js';
 import { useAdminTransactions } from '../hooks/useAdminTransactions.js';
+import { useAuth } from '../../../../app/AuthContext.jsx';
+import { appendAdminLog, listAdminLogs } from '../../../../../local-sim/admin/logs';
+
+const TRANSACTIONS_VIEW_CONTEXT = 'transactions-view';
+
+const getAdminDisplayName = (user) => {
+  const fullName = [user?.firstName, user?.lastName]
+    .filter((part) => typeof part === 'string' && part.trim())
+    .join(' ')
+    .trim();
+
+  if (fullName) {
+    return fullName;
+  }
+
+  if (typeof user?.nickname === 'string' && user.nickname.trim()) {
+    return user.nickname.trim();
+  }
+
+  if (typeof user?.email === 'string' && user.email.trim()) {
+    return user.email.trim();
+  }
+
+  return 'Неизвестный админ';
+};
+
+const getAdminRole = (user) => {
+  if (typeof user?.role === 'string' && user.role.trim()) {
+    return user.role.trim();
+  }
+
+  if (Array.isArray(user?.roles) && user.roles.length) {
+    const candidate = user.roles.find((role) => typeof role === 'string' && role.trim());
+    if (candidate) {
+      return candidate.trim();
+    }
+  }
+
+  return 'admin';
+};
+
+const getAdminId = (user) => {
+  if (typeof user?.id === 'string' && user.id.trim()) {
+    return user.id.trim();
+  }
+
+  return 'UNKNOWN';
+};
+
+const buildViewLogDetails = (user) => ({
+  section: 'transactions',
+  action: 'Запросил просмотр истории транзакций',
+  adminId: getAdminId(user),
+  adminName: getAdminDisplayName(user),
+  role: getAdminRole(user),
+  context: TRANSACTIONS_VIEW_CONTEXT,
+});
+
+const findLatestViewLog = (logs) => {
+  if (!Array.isArray(logs)) {
+    return null;
+  }
+
+  return logs.find((log) => log?.context === TRANSACTIONS_VIEW_CONTEXT) ?? null;
+};
 
 export default function TransactionsHistory() {
-  const { transactions, loading, error, reload } = useAdminTransactions();
+  const { user } = useAuth();
+  const { transactions, loading, error, reload, activate, isActivated } = useAdminTransactions();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [methodFilter, setMethodFilter] = useState('all');
+  const [lastViewLog, setLastViewLog] = useState(null);
+  const [logError, setLogError] = useState(null);
 
   const filtersApplied = Boolean(
     search.trim() || typeFilter !== 'all' || statusFilter !== 'all' || methodFilter !== 'all',
@@ -120,6 +188,75 @@ export default function TransactionsHistory() {
     setMethodFilter('all');
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    listAdminLogs({ signal: controller.signal, delay: 0 })
+      .then((logs) => {
+        if (controller.signal.aborted) return;
+        const latest = findLatestViewLog(logs);
+        if (latest) {
+          setLastViewLog(latest);
+        }
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return;
+        console.warn('Не удалось получить логи просмотра транзакций', err);
+      });
+
+    const target = typeof window !== 'undefined' ? window : null;
+    if (target?.addEventListener) {
+      const handleStorage = (event) => {
+        if (typeof event?.key !== 'string') {
+          return;
+        }
+
+        if (event.key !== 'dodepus_admin_dynamic_logs_v1') {
+          return;
+        }
+
+        listAdminLogs({ delay: 0 })
+          .then((logs) => {
+            const latest = findLatestViewLog(logs);
+            if (latest) {
+              setLastViewLog(latest);
+            }
+          })
+          .catch((err) => {
+            console.warn('Не удалось обновить логи просмотра транзакций', err);
+          });
+      };
+
+      target.addEventListener('storage', handleStorage);
+
+      return () => {
+        controller.abort();
+        target.removeEventListener('storage', handleStorage);
+      };
+    }
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+  const handleViewClick = useCallback(() => {
+    setLogError(null);
+
+    try {
+      const entry = appendAdminLog(buildViewLogDetails(user));
+      setLastViewLog(entry);
+    } catch (err) {
+      console.warn('Не удалось записать лог просмотра транзакций', err);
+      setLogError(err instanceof Error ? err : new Error('Не удалось записать лог просмотра'));
+    }
+
+    const maybePromise = activate();
+    if (maybePromise && typeof maybePromise.catch === 'function') {
+      maybePromise.catch(() => {});
+    }
+  }, [activate, user]);
+
   return (
     <Card>
       <Card.Body>
@@ -129,47 +266,94 @@ export default function TransactionsHistory() {
               История транзакций
             </Card.Title>
             <Card.Text className="text-muted mb-0">
-              Просматривайте операции в реальном времени. Данные синхронизируются автоматически при изменениях.
+              Доступ к данным предоставляется по запросу. Каждый просмотр фиксируется в журнале администраторов.
             </Card.Text>
           </div>
-          <div className="d-flex align-items-center gap-2">
-            {loading && transactions.length > 0 ? <Spinner animation="border" role="status" size="sm" /> : null}
-            <Button variant="outline-primary" onClick={handleManualReload} disabled={loading}>
-              Обновить
-            </Button>
-          </div>
+          {isActivated ? (
+            <div className="d-flex align-items-center gap-2">
+              {loading && transactions.length > 0 ? (
+                <Spinner animation="border" role="status" size="sm" />
+              ) : null}
+              <Button variant="outline-primary" onClick={handleManualReload} disabled={loading}>
+                Обновить
+              </Button>
+            </div>
+          ) : (
+            <div className="d-flex align-items-center gap-2">
+              <Button variant="primary" onClick={handleViewClick} disabled={loading}>
+                {loading ? (
+                  <span className="d-inline-flex align-items-center gap-2">
+                    <Spinner animation="border" role="status" size="sm" />
+                    Загрузка…
+                  </span>
+                ) : (
+                  'Просмотреть транзакции'
+                )}
+              </Button>
+            </div>
+          )}
         </div>
 
-        {error ? (
+        {logError ? (
           <Alert variant="danger" className="mb-3">
-            Не удалось обновить список транзакций: {error.message}
+            {logError.message}
           </Alert>
         ) : null}
 
-        <div className="d-flex flex-column gap-3 mb-4">
-          <TransactionsSummary totals={totalsByCurrency} />
-          <TransactionsFilters
-            search={search}
-            onSearchChange={setSearch}
-            typeFilter={typeFilter}
-            onTypeChange={setTypeFilter}
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            methodFilter={methodFilter}
-            onMethodChange={setMethodFilter}
-            methodsOptions={methodsOptions}
-            filtersApplied={filtersApplied}
-            onReset={handleResetFilters}
-            totalCount={transactions.length}
-            filteredCount={filteredTransactions.length}
-          />
-        </div>
+        {lastViewLog ? (
+          <Alert variant="light" className="border mb-4">
+            <div className="fw-semibold">Последний просмотр: {lastViewLog.adminName}</div>
+            <div className="text-muted small">
+              {lastViewLog.adminId}
+              {' · '}
+              {formatDateTime(lastViewLog.createdAt)}
+            </div>
+          </Alert>
+        ) : !isActivated ? (
+          <Alert variant="info" className="mb-4">
+            После нажатия кнопки «Просмотреть транзакции» система зафиксирует действие и загрузит все операции
+            аккаунтов.
+          </Alert>
+        ) : null}
 
-        <TransactionsTable
-          transactions={transactions}
-          filteredTransactions={filteredTransactions}
-          loading={loading}
-        />
+        {isActivated ? (
+          <>
+            {error ? (
+              <Alert variant="danger" className="mb-3">
+                Не удалось обновить список транзакций: {error.message}
+              </Alert>
+            ) : null}
+
+            <div className="d-flex flex-column gap-3 mb-4">
+              <TransactionsSummary totals={totalsByCurrency} />
+              <TransactionsFilters
+                search={search}
+                onSearchChange={setSearch}
+                typeFilter={typeFilter}
+                onTypeChange={setTypeFilter}
+                statusFilter={statusFilter}
+                onStatusChange={setStatusFilter}
+                methodFilter={methodFilter}
+                onMethodChange={setMethodFilter}
+                methodsOptions={methodsOptions}
+                filtersApplied={filtersApplied}
+                onReset={handleResetFilters}
+                totalCount={transactions.length}
+                filteredCount={filteredTransactions.length}
+              />
+            </div>
+
+            <TransactionsTable
+              transactions={transactions}
+              filteredTransactions={filteredTransactions}
+              loading={loading}
+            />
+          </>
+        ) : (
+          <div className="py-5 text-center text-muted">
+            Нажмите «Просмотреть транзакции», чтобы получить актуальную историю операций.
+          </div>
+        )}
       </Card.Body>
     </Card>
   );

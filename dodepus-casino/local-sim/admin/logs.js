@@ -12,11 +12,13 @@ const ADMIN_LOG_SECTIONS = Object.freeze([
 ]);
 
 const ADMIN_LOG_ROLE_LABELS = Object.freeze({
+  admin: 'Админ',
   superadmin: 'Суперадмин',
   manager: 'Менеджер',
   moderator: 'Модератор',
   analyst: 'Аналитик',
   operator: 'Оператор',
+  owner: 'Владелец',
 });
 
 const ADMIN_LOGS = [
@@ -112,7 +114,111 @@ const ADMIN_LOGS = [
   },
 ];
 
+const STORAGE_KEY = 'dodepus_admin_dynamic_logs_v1';
+const MAX_DYNAMIC_LOGS = 300;
+
+let dynamicLogsMemory = [];
+
 const clone = (value) => JSON.parse(JSON.stringify(value));
+
+const getStorage = () => {
+  try {
+    if (typeof globalThis === 'undefined') return null;
+    return globalThis.localStorage ?? null;
+  } catch (error) {
+    console.warn('Локальное хранилище недоступно для логов админ-панели', error);
+    return null;
+  }
+};
+
+const readDynamicLogsFromStorage = (storage = getStorage()) => {
+  if (!storage) {
+    return dynamicLogsMemory.slice();
+  }
+
+  try {
+    const raw = storage.getItem(STORAGE_KEY);
+    if (!raw) return dynamicLogsMemory.slice();
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return dynamicLogsMemory.slice();
+
+    const normalized = parsed
+      .filter((entry) => entry && typeof entry === 'object')
+      .slice(0, MAX_DYNAMIC_LOGS);
+
+    dynamicLogsMemory = normalized.slice();
+    return normalized;
+  } catch (error) {
+    console.warn('Не удалось прочитать динамические логи админ-панели', error);
+    return dynamicLogsMemory.slice();
+  }
+};
+
+const writeDynamicLogsToStorage = (logs, storage = getStorage()) => {
+  const normalized = Array.isArray(logs) ? logs.slice(0, MAX_DYNAMIC_LOGS) : [];
+  dynamicLogsMemory = normalized.slice();
+
+  if (!storage) return;
+
+  try {
+    storage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+  } catch (error) {
+    console.warn('Не удалось сохранить динамические логи админ-панели', error);
+  }
+};
+
+const generateLogId = () =>
+  `LOG-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
+
+const normalizeString = (value, fallback = '') => {
+  if (typeof value !== 'string') return fallback;
+  const trimmed = value.trim();
+  return trimmed || fallback;
+};
+
+const sanitizeContext = (value) => {
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.trim();
+  return normalized ? normalized : undefined;
+};
+
+const sanitizeMetadata = (value) => {
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(JSON.stringify(value));
+  } catch {
+    return undefined;
+  }
+};
+
+const createLogEntry = (details = {}) => {
+  const now = new Date().toISOString();
+  const entry = {
+    id: generateLogId(),
+    adminId: normalizeString(details.adminId, 'UNKNOWN'),
+    adminName: normalizeString(details.adminName, 'Неизвестный админ'),
+    role: normalizeString(details.role, 'admin'),
+    section: normalizeString(details.section, 'overview'),
+    action: normalizeString(details.action, 'Выполнил действие в админ-панели'),
+    createdAt: now,
+  };
+
+  const context = sanitizeContext(details.context);
+  if (context) {
+    entry.context = context;
+  }
+
+  const metadata = sanitizeMetadata(details.metadata);
+  if (metadata) {
+    entry.metadata = metadata;
+  }
+
+  return entry;
+};
 
 const createAbortError = (reason) => {
   if (reason instanceof Error) return reason;
@@ -136,7 +242,19 @@ export const getAdminLogSectionLabel = (section) => {
   return found ? found.label : section;
 };
 
-export const readAdminLogs = () => ADMIN_LOGS.map(clone);
+export const readAdminLogs = ({ storage = getStorage() } = {}) => {
+  const dynamicLogs = readDynamicLogsFromStorage(storage).map((entry) => clone(entry));
+  const staticLogs = ADMIN_LOGS.map(clone);
+  return [...dynamicLogs, ...staticLogs];
+};
+
+export const appendAdminLog = (details = {}, storage = getStorage()) => {
+  const entry = createLogEntry(details);
+  const existing = readDynamicLogsFromStorage(storage);
+  const nextLogs = [entry, ...existing];
+  writeDynamicLogsToStorage(nextLogs, storage);
+  return entry;
+};
 
 export function listAdminLogs({ signal, delay = 200 } = {}) {
   if (signal?.aborted) {
@@ -180,5 +298,10 @@ export const __internals = Object.freeze({
   ADMIN_LOGS,
   ADMIN_LOG_SECTIONS,
   ADMIN_LOG_ROLE_LABELS,
+  STORAGE_KEY,
+  MAX_DYNAMIC_LOGS,
+  readDynamicLogsFromStorage,
+  writeDynamicLogsToStorage,
+  createLogEntry,
 });
 
