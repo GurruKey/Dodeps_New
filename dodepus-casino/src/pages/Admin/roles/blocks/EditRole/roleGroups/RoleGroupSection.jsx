@@ -10,7 +10,7 @@ export default function RoleGroupSection({
 }) {
   if (!roles || roles.length === 0) {
     return (
-      <Card className="bg-light border-0">
+      <Card className="border-0 surface-card">
         <Card.Body className="py-4 text-center text-muted">
           Нет доступных ролей в выбранной группе.
         </Card.Body>

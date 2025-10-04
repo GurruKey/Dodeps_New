@@ -29,7 +29,7 @@ export default function PromoTypesReference({ selectedTypeId, onSelect }) {
                     <Card.Text className="small fw-medium mb-3">{type.plainText}</Card.Text>
                   )}
                   {type.seed && (
-                    <Card className="bg-light border-0">
+                    <Card className="border-0 surface-card">
                       <Card.Body className="py-3">
                         <div className="fw-semibold mb-1">Пример оффера</div>
                         {type.seed.title && (

@@ -150,7 +150,7 @@ export default function AssignRole({ statusMessage = '' }) {
           )}
 
           {lastIssuedRole && (
-            <Card className="bg-light border-0">
+            <Card className="border-0 surface-card">
               <Card.Body className="py-3">
                 <strong>{lastIssuedRole.userId}</strong> получил роль «{lastIssuedRole.roleName}»{' '}
                 <span className="text-muted">{lastIssuedRole.issuedAt}</span>
