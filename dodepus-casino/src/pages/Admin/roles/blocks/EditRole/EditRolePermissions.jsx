@@ -1,14 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button, Card, Form, Stack, Table } from 'react-bootstrap';
 import {
   rolePermissionMatrix,
   roleMatrixLegend,
 } from '../../data/roleConfigs.js';
 import {
+  ADMIN_PANEL_VISIBILITY_EVENT,
   loadAdminPanelVisibility,
   setAdminPanelVisibilityForRole,
 } from '../../../../../../local-sim/auth/admin/adminPanelVisibility';
-import BackendSynergyNotice from '../../../components/BackendSynergyNotice.jsx';
 
 const permissionKeys = Object.keys(roleMatrixLegend);
 
@@ -26,6 +26,33 @@ export default function EditRolePermissions() {
   );
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState(null);
+
+  useEffect(() => {
+    const target = typeof window !== 'undefined' ? window : globalThis;
+    if (!target?.addEventListener) return undefined;
+
+    const handleVisibilityChange = (event) => {
+      const map =
+        event?.detail?.visibility && typeof event.detail.visibility === 'object'
+          ? event.detail.visibility
+          : loadAdminPanelVisibility();
+
+      setMatrix((prev) =>
+        prev.map((role) => ({
+          ...role,
+          permissions: {
+            ...role.permissions,
+            adminPanel: map[role.roleId] ?? role.permissions.adminPanel ?? false,
+          },
+        }))
+      );
+    };
+
+    target.addEventListener(ADMIN_PANEL_VISIBILITY_EVENT, handleVisibilityChange);
+    return () => {
+      target.removeEventListener(ADMIN_PANEL_VISIBILITY_EVENT, handleVisibilityChange);
+    };
+  }, []);
 
   const selectedRole = useMemo(() => matrix[0], [matrix]);
 
@@ -65,8 +92,6 @@ export default function EditRolePermissions() {
     <Card>
       <Card.Body>
         <Stack gap={3}>
-          <BackendSynergyNotice className="mb-0" />
-
           <div>
             <Card.Title as="h4" className="mb-1">
               Изменить роль

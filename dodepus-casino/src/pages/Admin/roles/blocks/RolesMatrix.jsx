@@ -1,11 +1,49 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Badge, Card, Table } from 'react-bootstrap';
 import {
   rolePermissionMatrix,
   roleMatrixLegend,
 } from '../data/roleConfigs.js';
+import {
+  ADMIN_PANEL_VISIBILITY_EVENT,
+  loadAdminPanelVisibility,
+} from '../../../../../local-sim/auth/admin/adminPanelVisibility';
 
 export default function RolesMatrix() {
   const permissionKeys = Object.keys(roleMatrixLegend);
+  const [adminVisibility, setAdminVisibility] = useState(() => loadAdminPanelVisibility());
+
+  useEffect(() => {
+    const target = typeof window !== 'undefined' ? window : globalThis;
+    if (!target?.addEventListener) return undefined;
+
+    const handleVisibilityChange = (event) => {
+      const next = event?.detail?.visibility;
+      if (next && typeof next === 'object') {
+        setAdminVisibility((prev) => ({ ...prev, ...next }));
+      } else {
+        setAdminVisibility(loadAdminPanelVisibility());
+      }
+    };
+
+    target.addEventListener(ADMIN_PANEL_VISIBILITY_EVENT, handleVisibilityChange);
+    return () => {
+      target.removeEventListener(ADMIN_PANEL_VISIBILITY_EVENT, handleVisibilityChange);
+    };
+  }, []);
+
+  const matrix = useMemo(
+    () =>
+      rolePermissionMatrix.map((role) => ({
+        ...role,
+        permissions: {
+          ...role.permissions,
+          adminPanel:
+            adminVisibility[role.roleId] ?? role.permissions.adminPanel ?? false,
+        },
+      })),
+    [adminVisibility]
+  );
 
   return (
     <Card>
@@ -24,7 +62,7 @@ export default function RolesMatrix() {
             </tr>
           </thead>
           <tbody>
-            {rolePermissionMatrix.map((role) => (
+            {matrix.map((role) => (
               <tr key={role.roleId}>
                 <td className="text-start fw-medium">{role.roleName}</td>
                 {permissionKeys.map((permissionKey) => (

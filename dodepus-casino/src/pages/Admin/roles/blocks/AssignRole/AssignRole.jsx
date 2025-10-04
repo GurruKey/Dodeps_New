@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
   Alert,
@@ -13,10 +13,10 @@ import {
 import { availableRoles } from '../../data/roleConfigs.js';
 import { assignUserRole } from '../../../../../features/auth/api.js';
 import {
+  ADMIN_PANEL_VISIBILITY_EVENT,
   loadAdminPanelVisibility,
   setAdminPanelVisibilityForRole,
 } from '../../../../../../local-sim/auth/admin/adminPanelVisibility';
-import BackendSynergyNotice from '../../../components/BackendSynergyNotice.jsx';
 
 const idPlaceholderExamples = ['ID-10192', 'ID-20204', 'ID-30881'];
 
@@ -42,6 +42,25 @@ export default function AssignRole({ statusMessage = '' }) {
   const canSelectedRoleSeeAdminPanel = selectedRole
     ? adminVisibility[selectedRole] ?? false
     : false;
+
+  useEffect(() => {
+    const target = typeof window !== 'undefined' ? window : globalThis;
+    if (!target?.addEventListener) return undefined;
+
+    const handleVisibilityChange = (event) => {
+      const next = event?.detail?.visibility;
+      if (next && typeof next === 'object') {
+        setAdminVisibility((prev) => ({ ...prev, ...next }));
+      } else {
+        setAdminVisibility(loadAdminPanelVisibility());
+      }
+    };
+
+    target.addEventListener(ADMIN_PANEL_VISIBILITY_EVENT, handleVisibilityChange);
+    return () => {
+      target.removeEventListener(ADMIN_PANEL_VISIBILITY_EVENT, handleVisibilityChange);
+    };
+  }, []);
 
   const handleAdminPanelSwitch = (nextValue) => {
     if (!selectedRole) return;
@@ -92,8 +111,6 @@ export default function AssignRole({ statusMessage = '' }) {
     <Card>
       <Card.Body as={Form} onSubmit={handleSubmit}>
         <Stack gap={3}>
-          <BackendSynergyNotice className="mb-0" />
-
           <div>
             <Card.Title as="h4" className="mb-1">
               Выдать роль
