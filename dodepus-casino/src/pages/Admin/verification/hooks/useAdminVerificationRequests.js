@@ -13,8 +13,12 @@ export function useAdminVerificationRequests() {
   const isMountedRef = useRef(true);
   const activeRequestsRef = useRef(0);
 
-  useEffect(() => () => {
-    isMountedRef.current = false;
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   const loadRequests = useCallback(
