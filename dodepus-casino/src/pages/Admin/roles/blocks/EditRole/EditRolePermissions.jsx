@@ -103,13 +103,24 @@ export default function EditRolePermissions() {
   };
 
   const handleAccordionSelect = (eventKey) => {
-    if (!eventKey) return;
+    if (!eventKey) {
+      setExpandedRoles([]);
+      return;
+    }
+
+    if (Array.isArray(eventKey)) {
+      setExpandedRoles(eventKey.filter(Boolean));
+      return;
+    }
+
+    const key = String(eventKey);
+
     setExpandedRoles((prev) => {
       const next = new Set(prev);
-      if (next.has(eventKey)) {
-        next.delete(eventKey);
+      if (next.has(key)) {
+        next.delete(key);
       } else {
-        next.add(eventKey);
+        next.add(key);
       }
       return Array.from(next);
     });
