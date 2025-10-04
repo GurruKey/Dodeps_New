@@ -14,6 +14,7 @@ import AdminTransactions from '../pages/Admin/transactions';
 import AdminVerification from '../pages/Admin/verification';
 import AdminModeratorsChat from '../pages/Admin/moderators-chat';
 import AdminAdministratorsChat from '../pages/Admin/administrators-chat';
+import AdminLogAdmin from '../pages/Admin/log-admin';
 import ProviderPage from '../pages/Provider.jsx';
 import ProvidersPage from '../pages/Providers.jsx';
 import CategoriesPage from '../pages/Categories.jsx';
@@ -94,6 +95,7 @@ export default function AppRoutes() {
         <Route path="verification" element={<AdminVerification />} />
         <Route path="moderators-chat" element={<AdminModeratorsChat />} />
         <Route path="administrators-chat" element={<AdminAdministratorsChat />} />
+        <Route path="log-admin" element={<AdminLogAdmin />} />
       </Route>
 
       {/* Только для авторизованных */}
