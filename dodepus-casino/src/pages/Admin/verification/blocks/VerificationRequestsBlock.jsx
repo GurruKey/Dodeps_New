@@ -1,6 +1,11 @@
 import { Card, Button, ListGroup, Spinner } from 'react-bootstrap';
 import VerificationFieldBadges from '../components/VerificationFieldBadges.jsx';
-import { formatDateTime, getProgressLabel, getUserDisplayName } from '../utils.js';
+import {
+  formatDateTime,
+  getPendingVerificationTextClass,
+  getProgressLabel,
+  getUserDisplayName,
+} from '../utils.js';
 
 export default function VerificationRequestsBlock({
   requests = [],
@@ -13,6 +18,8 @@ export default function VerificationRequestsBlock({
   isVisible = true,
 }) {
   const isBusy = (requestId) => busyId === requestId;
+  const totalRequests = Array.isArray(requests) ? requests.length : 0;
+  const pendingCountClassName = getPendingVerificationTextClass(totalRequests);
 
   return (
     <Card>
@@ -20,7 +27,10 @@ export default function VerificationRequestsBlock({
         <div className="d-flex flex-column flex-lg-row gap-3 align-items-lg-center justify-content-between">
           <div>
             <Card.Title as="h3" className="mb-1">
-              Запросы на верификацию
+              <span className="d-inline-flex align-items-center gap-2">
+                <span>Запросы на верификацию</span>
+                <span className={`fw-semibold ${pendingCountClassName}`}>{totalRequests}</span>
+              </span>
             </Card.Title>
             <Card.Text className="text-muted mb-0">
               Новые заявки от пользователей, ожидающие проверки администратором.
@@ -58,7 +68,7 @@ export default function VerificationRequestsBlock({
         <Card.Body className="border-top text-secondary small">
           Список скрыт. Нажмите «Просмотр», чтобы загрузить заявки.
         </Card.Body>
-      ) : requests.length === 0 ? (
+      ) : totalRequests === 0 ? (
         <Card.Body className="border-top text-secondary small">
           {loading ? 'Загрузка запросов…' : 'Новых запросов нет.'}
         </Card.Body>

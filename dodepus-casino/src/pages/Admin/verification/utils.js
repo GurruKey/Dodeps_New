@@ -113,3 +113,30 @@ export const getStatusLabel = (status) => {
       return 'В ожидании проверки';
   }
 };
+
+const toFiniteNumber = (value) => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : 0;
+};
+
+export const getPendingVerificationVariant = (count) => {
+  const numeric = Math.max(0, toFiniteNumber(count));
+  if (numeric >= 16) {
+    return 'danger';
+  }
+  if (numeric >= 10) {
+    return 'warning';
+  }
+  return 'success';
+};
+
+export const getPendingVerificationTextClass = (count) => {
+  const variant = getPendingVerificationVariant(count);
+  if (variant === 'danger') {
+    return 'text-danger';
+  }
+  if (variant === 'warning') {
+    return 'text-warning';
+  }
+  return 'text-success';
+};
