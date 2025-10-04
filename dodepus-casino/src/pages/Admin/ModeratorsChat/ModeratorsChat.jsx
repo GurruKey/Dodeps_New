@@ -6,7 +6,7 @@ export default function ModeratorsChat() {
 
   return (
     <ChatPanel
-      heading="Чат модераторов"
+      heading="Модератор Чат"
       thread={activeThread}
       placeholder="Напишите ответ модераторам…"
     />

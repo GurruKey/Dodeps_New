@@ -1,9 +1,11 @@
 import { ADMINISTRATORS_CHAT_LOGS } from './administratorsChat.js';
 import { CLIENTS_LOGS } from './clients.js';
 import { MODERATORS_CHAT_LOGS } from './moderatorsChat.js';
+import { PROMOCODE_CREATE_LOGS } from './promocodeCreate.js';
 import { PROMOCODES_LOGS } from './promocodes.js';
 import { ROLE_EDIT_LOGS } from './roleEdit.js';
 import { ROLES_LOGS } from './roles.js';
+import { STAFF_CHAT_LOGS } from './staffChat.js';
 import {
   TRANSACTIONS_LOG_STORAGE_KEY,
   TRANSACTIONS_STATIC_LOGS,
@@ -16,12 +18,14 @@ const ADMIN_LOG_SECTIONS = Object.freeze([
   { value: 'overview', label: 'Обзор' },
   { value: 'clients', label: 'Клиенты' },
   { value: 'promocodes', label: 'Промокоды' },
+  { value: 'promocode-create', label: 'Создать Промокод' },
   { value: 'roles', label: 'Выдать роль' },
   { value: 'role-edit', label: 'Изменить роль' },
   { value: 'transactions', label: 'Транзакции' },
   { value: 'verification', label: 'Верификация' },
-  { value: 'moderators-chat', label: 'Чат модераторов' },
+  { value: 'moderators-chat', label: 'Модератор Чат' },
   { value: 'administrators-chat', label: 'Админ Чат' },
+  { value: 'staff-chat', label: 'Стаф Чат' },
   { value: 'log-admin', label: 'Log Admin' },
 ]);
 
@@ -51,11 +55,13 @@ const STATIC_SECTION_LOGS = Object.freeze([
   ...OVERVIEW_LOGS,
   ...CLIENTS_LOGS,
   ...PROMOCODES_LOGS,
+  ...PROMOCODE_CREATE_LOGS,
   ...ROLES_LOGS,
   ...ROLE_EDIT_LOGS,
   ...VERIFICATION_LOGS,
   ...MODERATORS_CHAT_LOGS,
   ...ADMINISTRATORS_CHAT_LOGS,
+  ...STAFF_CHAT_LOGS,
 ]);
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
