@@ -1,7 +1,147 @@
+import { useMemo } from 'react';
 import { Container, Row, Col, Nav, Card } from 'react-bootstrap';
 import { NavLink, Outlet } from 'react-router-dom';
 
+import { useAuth } from '../../app/AuthContext.jsx';
+import { availableRoles, rolePermissionMatrix } from './roles/data/roleConfigs.js';
+
+const NAV_ITEMS = [
+  { key: 'overview', to: 'overview', label: 'Обзор', permission: 'overview' },
+  { key: 'clients', to: 'clients', label: 'Клиенты', permission: 'clients' },
+  { key: 'promocodes', to: 'promocodes', label: 'Промокоды', permission: 'promocodes' },
+  { key: 'roles', to: 'roles', label: 'Выдать роль', permission: 'roles' },
+  { key: 'role-edit', to: 'role-edit', label: 'Изменить роль', permission: 'roles' },
+  { key: 'transactions', to: 'transactions', label: 'Транзакции', permission: 'transactions' },
+  { key: 'verification', to: 'verification', label: 'Верификация', permission: 'verification' },
+  { key: 'moderators-chat', to: 'moderators-chat', label: 'Чат модераторов', permission: 'chat' },
+  { key: 'administrators-chat', to: 'administrators-chat', label: 'Админ Чат', permission: 'chat' },
+  { key: 'log-admin', to: 'log-admin', label: 'Log Admin', permission: 'adminPanel' },
+];
+
+const permissionByRoleId = rolePermissionMatrix.reduce((acc, role) => {
+  if (!role?.roleId) return acc;
+  acc.set(role.roleId, role.permissions ?? {});
+  return acc;
+}, new Map());
+
+const normalizedRoles = availableRoles.map((role) => ({
+  id: typeof role?.id === 'string' ? role.id.trim() : '',
+  group: typeof role?.group === 'string' ? role.group.trim().toLowerCase() : '',
+  level:
+    typeof role?.level === 'number' && Number.isFinite(role.level) ? role.level : null,
+}));
+
+const normalizeRoleId = (value) => {
+  if (typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  return trimmed ? trimmed : '';
+};
+
+const normalizeRoleGroup = (value) => {
+  if (typeof value !== 'string') return '';
+  const trimmed = value.trim().toLowerCase();
+  return trimmed ? trimmed : '';
+};
+
+const collectCandidateRoleIds = (user) => {
+  if (!user) return [];
+
+  const candidates = [];
+  const pushCandidate = (value) => {
+    const normalized = normalizeRoleId(value);
+    if (!normalized) return;
+    if (!candidates.includes(normalized)) {
+      candidates.push(normalized);
+    }
+  };
+
+  pushCandidate(user.roleId);
+  pushCandidate(user?.user_metadata?.roleId);
+  pushCandidate(user?.app_metadata?.roleId);
+
+  if (Array.isArray(user?.roles)) {
+    user.roles.forEach(pushCandidate);
+  }
+
+  const groups = new Set();
+  [user?.role, user?.user_metadata?.role, user?.app_metadata?.role]
+    .map(normalizeRoleGroup)
+    .filter(Boolean)
+    .forEach((group) => {
+      groups.add(group);
+    });
+
+  const levels = new Set();
+  [
+    user?.roleLevel,
+    user?.user_metadata?.roleLevel,
+    user?.user_metadata?.level,
+    user?.app_metadata?.roleLevel,
+    user?.app_metadata?.level,
+  ].forEach((value) => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      levels.add(value);
+    }
+  });
+
+  normalizedRoles.forEach((role) => {
+    if (!role.id || candidates.includes(role.id)) return;
+    if (!groups.has(role.group)) return;
+
+    if (role.level !== null) {
+      if (levels.has(role.level)) {
+        candidates.push(role.id);
+      }
+      return;
+    }
+
+    candidates.push(role.id);
+  });
+
+  return candidates;
+};
+
+const resolvePermissionsForUser = (user) => {
+  if (!user) return null;
+  const roleIds = collectCandidateRoleIds(user);
+
+  for (const roleId of roleIds) {
+    const permissions = permissionByRoleId.get(roleId);
+    if (permissions) {
+      return permissions;
+    }
+  }
+
+  return null;
+};
+
 export default function AdminLayout({ clients, isLoading, error, onReload }) {
+  const { user } = useAuth();
+
+  const permissions = useMemo(() => resolvePermissionsForUser(user), [user]);
+
+  const visibleNavItems = useMemo(() => {
+    const allowedItems = NAV_ITEMS.filter((item) => {
+      if (!item.permission) return true;
+
+      if (permissions) {
+        return Boolean(permissions[item.permission]);
+      }
+
+      if (user?.isAdmin) {
+        return true;
+      }
+
+      return false;
+    });
+
+    if (allowedItems.length > 0) {
+      return allowedItems;
+    }
+
+    return NAV_ITEMS.filter((item) => item.key === 'overview');
+  }, [permissions, user?.isAdmin]);
+
   return (
     <Container className="mb-4">
       <h2 className="mb-3">Админ-панель</h2>
@@ -10,36 +150,11 @@ export default function AdminLayout({ clients, isLoading, error, onReload }) {
           <Card className="h-100">
             <Card.Body className="p-3">
               <Nav variant="pills" className="flex-column gap-1">
-                <Nav.Link as={NavLink} to="overview" end>
-                  Обзор
-                </Nav.Link>
-                <Nav.Link as={NavLink} to="clients" end>
-                  Клиенты
-                </Nav.Link>
-                <Nav.Link as={NavLink} to="promocodes" end>
-                  Промокоды
-                </Nav.Link>
-                <Nav.Link as={NavLink} to="roles" end>
-                  Выдать роль
-                </Nav.Link>
-                <Nav.Link as={NavLink} to="role-edit" end>
-                  Изменить роль
-                </Nav.Link>
-                <Nav.Link as={NavLink} to="transactions" end>
-                  Транзакции
-                </Nav.Link>
-                <Nav.Link as={NavLink} to="verification" end>
-                  Верификация
-                </Nav.Link>
-                <Nav.Link as={NavLink} to="moderators-chat" end>
-                  Чат модераторов
-                </Nav.Link>
-                <Nav.Link as={NavLink} to="administrators-chat" end>
-                  Админ Чат
-                </Nav.Link>
-                <Nav.Link as={NavLink} to="log-admin" end>
-                  Log Admin
-                </Nav.Link>
+                {visibleNavItems.map((item) => (
+                  <Nav.Link key={item.key} as={NavLink} to={item.to} end>
+                    {item.label}
+                  </Nav.Link>
+                ))}
               </Nav>
             </Card.Body>
           </Card>
