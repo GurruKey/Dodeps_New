@@ -1,17 +1,26 @@
-import { Card, ListGroup } from 'react-bootstrap';
+import { Card, ListGroup, Button } from 'react-bootstrap';
 import VerificationFieldBadges from '../components/VerificationFieldBadges.jsx';
 import { formatDateTime, getProgressLabel, getUserDisplayName } from '../utils.js';
 
-export default function VerificationApprovedBlock({ requests = [], loading = false }) {
+export default function VerificationApprovedBlock({ requests = [], loading = false, onView }) {
   return (
     <Card>
       <Card.Body>
-        <Card.Title as="h3" className="mb-1">
-          Верифицировано
-        </Card.Title>
-        <Card.Text className="text-muted mb-0">
-          Запросы, полностью прошедшие проверку. Данные пользователя подтверждены.
-        </Card.Text>
+        <div className="d-flex flex-column flex-lg-row gap-3 align-items-lg-center justify-content-between">
+          <div>
+            <Card.Title as="h3" className="mb-1">
+              Верифицировано
+            </Card.Title>
+            <Card.Text className="text-muted mb-0">
+              Запросы, полностью прошедшие проверку. Данные пользователя подтверждены.
+            </Card.Text>
+          </div>
+          {onView && (
+            <Button variant="primary" onClick={onView} disabled={loading}>
+              Просмотр
+            </Button>
+          )}
+        </div>
       </Card.Body>
 
       {requests.length === 0 ? (

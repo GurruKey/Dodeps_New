@@ -8,18 +8,28 @@ export default function VerificationPartialBlock({
   onConfirm,
   onReject,
   busyId,
+  onView,
 }) {
   const isBusy = (requestId) => busyId === requestId;
 
   return (
     <Card>
       <Card.Body>
-        <Card.Title as="h3" className="mb-1">
-          Частичная верификация
-        </Card.Title>
-        <Card.Text className="text-muted mb-0">
-          Заявки, в которых подтверждены не все поля. Проверьте обновлённые данные и завершите процесс.
-        </Card.Text>
+        <div className="d-flex flex-column flex-lg-row gap-3 align-items-lg-center justify-content-between">
+          <div>
+            <Card.Title as="h3" className="mb-1">
+              Частичная верификация
+            </Card.Title>
+            <Card.Text className="text-muted mb-0">
+              Заявки, в которых подтверждены не все поля. Проверьте обновлённые данные и завершите процесс.
+            </Card.Text>
+          </div>
+          {onView && (
+            <Button variant="primary" onClick={onView} disabled={loading}>
+              Просмотр
+            </Button>
+          )}
+        </div>
       </Card.Body>
 
       {requests.length === 0 ? (

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Row, Col, Card, Button, Alert } from 'react-bootstrap';
+import { Row, Col, Card, Button, Toast, ToastContainer, Alert } from 'react-bootstrap';
 import { Circle, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../app/AuthContext.jsx';
@@ -9,7 +9,7 @@ export default function VerificationStatusBlock() {
   const { user, submitVerificationRequest } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Локальные правила готовности (без БД)
   const emailDone = Boolean(user?.emailVerified);
@@ -28,7 +28,7 @@ export default function VerificationStatusBlock() {
 
   const handleSubmit = async () => {
     setSubmitError(null);
-    setSubmitSuccess(false);
+    setShowSuccessToast(false);
 
     if (!submitVerificationRequest) {
       setSubmitError('Отправка доступна только авторизованным пользователям.');
@@ -46,7 +46,7 @@ export default function VerificationStatusBlock() {
           doc: docDone,
         }),
       );
-      setSubmitSuccess(true);
+      setShowSuccessToast(true);
     } catch (error) {
       const message =
         error instanceof Error
@@ -59,8 +59,9 @@ export default function VerificationStatusBlock() {
   };
 
   return (
-    <Card>
-      <Card.Body>
+    <>
+      <Card>
+        <Card.Body>
         <Card.Title className="mb-3">Статусы верификации</Card.Title>
         <Row className="text-center g-4">
           {items.map((s) => (
@@ -88,6 +89,7 @@ export default function VerificationStatusBlock() {
                   <Circle size={56} />
                 </Button>
               )}
+              <div className="mt-2 small text-muted">Подтвердить</div>
             </Col>
           ))}
         </Row>
@@ -108,18 +110,26 @@ export default function VerificationStatusBlock() {
           </Button>
         </div>
 
-        {submitSuccess && (
-          <Alert variant="success" className="mt-3 mb-0">
+          {submitError && (
+            <Alert variant="danger" className="mt-3 mb-0">
+              {submitError}
+            </Alert>
+          )}
+        </Card.Body>
+      </Card>
+      <ToastContainer position="bottom-end" className="p-3">
+        <Toast
+          bg="success"
+          onClose={() => setShowSuccessToast(false)}
+          show={showSuccessToast}
+          delay={4000}
+          autohide
+        >
+          <Toast.Body className="text-white">
             Запрос отправлен в админ-панель на проверку.
-          </Alert>
-        )}
-
-        {submitError && (
-          <Alert variant="danger" className="mt-3 mb-0">
-            {submitError}
-          </Alert>
-        )}
-      </Card.Body>
-    </Card>
+          </Toast.Body>
+        </Toast>
+      </ToastContainer>
+    </>
   );
 }

@@ -6,6 +6,7 @@ export default function VerificationRequestsBlock({
   requests = [],
   loading = false,
   onReload,
+  onView,
   onConfirm,
   onReject,
   busyId,
@@ -24,17 +25,26 @@ export default function VerificationRequestsBlock({
               Новые заявки от пользователей, ожидающие проверки администратором.
             </Card.Text>
           </div>
-          {onReload && (
-            <Button variant="outline-primary" onClick={onReload} disabled={loading}>
-              {loading ? (
-                <>
-                  <Spinner size="sm" animation="border" className="me-2" />
-                  Обновление…
-                </>
-              ) : (
-                'Обновить'
+          {(onReload || onView) && (
+            <div className="d-flex align-items-center gap-2">
+              {onView && (
+                <Button variant="primary" onClick={onView} disabled={loading}>
+                  Просмотр
+                </Button>
               )}
-            </Button>
+              {onReload && (
+                <Button variant="outline-primary" onClick={onReload} disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Spinner size="sm" animation="border" className="me-2" />
+                      Обновление…
+                    </>
+                  ) : (
+                    'Обновить'
+                  )}
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </Card.Body>
