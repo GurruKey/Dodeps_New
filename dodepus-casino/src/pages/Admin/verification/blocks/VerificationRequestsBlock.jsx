@@ -10,6 +10,7 @@ export default function VerificationRequestsBlock({
   onConfirm,
   onReject,
   busyId,
+  isVisible = true,
 }) {
   const isBusy = (requestId) => busyId === requestId;
 
@@ -33,7 +34,11 @@ export default function VerificationRequestsBlock({
                 </Button>
               )}
               {onReload && (
-                <Button variant="outline-primary" onClick={onReload} disabled={loading}>
+                <Button
+                  variant="outline-primary"
+                  onClick={onReload}
+                  disabled={!isVisible || loading}
+                >
                   {loading ? (
                     <>
                       <Spinner size="sm" animation="border" className="me-2" />
@@ -49,7 +54,11 @@ export default function VerificationRequestsBlock({
         </div>
       </Card.Body>
 
-      {requests.length === 0 ? (
+      {!isVisible ? (
+        <Card.Body className="border-top text-secondary small">
+          Список скрыт. Нажмите «Просмотр», чтобы загрузить заявки.
+        </Card.Body>
+      ) : requests.length === 0 ? (
         <Card.Body className="border-top text-secondary small">
           {loading ? 'Загрузка запросов…' : 'Новых запросов нет.'}
         </Card.Body>

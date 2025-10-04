@@ -17,10 +17,16 @@ import {
 } from './utils.js';
 
 export default function Verification() {
-  const { requests, loading, error, reload } = useAdminVerificationRequests();
+  const { requests, loading, error, reload, ensureLoaded } = useAdminVerificationRequests();
   const { user } = useAuth();
   const [actionError, setActionError] = useState(null);
   const [busyId, setBusyId] = useState(null);
+  const [visibleSections, setVisibleSections] = useState(() => ({
+    pending: false,
+    partial: false,
+    rejected: false,
+    approved: false,
+  }));
 
   const grouped = useMemo(() => {
     const byStatus = {
@@ -110,6 +116,17 @@ export default function Verification() {
         return;
       }
 
+      setVisibleSections((prev) => {
+        if (prev[sectionKey]) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          [sectionKey]: true,
+        };
+      });
+
       const sectionActionMap = {
         pending: 'Запросил просмотр очереди запросов на верификацию',
         partial: 'Запросил просмотр частично подтверждённых заявок на верификацию',
@@ -132,12 +149,12 @@ export default function Verification() {
         console.warn('Не удалось записать лог просмотра раздела верификации', err);
       }
 
-      const maybePromise = reload?.();
+      const maybePromise = ensureLoaded?.();
       if (maybePromise && typeof maybePromise.catch === 'function') {
         maybePromise.catch(() => {});
       }
     },
-    [reload, reviewer],
+    [ensureLoaded, reviewer],
   );
 
   return (
@@ -156,6 +173,7 @@ export default function Verification() {
         onConfirm={handleConfirm}
         onReject={handleReject}
         busyId={busyId}
+        isVisible={visibleSections.pending}
       />
 
       <VerificationPartialBlock
@@ -165,18 +183,21 @@ export default function Verification() {
         onReject={handleReject}
         busyId={busyId}
         onView={() => handleViewSection('partial')}
+        isVisible={visibleSections.partial}
       />
 
       <VerificationRejectedBlock
         requests={grouped.rejected}
         loading={loading}
         onView={() => handleViewSection('rejected')}
+        isVisible={visibleSections.rejected}
       />
 
       <VerificationApprovedBlock
         requests={grouped.approved}
         loading={loading}
         onView={() => handleViewSection('approved')}
+        isVisible={visibleSections.approved}
       />
     </Stack>
   );

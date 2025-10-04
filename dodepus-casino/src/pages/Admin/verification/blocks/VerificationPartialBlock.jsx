@@ -9,6 +9,7 @@ export default function VerificationPartialBlock({
   onReject,
   busyId,
   onView,
+  isVisible = true,
 }) {
   const isBusy = (requestId) => busyId === requestId;
 
@@ -32,7 +33,11 @@ export default function VerificationPartialBlock({
         </div>
       </Card.Body>
 
-      {requests.length === 0 ? (
+      {!isVisible ? (
+        <Card.Body className="border-top text-secondary small">
+          Список скрыт. Нажмите «Просмотр», чтобы загрузить заявки.
+        </Card.Body>
+      ) : requests.length === 0 ? (
         <Card.Body className="border-top text-secondary small">
           {loading ? 'Загрузка…' : 'Нет заявок на частичную проверку.'}
         </Card.Body>

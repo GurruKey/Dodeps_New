@@ -2,7 +2,12 @@ import { Card, ListGroup, Button } from 'react-bootstrap';
 import VerificationFieldBadges from '../components/VerificationFieldBadges.jsx';
 import { formatDateTime, getUserDisplayName } from '../utils.js';
 
-export default function VerificationRejectedBlock({ requests = [], loading = false, onView }) {
+export default function VerificationRejectedBlock({
+  requests = [],
+  loading = false,
+  onView,
+  isVisible = true,
+}) {
   return (
     <Card>
       <Card.Body>
@@ -23,7 +28,11 @@ export default function VerificationRejectedBlock({ requests = [], loading = fal
         </div>
       </Card.Body>
 
-      {requests.length === 0 ? (
+      {!isVisible ? (
+        <Card.Body className="border-top text-secondary small">
+          Список скрыт. Нажмите «Просмотр», чтобы загрузить заявки.
+        </Card.Body>
+      ) : requests.length === 0 ? (
         <Card.Body className="border-top text-secondary small">
           {loading ? 'Загрузка…' : 'Отказов нет.'}
         </Card.Body>
