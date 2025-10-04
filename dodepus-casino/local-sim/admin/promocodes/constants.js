@@ -8,6 +8,7 @@ export const ADMIN_PROMOCODE_STATUS_LABELS = Object.freeze({
   paused: 'Пауза',
   expired: 'Истёк',
   draft: 'Черновик',
+  archived: 'Архив',
 });
 
 export const DEFAULT_PROMOCODE_WAGER = 30;

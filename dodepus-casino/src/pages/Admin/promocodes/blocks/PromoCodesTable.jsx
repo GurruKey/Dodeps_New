@@ -1,132 +1,134 @@
-import { Badge, Card, Spinner, Table } from 'react-bootstrap';
-
-const statusVariantMap = {
-  active: 'success',
-  scheduled: 'info',
-  paused: 'warning',
-  expired: 'secondary',
-  draft: 'dark',
-};
+import { Badge, Button, Card, Spinner, Stack } from 'react-bootstrap';
 
 const formatDateTime = (value) => {
-  if (!value) return null;
+  if (!value) return '—';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
+  if (Number.isNaN(date.getTime())) return '—';
   return date.toLocaleString('ru-RU', {
     dateStyle: 'short',
     timeStyle: 'short',
   });
 };
 
-const formatSchedule = (startsAt, endsAt) => {
-  const startText = formatDateTime(startsAt);
-  const endText = formatDateTime(endsAt);
-
-  if (!startText && !endText) {
-    return '—';
-  }
-
-  if (startText && endText) {
-    return `${startText} — ${endText}`;
-  }
-
-  if (startText) {
-    return `с ${startText}`;
-  }
-
-  return `до ${endText}`;
+const formatUsage = (used, limit) => {
+  const safeUsed = Number.isFinite(used) ? used : 0;
+  if (limit == null) return `${safeUsed.toLocaleString('ru-RU')} использовано`;
+  return `${safeUsed.toLocaleString('ru-RU')} из ${limit.toLocaleString('ru-RU')}`;
 };
 
-const formatLimit = (limit) => {
-  if (limit == null) return '—';
-  return limit.toLocaleString('ru-RU');
-};
-
-const formatUsed = (used, limit) => {
-  const value = used?.toLocaleString?.('ru-RU') ?? String(used ?? 0);
-  if (limit == null) return value;
-  return `${value} / ${limit.toLocaleString('ru-RU')}`;
-};
-
-const renderRequirements = (wager, cashoutCap) => {
+const formatConditions = (promo) => {
   const parts = [];
-  if (wager === 0) {
+  if (promo.wager === 0) {
     parts.push('Без вейджера');
-  } else if (typeof wager === 'number' && Number.isFinite(wager)) {
-    parts.push(`Вейджер ×${wager}`);
+  } else if (typeof promo.wager === 'number' && Number.isFinite(promo.wager)) {
+    parts.push(`Вейджер ×${promo.wager}`);
   }
 
-  if (typeof cashoutCap === 'number' && Number.isFinite(cashoutCap)) {
-    parts.push(`Кеп ${cashoutCap}×`);
+  if (typeof promo.cashoutCap === 'number' && Number.isFinite(promo.cashoutCap)) {
+    parts.push(`Кеп ×${promo.cashoutCap}`);
   }
 
-  if (!parts.length) return null;
+  if (promo.repeatLimit != null || promo.repeatDelayHours != null) {
+    const repeatParts = [];
+    if (promo.repeatLimit != null) {
+      repeatParts.push(`до ${promo.repeatLimit} повторов`);
+    }
+    if (promo.repeatDelayHours != null) {
+      if (promo.repeatDelayHours >= 24 && Number.isInteger(promo.repeatDelayHours / 24)) {
+        repeatParts.push(`каждые ${promo.repeatDelayHours / 24} д.`);
+      } else {
+        repeatParts.push(`каждые ${promo.repeatDelayHours} ч.`);
+      }
+    }
+    if (repeatParts.length) {
+      parts.push(`Повтор: ${repeatParts.join(' · ')}`);
+    }
+  }
+
+  if (promo.notes) {
+    parts.push(promo.notes);
+  }
+
   return parts.join(' · ');
 };
 
-export default function PromoCodesTable({ promocodes, isLoading }) {
+export default function PromoCodesTable({ promocodes, isLoading, onSelect, selectedId }) {
+  if (isLoading) {
+    return (
+      <Card>
+        <Card.Body className="text-center py-5">
+          <Spinner animation="border" role="status" size="sm" className="me-2" />
+          Загрузка промокодов…
+        </Card.Body>
+      </Card>
+    );
+  }
+
+  if (!promocodes.length) {
+    return (
+      <Card>
+        <Card.Body className="text-center py-5 text-muted">
+          Promo ещё не созданы. Добавьте первый через раздел «Создать Promo».
+        </Card.Body>
+      </Card>
+    );
+  }
+
   return (
-    <Card>
-      <Card.Body>
-        <Card.Title>Список промокодов</Card.Title>
-        <Table responsive hover className="mb-0 align-middle">
-          <thead>
-            <tr>
-              <th style={{ width: '12%' }}>Код</th>
-              <th style={{ width: '18%' }}>Тип</th>
-              <th style={{ width: '20%' }}>Название</th>
-              <th style={{ width: '20%' }}>Вознаграждение</th>
-              <th style={{ width: '10%' }}>Лимит</th>
-              <th style={{ width: '12%' }}>Период</th>
-              <th style={{ width: '10%' }}>Использовано</th>
-              <th style={{ width: '10%' }}>Статус</th>
-            </tr>
-          </thead>
-          {isLoading ? (
-            <tbody>
-              <tr>
-                <td colSpan={8} className="text-center py-4">
-                  <Spinner animation="border" size="sm" role="status" className="me-2" />
-                  Загрузка промокодов…
-                </td>
-              </tr>
-            </tbody>
-          ) : promocodes.length > 0 ? (
-            <tbody>
-              {promocodes.map((promo) => {
-                const requirements = renderRequirements(promo.wager, promo.cashoutCap);
-                return (
-                  <tr key={promo.id ?? promo.code}>
-                    <td className="fw-semibold">{promo.code}</td>
-                    <td>{promo.type?.name ?? '—'}</td>
-                    <td>{promo.title}</td>
-                    <td>
-                      <div>{promo.reward}</div>
-                      {requirements && <div className="small text-muted">{requirements}</div>}
-                    </td>
-                    <td>{formatLimit(promo.limit)}</td>
-                    <td>{formatSchedule(promo.startsAt, promo.endsAt)}</td>
-                    <td>{formatUsed(promo.used, promo.limit)}</td>
-                    <td>
-                      <Badge bg={statusVariantMap[promo.status] ?? 'secondary'}>{
-                        promo.statusLabel
-                      }</Badge>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          ) : (
-            <tbody>
-              <tr>
-                <td colSpan={8} className="text-center py-4 text-muted">
-                  Promo ещё не созданы. Добавьте первый через раздел «Создать Promo».
-                </td>
-              </tr>
-            </tbody>
-          )}
-        </Table>
-      </Card.Body>
-    </Card>
+    <Stack gap={3} className="promo-codes-list">
+      {promocodes.map((promo) => {
+        const conditions = formatConditions(promo);
+        const isActive = selectedId === promo.id;
+        return (
+          <Card
+            key={promo.id ?? promo.code}
+            className={isActive ? 'active' : ''}
+            onClick={() => onSelect?.(promo)}
+            role="button"
+          >
+            <Card.Body className="d-flex flex-column gap-3">
+              <div className="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <div>
+                  <div className="small text-muted">Promo ID</div>
+                  <div className="h5 mb-0">{promo.id}</div>
+                </div>
+                <Badge bg="secondary">{promo.statusLabel}</Badge>
+              </div>
+
+              <div className="d-flex flex-column flex-lg-row gap-4">
+                <div className="flex-grow-1">
+                  <div className="text-uppercase text-muted small mb-1">Сумма</div>
+                  <div className="fw-semibold">{promo.reward || '—'}</div>
+                </div>
+                <div>
+                  <div className="text-uppercase text-muted small mb-1">Использование</div>
+                  <div>{formatUsage(promo.used, promo.limit)}</div>
+                </div>
+                <div>
+                  <div className="text-uppercase text-muted small mb-1">Окончание</div>
+                  <div>{formatDateTime(promo.endsAt)}</div>
+                </div>
+              </div>
+
+              <div className="d-flex flex-column flex-lg-row gap-3 align-items-start">
+                <div className="text-muted small">
+                  <div className="text-uppercase text-muted mb-1">Условия</div>
+                  <div>{conditions || '—'}</div>
+                </div>
+                <div className="text-muted small">
+                  <div className="text-uppercase text-muted mb-1">Тип</div>
+                  <div>{promo.type?.name ?? '—'}</div>
+                </div>
+                <div className="ms-auto">
+                  <Button variant="outline-primary" size="sm" onClick={() => onSelect?.(promo)}>
+                    Открыть
+                  </Button>
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+        );
+      })}
+    </Stack>
   );
 }
