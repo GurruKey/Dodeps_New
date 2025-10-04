@@ -28,6 +28,16 @@
   background: var(--bs-body-bg);
 }
 
+.activation-chart--dense .activation-chart__grid {
+  overflow-x: auto;
+  gap: 0.5rem;
+}
+
+.activation-chart--dense .activation-chart__column {
+  flex: 0 0 auto;
+  min-width: 2rem;
+}
+
 .activation-chart__column {
   flex: 1 1 0;
   display: flex;
@@ -35,6 +45,22 @@
   align-items: center;
   gap: 0.5rem;
   min-width: 1.5rem;
+}
+
+.activation-chart__column--interactive {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.activation-chart__column--interactive:focus-visible {
+  outline: none;
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.35);
+  border-radius: var(--bs-border-radius-lg);
+}
+
+.activation-chart__column--interactive:hover {
+  transform: translateY(-2px);
 }
 
 .activation-chart__bar-track {
@@ -48,11 +74,22 @@
   overflow: hidden;
 }
 
+.activation-chart__column--interactive:hover .activation-chart__bar-track,
+.activation-chart__column--interactive:focus-visible .activation-chart__bar-track {
+  background: rgba(var(--bs-primary-rgb), 0.12);
+}
+
 .activation-chart__bar-fill {
   width: 100%;
   background: var(--bs-primary);
   border-radius: var(--bs-border-radius);
   transition: height 0.3s ease;
+}
+
+.activation-chart__column--interactive:hover .activation-chart__bar-fill,
+.activation-chart__column--interactive:focus-visible .activation-chart__bar-fill {
+  background: var(--bs-primary);
+  filter: brightness(1.1);
 }
 
 .activation-chart__bar-value {
@@ -62,6 +99,10 @@
 
 .activation-chart__bar-label {
   font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+.activation-chart__breadcrumbs {
   color: var(--bs-secondary-color);
 }
 
