@@ -94,7 +94,7 @@ export default function CategoriesPage() {
             ))}
             {list.length === 0 && (
               <Col>
-                <Card className="border-0 bg-light">
+                <Card className="border-0 surface-card">
                   <Card.Body>
                     <div className="text-muted">Пока пусто.</div>
                   </Card.Body>
