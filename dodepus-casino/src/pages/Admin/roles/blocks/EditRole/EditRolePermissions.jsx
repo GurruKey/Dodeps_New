@@ -60,7 +60,6 @@ export default function EditRolePermissions() {
   const [activeCategory, setActiveCategory] = useState(roleCategories[0].key);
   const [expandedRoles, setExpandedRoles] = useState([]);
   const [pendingChange, setPendingChange] = useState(null);
-  const [commentValue, setCommentValue] = useState('');
 
   useEffect(() => {
     const target = typeof window !== 'undefined' ? window : globalThis;
@@ -150,7 +149,6 @@ export default function EditRolePermissions() {
 
   const handleCloseModal = () => {
     setPendingChange(null);
-    setCommentValue('');
   };
 
   const requestPermissionToggle = (event, role, permissionKey) => {
@@ -168,15 +166,10 @@ export default function EditRolePermissions() {
       currentValue,
       nextValue: !currentValue,
     });
-    setCommentValue('');
   };
 
-  const handleConfirmChange = (event) => {
-    event.preventDefault();
+  const handleConfirmChange = (comment) => {
     if (!pendingChange) return;
-
-    const comment = commentValue.trim();
-    if (!comment) return;
 
     const { roleId, roleName, permissionKey, permissionLabel, currentValue, nextValue } =
       pendingChange;
@@ -322,45 +315,70 @@ export default function EditRolePermissions() {
         </Stack>
       </Card.Body>
 
-      <Modal show={Boolean(pendingChange)} onHide={handleCloseModal} centered>
-        <Form onSubmit={handleConfirmChange}>
-          <Modal.Header closeButton>
-            <Modal.Title>Подтверждение изменения</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Stack gap={3}>
-              <div>
-                <div className="fw-semibold">{pendingChange?.roleName}</div>
-                <div className="text-muted small">
-                  {pendingChange?.nextValue ? 'Включить' : 'Отключить'} «{pendingChange?.permissionLabel}»
-                </div>
-              </div>
-              <Form.Group controlId="role-permission-comment">
-                <Form.Label>Комментарий</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={commentValue}
-                  onChange={(event) => setCommentValue(event.target.value)}
-                  placeholder="Опишите причину изменения доступа"
-                  autoFocus
-                />
-                <Form.Text className="text-muted">
-                  Запись об изменении сохранится через локальный симулятор сразу после подтверждения.
-                </Form.Text>
-              </Form.Group>
-            </Stack>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="outline-secondary" onClick={handleCloseModal}>
-              Отмена
-            </Button>
-            <Button type="submit" disabled={!commentValue.trim()}>
-              Подтвердить
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
+      <ConfirmChangeModal
+        pendingChange={pendingChange}
+        onCancel={handleCloseModal}
+        onConfirm={handleConfirmChange}
+      />
     </Card>
+  );
+}
+
+function ConfirmChangeModal({ pendingChange, onCancel, onConfirm }) {
+  const [commentValue, setCommentValue] = useState('');
+
+  useEffect(() => {
+    if (pendingChange) {
+      setCommentValue('');
+    }
+  }, [pendingChange]);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const comment = commentValue.trim();
+    if (!comment) return;
+    onConfirm(comment);
+  };
+
+  return (
+    <Modal show={Boolean(pendingChange)} onHide={onCancel} centered>
+      <Form onSubmit={handleSubmit}>
+        <Modal.Header closeButton>
+          <Modal.Title>Подтверждение изменения</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Stack gap={3}>
+            <div>
+              <div className="fw-semibold">{pendingChange?.roleName}</div>
+              <div className="text-muted small">
+                {pendingChange?.nextValue ? 'Включить' : 'Отключить'} «{pendingChange?.permissionLabel}»
+              </div>
+            </div>
+            <Form.Group controlId="role-permission-comment">
+              <Form.Label>Комментарий</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={commentValue}
+                onChange={(event) => setCommentValue(event.target.value)}
+                placeholder="Опишите причину изменения доступа"
+                autoFocus
+              />
+              <Form.Text className="text-muted">
+                Запись об изменении сохранится через локальный симулятор сразу после подтверждения.
+              </Form.Text>
+            </Form.Group>
+          </Stack>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={onCancel}>
+            Отмена
+          </Button>
+          <Button type="submit" disabled={!commentValue.trim()}>
+            Подтвердить
+          </Button>
+        </Modal.Footer>
+      </Form>
+    </Modal>
   );
 }
