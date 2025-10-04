@@ -81,7 +81,7 @@ const getRoleConfigById = (roleId) => {
   return normalizeRoleConfig(match);
 };
 
-const collectRoles = (record, { group, isAdmin }) => {
+const collectRoles = (record, { id, group, isAdmin }) => {
   const allowAdmin = Boolean(isAdmin);
   const roles = [];
 
@@ -104,6 +104,7 @@ const collectRoles = (record, { group, isAdmin }) => {
   };
 
   addRole(group);
+  addRole(id);
   addRole(record?.role);
   addRole(record?.app_metadata?.role);
   addRole(record?.user_metadata?.role);
@@ -125,6 +126,7 @@ const applyRoleToRecord = (record, roleConfig) => {
 
   const appMetadata = {
     ...(record.app_metadata ?? {}),
+    roleId: roleConfig.id,
     role: group,
     roles: mergedRoles,
     isAdmin,
@@ -132,6 +134,7 @@ const applyRoleToRecord = (record, roleConfig) => {
 
   const userMetadata = {
     ...(record.user_metadata ?? {}),
+    roleId: roleConfig.id,
     role: group,
     roles: mergedRoles,
     isAdmin,
@@ -152,6 +155,7 @@ const applyRoleToRecord = (record, roleConfig) => {
   const updatedRecord = {
     ...record,
     role: group,
+    roleId: roleConfig.id,
     roles: mergedRoles,
     roleLevel: typeof level === 'number' ? level : undefined,
     isAdmin,

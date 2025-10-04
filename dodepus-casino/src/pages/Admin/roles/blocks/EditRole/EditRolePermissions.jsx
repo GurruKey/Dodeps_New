@@ -4,17 +4,39 @@ import {
   rolePermissionMatrix,
   roleMatrixLegend,
 } from '../../data/roleConfigs.js';
+import {
+  loadAdminPanelVisibility,
+  setAdminPanelVisibilityForRole,
+} from '../../../../../../local-sim/auth/admin/adminPanelVisibility';
 
 const permissionKeys = Object.keys(roleMatrixLegend);
 
 export default function EditRolePermissions() {
-  const [matrix, setMatrix] = useState(rolePermissionMatrix);
+  const initialVisibility = useMemo(() => loadAdminPanelVisibility(), []);
+  const [matrix, setMatrix] = useState(() =>
+    rolePermissionMatrix.map((role) => ({
+      ...role,
+      permissions: {
+        ...role.permissions,
+        adminPanel:
+          initialVisibility[role.roleId] ?? role.permissions.adminPanel ?? false,
+      },
+    }))
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState(null);
 
   const selectedRole = useMemo(() => matrix[0], [matrix]);
 
   const handleToggle = (roleId, permissionKey) => {
+    const targetRole = matrix.find((role) => role.roleId === roleId);
+    const currentValue = targetRole?.permissions?.[permissionKey] ?? false;
+    const nextValue = !currentValue;
+
+    if (permissionKey === 'adminPanel') {
+      setAdminPanelVisibilityForRole(roleId, nextValue);
+    }
+
     setMatrix((prev) =>
       prev.map((role) =>
         role.roleId === roleId
@@ -22,7 +44,7 @@ export default function EditRolePermissions() {
               ...role,
               permissions: {
                 ...role.permissions,
-                [permissionKey]: !role.permissions[permissionKey],
+                [permissionKey]: nextValue,
               },
             }
           : role,
@@ -103,7 +125,9 @@ export default function EditRolePermissions() {
                 <Card.Text className="mb-0">
                   Активные переключатели определяют видимость вкладок и доступ к действиям в панели.
                   Например, если отключить «{roleMatrixLegend.chat}» для «{selectedRole.roleName}», то
-                  для этой роли исчезнут раздел чата и все инструменты модерации переписки.
+                  для этой роли исчезнут раздел чата и все инструменты модерации переписки. Тумблер
+                  «{roleMatrixLegend.adminPanel}» синхронизируется с локальной симуляцией и управляет
+                  доступностью самой админ-панели для выбранной роли.
                 </Card.Text>
               </Card.Body>
             </Card>

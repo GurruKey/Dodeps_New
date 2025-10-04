@@ -1,4 +1,5 @@
 import { pickExtras } from './profileExtras';
+import { availableRoles } from '../../src/pages/Admin/roles/data/roleConfigs.js';
 
 export const isAdminUser = (user) =>
   Boolean(
@@ -16,6 +17,53 @@ const resolveAdminFlag = (record, extras) => {
     metadataRole === 'admin' ||
     Boolean(record?.user_metadata?.isAdmin)
   );
+};
+
+const resolveRoleId = (record, extras) => {
+  const directValues = [
+    record?.roleId,
+    record?.user_metadata?.roleId,
+    record?.app_metadata?.roleId,
+    extras?.roleId,
+  ];
+
+  for (const value of directValues) {
+    if (!value) continue;
+    const candidate = availableRoles.find((role) => role.id === value);
+    if (candidate) {
+      return candidate.id;
+    }
+  }
+
+  const group =
+    record?.role ||
+    record?.app_metadata?.role ||
+    record?.user_metadata?.role ||
+    extras?.role ||
+    null;
+
+  if (!group) return null;
+
+  const levelValues = [
+    record?.roleLevel,
+    record?.app_metadata?.roleLevel,
+    record?.app_metadata?.level,
+    record?.user_metadata?.roleLevel,
+    record?.user_metadata?.level,
+    extras?.roleLevel,
+  ].filter((value) => typeof value === 'number' && Number.isFinite(value));
+
+  const level = levelValues.length ? levelValues[0] : null;
+
+  const match = availableRoles.find((role) => {
+    if (role.group !== group) return false;
+    if (typeof role.level === 'number') {
+      return level !== null && role.level === level;
+    }
+    return level === null;
+  });
+
+  return match?.id ?? null;
 };
 
 export function composeUser(record, extras) {
@@ -50,6 +98,7 @@ export function composeUser(record, extras) {
     user_metadata: record.user_metadata ?? {},
     roles,
     role,
+    roleId: resolveRoleId(record, extras),
     isAdmin: resolveAdminFlag(record, extras),
     ...pickExtras({ ...extras, emailVerified, email: record.email, phone: record.phone }),
   };

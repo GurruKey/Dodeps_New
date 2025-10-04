@@ -12,6 +12,10 @@ import {
 } from 'react-bootstrap';
 import { availableRoles } from '../../data/roleConfigs.js';
 import { assignUserRole } from '../../../../../features/auth/api.js';
+import {
+  loadAdminPanelVisibility,
+  setAdminPanelVisibilityForRole,
+} from '../../../../../../local-sim/auth/admin/adminPanelVisibility';
 
 const idPlaceholderExamples = ['ID-10192', 'ID-20204', 'ID-30881'];
 
@@ -21,12 +25,28 @@ export default function AssignRole({ statusMessage = '' }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastIssuedRole, setLastIssuedRole] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [adminVisibility, setAdminVisibility] = useState(() => loadAdminPanelVisibility());
   const { onReload } = useOutletContext() ?? {};
 
   const placeholder = useMemo(() => {
     const index = Math.floor(Math.random() * idPlaceholderExamples.length);
     return `Например: ${idPlaceholderExamples[index]}`;
   }, []);
+
+  const selectedRoleConfig = useMemo(
+    () => availableRoles.find((role) => role.id === selectedRole) ?? null,
+    [selectedRole]
+  );
+
+  const canSelectedRoleSeeAdminPanel = selectedRole
+    ? adminVisibility[selectedRole] ?? false
+    : false;
+
+  const handleAdminPanelSwitch = (nextValue) => {
+    if (!selectedRole) return;
+    const nextVisibility = setAdminPanelVisibilityForRole(selectedRole, nextValue);
+    setAdminVisibility(nextVisibility);
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -42,7 +62,7 @@ export default function AssignRole({ statusMessage = '' }) {
         roleId: selectedRole,
       });
 
-      const roleConfig = availableRoles.find((role) => role.id === selectedRole);
+      const roleConfig = selectedRoleConfig;
       setLastIssuedRole({
         userId: updatedUser?.id ?? trimmedId,
         roleName: roleConfig?.name ?? roleConfig?.id ?? selectedRole,
@@ -114,8 +134,27 @@ export default function AssignRole({ statusMessage = '' }) {
                 ))}
               </Form.Select>
               <Form.Text>
-                {availableRoles.find((role) => role.id === selectedRole)?.description ?? ''}
+                {selectedRoleConfig?.description ?? ''}
               </Form.Text>
+              <div className="mt-3">
+                <Form.Check
+                  type="switch"
+                  id="assign-role-admin-panel"
+                  label={
+                    canSelectedRoleSeeAdminPanel
+                      ? 'Админ-панель доступна'
+                      : 'Админ-панель скрыта'
+                  }
+                  checked={canSelectedRoleSeeAdminPanel}
+                  onChange={(event) => handleAdminPanelSwitch(event.target.checked)}
+                  disabled={!selectedRole}
+                />
+                <Form.Text>
+                  Переключатель сохраняется в локальной симуляции и управляет тем,
+                  видят ли сотрудники с ролью «{selectedRoleConfig?.name ?? selectedRole}»
+                  раздел админ-панели.
+                </Form.Text>
+              </div>
             </Col>
           </Row>
 
