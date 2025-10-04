@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import {
+  Alert,
   Button,
   Card,
   Col,
@@ -9,6 +11,7 @@ import {
   Stack,
 } from 'react-bootstrap';
 import { availableRoles } from '../../data/roleConfigs.js';
+import { assignUserRole } from '../../../../../features/auth/api.js';
 
 const idPlaceholderExamples = ['ID-10192', 'ID-20204', 'ID-30881'];
 
@@ -17,26 +20,51 @@ export default function AssignRole({ statusMessage = '' }) {
   const [selectedRole, setSelectedRole] = useState(availableRoles[0]?.id ?? '');
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastIssuedRole, setLastIssuedRole] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const { onReload } = useOutletContext() ?? {};
 
   const placeholder = useMemo(() => {
     const index = Math.floor(Math.random() * idPlaceholderExamples.length);
     return `Например: ${idPlaceholderExamples[index]}`;
   }, []);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!searchId.trim() || !selectedRole) return;
+    const trimmedId = searchId.trim();
+    if (!trimmedId || !selectedRole) return;
 
     setIsProcessing(true);
-    window.setTimeout(() => {
-      const roleName = availableRoles.find((role) => role.id === selectedRole)?.name ?? selectedRole;
+    setErrorMessage('');
+
+    try {
+      const updatedUser = await assignUserRole({
+        userId: trimmedId,
+        roleId: selectedRole,
+      });
+
+      const roleConfig = availableRoles.find((role) => role.id === selectedRole);
       setLastIssuedRole({
-        userId: searchId.trim(),
-        roleName,
+        userId: updatedUser?.id ?? trimmedId,
+        roleName: roleConfig?.name ?? roleConfig?.id ?? selectedRole,
+        roleGroup: roleConfig?.group ?? updatedUser?.role ?? null,
+        roleLevel:
+          typeof roleConfig?.level === 'number'
+            ? roleConfig.level
+            : typeof updatedUser?.roleLevel === 'number'
+            ? updatedUser.roleLevel
+            : null,
         issuedAt: new Date().toLocaleString('ru-RU'),
       });
+
+      if (typeof onReload === 'function') {
+        onReload();
+      }
+    } catch (error) {
+      setLastIssuedRole(null);
+      setErrorMessage(error instanceof Error ? error.message : 'Не удалось назначить роль.');
+    } finally {
       setIsProcessing(false);
-    }, 550);
+    }
   };
 
   return (
@@ -101,12 +129,20 @@ export default function AssignRole({ statusMessage = '' }) {
               onClick={() => {
                 setSearchId('');
                 setSelectedRole(availableRoles[0]?.id ?? '');
+                setErrorMessage('');
+                setLastIssuedRole(null);
               }}
               disabled={isProcessing}
             >
               Сбросить
             </Button>
           </div>
+
+          {errorMessage && (
+            <Alert variant="danger" className="mb-0">
+              {errorMessage}
+            </Alert>
+          )}
 
           {lastIssuedRole && (
             <Card className="bg-light border-0">
