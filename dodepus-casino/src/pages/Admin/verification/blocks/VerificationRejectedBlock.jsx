@@ -8,13 +8,18 @@ export default function VerificationRejectedBlock({
   onView,
   isVisible = true,
 }) {
+  const totalRequests = Array.isArray(requests) ? requests.length : 0;
+
   return (
     <Card>
       <Card.Body>
         <div className="d-flex flex-column flex-lg-row gap-3 align-items-lg-center justify-content-between">
           <div>
             <Card.Title as="h3" className="mb-1">
-              Отказано
+              <span className="d-inline-flex align-items-center gap-2">
+                <span>Отказано</span>
+                <span className="fw-semibold text-secondary">{totalRequests}</span>
+              </span>
             </Card.Title>
             <Card.Text className="text-muted mb-0">
               Заявки, которые не прошли проверку. Пользователю потребуется повторно отправить данные.
@@ -32,7 +37,7 @@ export default function VerificationRejectedBlock({
         <Card.Body className="border-top text-secondary small">
           Список скрыт. Нажмите «Просмотр», чтобы загрузить заявки.
         </Card.Body>
-      ) : requests.length === 0 ? (
+      ) : totalRequests === 0 ? (
         <Card.Body className="border-top text-secondary small">
           {loading ? 'Загрузка…' : 'Отказов нет.'}
         </Card.Body>

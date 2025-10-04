@@ -12,6 +12,7 @@ export default function VerificationPartialBlock({
   isVisible = true,
 }) {
   const isBusy = (requestId) => busyId === requestId;
+  const totalRequests = Array.isArray(requests) ? requests.length : 0;
 
   return (
     <Card>
@@ -19,7 +20,10 @@ export default function VerificationPartialBlock({
         <div className="d-flex flex-column flex-lg-row gap-3 align-items-lg-center justify-content-between">
           <div>
             <Card.Title as="h3" className="mb-1">
-              Частичная верификация
+              <span className="d-inline-flex align-items-center gap-2">
+                <span>Частичная верификация</span>
+                <span className="fw-semibold text-secondary">{totalRequests}</span>
+              </span>
             </Card.Title>
             <Card.Text className="text-muted mb-0">
               Заявки, в которых подтверждены не все поля. Проверьте обновлённые данные и завершите процесс.
@@ -37,7 +41,7 @@ export default function VerificationPartialBlock({
         <Card.Body className="border-top text-secondary small">
           Список скрыт. Нажмите «Просмотр», чтобы загрузить заявки.
         </Card.Body>
-      ) : requests.length === 0 ? (
+      ) : totalRequests === 0 ? (
         <Card.Body className="border-top text-secondary small">
           {loading ? 'Загрузка…' : 'Нет заявок на частичную проверку.'}
         </Card.Body>
