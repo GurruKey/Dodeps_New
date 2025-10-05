@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Card, Form, Row, Col, InputGroup, Badge, Dropdown, Alert } from 'react-bootstrap';
+import { Card, Form, Row, Col, InputGroup, Dropdown, Alert } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/AuthContext.jsx';
 
 const DIAL_CODES = ['+380', '+7', '+375', '+370', '+371', '+372', '+48', '+995', '+374'];
@@ -245,10 +245,12 @@ export default function ContactsBlock() {
                 autoComplete="email"
                 isInvalid={Boolean(emailError)}
               />
-              <InputGroup.Text className={emailBadge.className} style={controlHeight}>
-                <Badge bg={emailBadge.variant || 'secondary'}>{emailBadge.label}</Badge>
-              </InputGroup.Text>
             </InputGroup>
+            <div className="mt-2">
+              <span className={`badge rounded-pill px-3 py-2 ${emailBadge.className}`}>
+                {emailBadge.label}
+              </span>
+            </div>
             {emailError && (
               <Form.Text className="text-danger d-block mt-1">{emailError}</Form.Text>
             )}

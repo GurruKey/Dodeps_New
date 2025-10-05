@@ -171,17 +171,18 @@ export default function VerificationStatusBlock() {
                 </span>
               );
 
-              const showActionButton = state === 'idle' || state === 'rejected';
+              const canNavigateToPersonal = !item.done && (state === 'idle' || state === 'rejected');
+              const canSubmit = item.done && (state === 'idle' || state === 'rejected');
               const buttonVariant = state === 'rejected' ? 'warning' : 'primary';
-              const actionDisabled = isSubmitting || !item.done;
               const buttonLabel =
                 isSubmitting && submittingKey === item.key ? 'Отправка…' : 'Подтвердить';
+              const showFillHint = !item.done && (state === 'idle' || state === 'rejected');
 
               return (
                 <Col key={item.key} xs={6} md={3} className="d-flex flex-column align-items-center">
                   <div className="fw-medium mb-2">{item.label}</div>
 
-                  {state === 'idle' && !item.done ? (
+                  {canNavigateToPersonal ? (
                     <Button
                       variant="link"
                       className="p-0 text-decoration-none"
@@ -202,18 +203,14 @@ export default function VerificationStatusBlock() {
                     <div className="mt-2 small fw-semibold text-warning">Ожидание</div>
                   ) : null}
 
-                  {showActionButton ? (
+                  {canSubmit ? (
                     <Button
                       type="button"
                       size="sm"
                       variant={buttonVariant}
                       className="mt-2 px-3"
-                      disabled={actionDisabled}
+                      disabled={isSubmitting}
                       onClick={() => {
-                        if (!item.done) {
-                          navigate('/profile/personal');
-                          return;
-                        }
                         handleSubmit(item.key);
                       }}
                     >
@@ -221,9 +218,15 @@ export default function VerificationStatusBlock() {
                     </Button>
                   ) : null}
 
-                  {state === 'approved' ? null : state === 'pending' ? null : showActionButton && !item.done ? (
-                    <div className="mt-2 small text-muted">Заполните данные профиля</div>
-                  ) : null}
+                  {state === 'approved'
+                    ? null
+                    : state === 'pending'
+                      ? null
+                      : showFillHint
+                        ? (
+                            <div className="mt-2 small text-muted">Заполните данные профиля</div>
+                          )
+                        : null}
                 </Col>
               );
             })}
