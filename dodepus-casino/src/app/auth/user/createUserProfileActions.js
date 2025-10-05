@@ -47,8 +47,8 @@ export function createUserProfileActions({ user, setUser }) {
 
   const addTransaction = (txn) => syncExtras((actions) => actions.addTransaction(txn));
 
-  const addVerificationUpload = (file) =>
-    syncExtras((actions) => actions.addVerificationUpload(file));
+  const addVerificationUpload = (payload) =>
+    syncExtras((actions) => actions.addVerificationUpload(payload));
 
   const submitVerificationRequest = (statusMap) =>
     syncExtras((actions) => actions.submitVerificationRequest(statusMap));
