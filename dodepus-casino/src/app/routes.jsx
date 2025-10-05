@@ -26,15 +26,15 @@ import NotFound from '../pages/NotFound.jsx';
 import Login from '../pages/auth/Login.jsx';
 import Register from '../pages/auth/Register.jsx';
 
-import ProfileLayout from '../pages/profile/ProfileLayout.jsx';
-import Personal from '../pages/profile/Personal.jsx';
-import Wallet from '../pages/profile/Wallet.jsx';
-import Terminal from '../pages/profile/Terminal.jsx';
-import History from '../pages/profile/History.jsx';
-import Verification from '../pages/profile/Verification.jsx';
-import Promos from '../pages/profile/Promos.jsx';
-import Season from '../pages/profile/Season.jsx';
-import GamesHistory from '../pages/profile/GamesHistory.jsx';
+import ProfileLayout from '../pages/profile/layout';
+import Personal from '../pages/profile/personal';
+import Wallet from '../pages/profile/wallet';
+import Terminal from '../pages/profile/terminal';
+import History from '../pages/profile/history';
+import Verification from '../pages/profile/verification';
+import Promos from '../pages/profile/promos';
+import Season from '../pages/profile/season';
+import GamesHistory from '../pages/profile/games-history';
 
 function RequireAuth({ children }) {
   const { isAuthed } = useAuth();

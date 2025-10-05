@@ -84,35 +84,67 @@ src/
       Register.jsx
 
     profile/
-      ProfileLayout.jsx      # левое меню с разделителями и бейджем баланса
-      Personal.jsx            # Вкладка «Персональные данные»
-      Wallet.jsx              # Вкладка «Баланс» (3 блока)
-      Terminal.jsx            # Вкладка «Терминал» (2 блока)
-      History.jsx             # Вкладка «История транзакций»
-      Verification.jsx        # Вкладка «Верификация»
-      Promos.jsx              # Вкладка «Акции для игры»
-      Season.jsx              # Вкладка «Сезон»
-      GamesHistory.jsx        # Вкладка «История игр»
-
-      blocks/
-        Personal/
-          AccountIdBlock.jsx
-          NicknameBlock.jsx
-          NameBlock.jsx
-          GenderDobBlock.jsx
-          SocialStatusBlock.jsx
-          AddressBlock.jsx
-          ContactsBlock.jsx
-          AuthenticatorBlock.jsx
-        Wallet/
-          BalanceSummaryBlock.jsx
-          RealBalanceBlock.jsx
-          WithdrawableBlock.jsx
-        Terminal/
-          DepositBlock.jsx
-          WithdrawBlock.jsx
-        History/
-          TransactionsBlock.jsx
+      layout/
+        ProfileLayout.jsx    # левое меню с разделителями и бейджем баланса
+      personal/
+        Personal.jsx          # вкладка «Персональные данные»
+        blocks/
+          AccountIdBlock/
+            AccountIdBlock.jsx
+          AddressBlock/
+            AddressBlock.jsx
+          ContactsBlock/
+            ContactsBlock.jsx
+          GenderDobBlock/
+            GenderDobBlock.jsx
+          NameBlock/
+            NameBlock.jsx
+          NicknameBlock/
+            NicknameBlock.jsx
+          SavePersonalBlock/
+            SavePersonalBlock.jsx
+          SocialStatusBlock/
+            SocialStatusBlock.jsx
+          AuthenticatorBlock/
+            AuthenticatorBlock.jsx
+      wallet/
+        Wallet.jsx            # вкладка «Баланс» (3 блока + казино баланс)
+        blocks/
+          BalanceSummaryBlock/
+            BalanceSummaryBlock.jsx
+          CasinoBalanceBlock/
+            CasinoBalanceBlock.jsx
+          RealBalanceBlock/
+            RealBalanceBlock.jsx
+          WithdrawableBlock/
+            WithdrawableBlock.jsx
+      terminal/
+        Terminal.jsx          # вкладка «Терминал» (2 блока)
+        blocks/
+          DepositBlock/
+            DepositBlock.jsx
+          WithdrawBlock/
+            WithdrawBlock.jsx
+      history/
+        History.jsx           # вкладка «История транзакций»
+        blocks/
+          TransactionsBlock/
+            TransactionsBlock.jsx
+      verification/
+        Verification.jsx      # вкладка «Верификация»
+        blocks/
+          VerificationStatusBlock/
+            VerificationStatusBlock.jsx
+          VerificationUploadBlock/
+            VerificationUploadBlock.jsx
+          VerificationHistoryBlock/
+            VerificationHistoryBlock.jsx
+      promos/
+        Promos.jsx            # вкладка «Акции для игры»
+      season/
+        Season.jsx            # вкладка «Сезон»
+      games-history/
+        GamesHistory.jsx      # вкладка «История игр»
 
   shared/
     ui/
