@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, Form } from 'react-bootstrap';
-import { useAuth } from '../../../../app/AuthContext.jsx';
+import { useAuth } from '../../../../../app/AuthContext.jsx';
 
 const options = [
   { value: 'employed',   label: 'Трудоустроен(а)' },

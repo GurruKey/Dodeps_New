@@ -27,7 +27,7 @@ import Login from '../pages/auth/Login.jsx';
 import Register from '../pages/auth/Register.jsx';
 
 import ProfileLayout from '../pages/profile/ProfileLayout.jsx';
-import Personal from '../pages/profile/Personal.jsx';
+import Personal from '../pages/profile/personal';
 import Wallet from '../pages/profile/Wallet.jsx';
 import Terminal from '../pages/profile/Terminal.jsx';
 import History from '../pages/profile/History.jsx';
