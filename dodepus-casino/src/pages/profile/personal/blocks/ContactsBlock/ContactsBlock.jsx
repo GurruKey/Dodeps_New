@@ -34,15 +34,12 @@ const getLatestFieldRequest = (requests, fieldKey) => {
   }, null);
 };
 
-const normalizeEmail = (value) => String(value ?? '').trim().toLowerCase();
-
 export default function ContactsBlock() {
   const { user, updateContacts } = useAuth();
 
   const phoneInitial = useMemo(() => splitPhone(user?.phone || ''), [user?.phone]);
   const [dial, setDial] = useState(phoneInitial.dial);
   const [number, setNumber] = useState(phoneInitial.number.replace(/\D/g, ''));
-  const [email, setEmail] = useState(user?.email ?? '');
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -51,13 +48,7 @@ export default function ContactsBlock() {
     setNumber(next.number.replace(/\D/g, ''));
   }, [user?.phone]);
 
-  useEffect(() => {
-    setEmail(user?.email ?? '');
-  }, [user?.email]);
-
-  const trimmedEmail = useMemo(() => email.trim(), [email]);
-  const normalizedEmail = useMemo(() => normalizeEmail(email), [email]);
-  const originalEmail = useMemo(() => normalizeEmail(user?.email ?? ''), [user?.email]);
+  const email = useMemo(() => user?.email ?? '', [user?.email]);
 
   const currentPhone = useMemo(() => {
     const digits = number.replace(/\D/g, '');
@@ -70,19 +61,9 @@ export default function ContactsBlock() {
     return digits ? `${origin.dial}${digits}` : '';
   }, [user?.phone]);
 
-  const emailRequest = useMemo(
-    () => getLatestFieldRequest(user?.verificationRequests, 'email'),
-    [user?.verificationRequests],
-  );
-
   const phoneRequest = useMemo(
     () => getLatestFieldRequest(user?.verificationRequests, 'phone'),
     [user?.verificationRequests],
-  );
-
-  const emailRequestStatus = useMemo(
-    () => String(emailRequest?.status || '').toLowerCase(),
-    [emailRequest],
   );
 
   const phoneRequestStatus = useMemo(
@@ -90,13 +71,11 @@ export default function ContactsBlock() {
     [phoneRequest],
   );
 
-  const emailVerified = Boolean(user?.emailVerified);
-  const emailLocked = emailVerified || LOCK_STATUSES.has(emailRequestStatus);
+  const emailLocked = true;
   const phoneLocked = LOCK_STATUSES.has(phoneRequestStatus);
 
-  const emailChanged = !emailLocked && normalizedEmail !== originalEmail;
   const phoneChanged = !phoneLocked && currentPhone !== originalPhone;
-  const hasChanges = emailChanged || phoneChanged;
+  const hasChanges = phoneChanged;
 
   useEffect(() => {
     const id = 'block:contacts';
@@ -109,14 +88,13 @@ export default function ContactsBlock() {
 
   useEffect(() => {
     setError(null);
-  }, [trimmedEmail, dial, number, emailLocked, phoneLocked]);
+  }, [dial, number, phoneLocked]);
 
   useEffect(() => {
     const onSave = async () => {
       if (!hasChanges || typeof updateContacts !== 'function') return;
 
       const payload = {};
-      if (emailChanged) payload.email = trimmedEmail;
       if (phoneChanged) payload.phone = currentPhone;
 
       try {
@@ -135,36 +113,12 @@ export default function ContactsBlock() {
 
     window.addEventListener('personal:save', onSave);
     return () => window.removeEventListener('personal:save', onSave);
-  }, [hasChanges, updateContacts, emailChanged, phoneChanged, trimmedEmail, currentPhone]);
+  }, [hasChanges, updateContacts, phoneChanged, currentPhone]);
 
-  const emailError = error && /mail/i.test(error) ? error : null;
   const phoneError = error && /(телефон|номер)/i.test(error) ? error : null;
-  const generalError = error && !emailError && !phoneError ? error : null;
+  const generalError = error && !phoneError ? error : null;
 
   const controlHeight = { minHeight: 'calc(1.5em + .75rem + 2px)' };
-
-  const emailBadge = (() => {
-    if (!trimmedEmail) {
-      return { label: 'Не указан', className: 'bg-secondary-subtle text-secondary' };
-    }
-    if (emailVerified || emailRequestStatus === 'approved') {
-      return { label: 'Подтверждён', className: 'bg-success-subtle text-success', variant: 'success' };
-    }
-    if (LOCK_STATUSES.has(emailRequestStatus) && emailRequestStatus !== 'approved') {
-      return { label: 'В проверке', className: 'bg-warning-subtle text-warning', variant: 'warning' };
-    }
-    return { label: 'Не подтверждён', className: 'bg-secondary-subtle text-secondary', variant: 'secondary' };
-  })();
-
-  const emailLockHint = (() => {
-    if (emailVerified || emailRequestStatus === 'approved') {
-      return 'Адрес подтверждён и недоступен для изменения.';
-    }
-    if (LOCK_STATUSES.has(emailRequestStatus) && emailRequestStatus !== 'approved') {
-      return 'Изменение адреса заблокировано, пока идёт проверка.';
-    }
-    return null;
-  })();
 
   const phoneLockHint = (() => {
     if (phoneRequestStatus === 'approved') {
@@ -239,29 +193,12 @@ export default function ContactsBlock() {
               <Form.Control
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                readOnly
                 disabled={emailLocked}
                 style={controlHeight}
                 autoComplete="email"
-                isInvalid={Boolean(emailError)}
               />
             </InputGroup>
-            <div className="mt-2">
-              <span className={`badge rounded-pill px-3 py-2 ${emailBadge.className}`}>
-                {emailBadge.label}
-              </span>
-            </div>
-            {emailError && (
-              <Form.Text className="text-danger d-block mt-1">{emailError}</Form.Text>
-            )}
-            {emailLockHint && (
-              <Form.Text className="text-muted d-block mt-1">{emailLockHint}</Form.Text>
-            )}
-            {!emailLockHint && (
-              <Form.Text className="text-muted d-block mt-1">
-                Сохраняйте изменения через общую кнопку «Сохранить изменения» ниже.
-              </Form.Text>
-            )}
           </Col>
         </Row>
 
