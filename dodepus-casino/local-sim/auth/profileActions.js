@@ -111,9 +111,34 @@ export const createProfileActions = (uid) => {
     return nextExtras;
   };
 
-  const addVerificationUpload = (file) =>
+  const addVerificationUpload = (input) =>
     persistExtras(uid, (current) => {
+      if (!input) return current;
+
+      const payload = (() => {
+        if (input && typeof input === 'object' && 'file' in input) {
+          return {
+            file: input.file,
+            category: input.verificationKind || input.category || input.kind,
+            documentType: input.verificationType || input.documentType,
+            documentLabel: input.verificationLabel || input.documentLabel,
+          };
+        }
+
+        return { file: input };
+      })();
+
+      const file = payload.file;
       if (!file) return current;
+
+      const normalizedCategory = (() => {
+        const category = typeof payload.category === 'string' ? payload.category.toLowerCase() : '';
+        if (category === 'address') return 'address';
+        if (category === 'identity' || category === 'document' || category === 'doc') {
+          return 'identity';
+        }
+        return 'identity';
+      })();
 
       const entry = {
         id:
@@ -124,6 +149,11 @@ export const createProfileActions = (uid) => {
         type: file.type == null ? '' : file.type,
         size: toNumber(file.size, 0),
         uploadedAt: file.uploadedAt || new Date().toISOString(),
+        verificationCategory: normalizedCategory,
+        documentType:
+          typeof payload.documentType === 'string' ? payload.documentType : '',
+        documentLabel:
+          typeof payload.documentLabel === 'string' ? payload.documentLabel : '',
       };
 
       return {

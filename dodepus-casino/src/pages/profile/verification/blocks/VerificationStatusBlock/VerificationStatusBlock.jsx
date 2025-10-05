@@ -54,10 +54,29 @@ export default function VerificationStatusBlock() {
   const [submitError, setSubmitError] = useState(null);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
+  const uploads = Array.isArray(user?.verificationUploads)
+    ? user.verificationUploads
+    : [];
+
+  const normalizeUploadCategory = (upload) => {
+    const raw =
+      upload?.verificationCategory ||
+      upload?.verificationKind ||
+      upload?.category ||
+      upload?.kind;
+    const value = typeof raw === 'string' ? raw.toLowerCase() : '';
+    if (value === 'address') return 'address';
+    return 'identity';
+  };
+
+  const hasAddressUpload = uploads.some((upload) => normalizeUploadCategory(upload) === 'address');
+  const hasIdentityUpload = uploads.some((upload) => normalizeUploadCategory(upload) === 'identity');
+
   const emailDone = Boolean(user?.emailVerified);
   const phoneDone = !!(user?.phone && String(user.phone).replace(/\D/g, '').length >= 10);
-  const addressDone = !!(user?.address && String(user.address).trim().length >= 5);
-  const docDone = Array.isArray(user?.verificationUploads) && user.verificationUploads.length > 0;
+  const addressInfoProvided = !!(user?.address && String(user.address).trim().length >= 5);
+  const addressDone = addressInfoProvided && hasAddressUpload;
+  const docDone = hasIdentityUpload;
 
   const items = [
     { key: 'email', label: 'Почта', done: emailDone },
