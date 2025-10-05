@@ -24,8 +24,10 @@ const getLatestFieldRequest = (requests, fieldKey) => {
 
   return requests.reduce((latest, current) => {
     if (!current || typeof current !== 'object') return latest;
-    const completed = current?.completedFields?.[fieldKey];
-    if (!completed) return latest;
+    const hasField = Boolean(
+      current?.completedFields?.[fieldKey] || current?.requestedFields?.[fieldKey],
+    );
+    if (!hasField) return latest;
     if (!latest) return current;
 
     const latestTs = toTimestamp(latest.updatedAt || latest.reviewedAt || latest.submittedAt);
