@@ -94,13 +94,11 @@ const buildRequestEntry = (client, request) => {
 
   const completedFields = normalizeFields(request.completedFields);
   const requestedFields = normalizeFields(request.requestedFields ?? request.completedFields);
-  const totalFields = clamp(
-    toNumber(request.totalFields, Object.keys(requestedFields).length || 4),
-    1,
-    10,
-  );
+  const requestedCount = Object.values(requestedFields).filter(Boolean).length;
   const calculatedCompleted = Object.values(completedFields).filter(Boolean).length;
-  const completedCount = clamp(toNumber(request.completedCount, calculatedCompleted), 0, totalFields);
+  const baseTotal = Math.max(requestedCount, calculatedCompleted);
+  const totalFields = clamp(baseTotal || Object.keys(requestedFields).length || 4, 1, 10);
+  const completedCount = clamp(calculatedCompleted, 0, totalFields);
 
   const submittedAt = normalizeString(
     request.submittedAt || request.createdAt || request.updatedAt || '',
@@ -300,16 +298,23 @@ export const updateVerificationRequestStatus = ({ requestId, status, reviewer } 
     nextRequested = { ...nextCompleted };
   }
 
-  const completedCount = Object.values(nextCompleted).filter(Boolean).length;
-  const totalFields = clamp(
-    toNumber(previous.totalFields, Object.keys(nextRequested).length || 4),
-    1,
-    10,
-  );
+  const completedTrueCount = Object.values(nextCompleted).filter(Boolean).length;
+  const requestedTrueCount = Object.values(nextRequested).filter(Boolean).length;
+  const relevantTotal = Math.max(requestedTrueCount, completedTrueCount);
+
+  const totalFields = clamp(relevantTotal || Object.keys(nextRequested).length || 4, 1, 10);
+  const completedCount = clamp(completedTrueCount, 0, totalFields);
+  const hasOutstanding = requestedTrueCount > completedTrueCount;
+  const finalStatus =
+    normalizedStatus === 'rejected'
+      ? 'rejected'
+      : hasOutstanding
+        ? 'partial'
+        : 'approved';
 
   const updatedRequest = {
     ...previous,
-    status: normalizedStatus,
+    status: finalStatus,
     reviewerId: reviewerInfo.id,
     reviewerName: reviewerInfo.name,
     reviewerRole: reviewerInfo.role,
@@ -336,7 +341,7 @@ export const updateVerificationRequestStatus = ({ requestId, status, reviewer } 
       type: 'updated',
       requestId,
       userId: owner.id,
-      status: normalizedStatus,
+      status: finalStatus,
     });
   } catch (error) {
     console.warn('Failed to broadcast admin verification status change', error);

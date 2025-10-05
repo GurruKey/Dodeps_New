@@ -102,7 +102,43 @@ export default function Verification() {
       setActionError(null);
       setBusyId(request.id);
 
-      const nextStatus = request.completedCount >= request.totalFields ? 'approved' : 'partial';
+      const completedFields =
+        request?.completedFields && typeof request.completedFields === 'object'
+          ? request.completedFields
+          : {};
+      const requestedFields =
+        request?.requestedFields && typeof request.requestedFields === 'object'
+          ? request.requestedFields
+          : {};
+
+      const completedTrueCount = Object.values(completedFields).filter(Boolean).length;
+      const outstandingRequestedCount = Object.entries(requestedFields).reduce(
+        (total, [key, isRequested]) => {
+          if (!isRequested) {
+            return total;
+          }
+          return completedFields[key] ? total : total + 1;
+        },
+        0,
+      );
+
+      const relevantKeys = new Set([
+        ...Object.entries(completedFields)
+          .filter(([, value]) => Boolean(value))
+          .map(([key]) => key),
+        ...Object.entries(requestedFields)
+          .filter(([, value]) => Boolean(value))
+          .map(([key]) => key),
+      ]);
+
+      const relevantTotal = relevantKeys.size || completedTrueCount + outstandingRequestedCount;
+      const nextCompletedCount = Math.min(
+        relevantTotal,
+        completedTrueCount + outstandingRequestedCount,
+      );
+
+      const nextStatus =
+        relevantTotal === 0 || nextCompletedCount >= relevantTotal ? 'approved' : 'partial';
 
       try {
         await Promise.resolve(
@@ -112,6 +148,10 @@ export default function Verification() {
             reviewer,
           }),
         );
+        const maybePromise = ensureLoaded?.();
+        if (maybePromise && typeof maybePromise.catch === 'function') {
+          maybePromise.catch(() => {});
+        }
       } catch (err) {
         const normalizedError =
           err instanceof Error ? err : new Error('Не удалось обновить статус запроса');
@@ -120,7 +160,7 @@ export default function Verification() {
         setBusyId(null);
       }
     },
-    [reviewer],
+    [ensureLoaded, reviewer],
   );
 
   const handleReject = useCallback(
@@ -138,6 +178,10 @@ export default function Verification() {
             reviewer,
           }),
         );
+        const maybePromise = ensureLoaded?.();
+        if (maybePromise && typeof maybePromise.catch === 'function') {
+          maybePromise.catch(() => {});
+        }
       } catch (err) {
         const normalizedError =
           err instanceof Error ? err : new Error('Не удалось обновить статус запроса');
@@ -146,7 +190,7 @@ export default function Verification() {
         setBusyId(null);
       }
     },
-    [reviewer],
+    [ensureLoaded, reviewer],
   );
 
   const displayError = actionError || error;
