@@ -54,7 +54,11 @@ export default function VerificationPartialBlock({
                   <div className="fw-semibold">{getUserDisplayName(request)}</div>
                   <div className="text-muted small">{request.userId}</div>
                   <div className="mt-3">
-                    <VerificationFieldBadges fields={request.completedFields} />
+                    <VerificationFieldBadges
+                      fields={request.completedFields}
+                      requested={request.requestedFields}
+                      status={request.status}
+                    />
                   </div>
                 </div>
                 <div className="text-xl-center" style={{ minWidth: 140 }}>

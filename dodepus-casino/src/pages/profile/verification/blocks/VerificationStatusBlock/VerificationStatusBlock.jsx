@@ -85,6 +85,13 @@ export default function VerificationStatusBlock() {
     return latestRequest.completedFields;
   }, [latestRequest]);
 
+  const requestedFields = useMemo(() => {
+    if (!latestRequest || typeof latestRequest.requestedFields !== 'object') {
+      return {};
+    }
+    return latestRequest.requestedFields;
+  }, [latestRequest]);
+
   const isRequestPending = requestStatus === 'pending' || requestStatus === 'partial';
   const isRequestRejected = requestStatus === 'rejected';
   const isRequestApproved = requestStatus === 'approved';
@@ -129,11 +136,22 @@ export default function VerificationStatusBlock() {
   };
 
   const getStateForItem = (itemKey) => {
-    const submitted = Boolean(completedFields?.[itemKey]);
+    const isCompleted = Boolean(completedFields?.[itemKey]);
+    const isRequested = Boolean(requestedFields?.[itemKey]);
 
-    if (submitted && isRequestApproved) return 'approved';
-    if (submitted && isRequestRejected) return 'rejected';
-    if (submitted && isRequestPending) return 'pending';
+    if (isCompleted) {
+      return 'approved';
+    }
+
+    if (isRequested) {
+      if (isRequestRejected) {
+        return 'rejected';
+      }
+      if (isRequestPending) {
+        return 'pending';
+      }
+    }
+
     return 'idle';
   };
 

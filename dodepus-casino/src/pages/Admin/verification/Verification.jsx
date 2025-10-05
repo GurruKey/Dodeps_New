@@ -28,6 +28,47 @@ export default function Verification() {
     approved: false,
   }));
 
+  const latestRequests = useMemo(() => {
+    if (!Array.isArray(requests) || requests.length === 0) {
+      return [];
+    }
+
+    const byUser = new Map();
+    const getTimestamp = (entry) => {
+      if (!entry) return 0;
+      if (Number.isFinite(entry.sortTimestamp)) {
+        return entry.sortTimestamp;
+      }
+      const candidates = [entry.updatedAt, entry.reviewedAt, entry.submittedAt];
+      for (const value of candidates) {
+        if (!value) continue;
+        const parsed = Date.parse(value);
+        if (Number.isFinite(parsed)) {
+          return parsed;
+        }
+      }
+      return 0;
+    };
+
+    requests.forEach((request) => {
+      if (!request || typeof request !== 'object') {
+        return;
+      }
+
+      const key = request.userId || request.id;
+      if (!key) {
+        return;
+      }
+
+      const current = byUser.get(key);
+      if (!current || getTimestamp(request) >= getTimestamp(current)) {
+        byUser.set(key, request);
+      }
+    });
+
+    return Array.from(byUser.values()).sort((a, b) => getTimestamp(b) - getTimestamp(a));
+  }, [requests]);
+
   const grouped = useMemo(() => {
     const byStatus = {
       pending: [],
@@ -36,14 +77,14 @@ export default function Verification() {
       approved: [],
     };
 
-    requests.forEach((request) => {
+    latestRequests.forEach((request) => {
       if (!request) return;
       const bucket = byStatus[request.status] ?? byStatus.pending;
       bucket.push(request);
     });
 
     return byStatus;
-  }, [requests]);
+  }, [latestRequests]);
 
   const reviewer = useMemo(
     () => ({
