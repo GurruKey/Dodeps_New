@@ -1,5 +1,5 @@
 import { Card, Button } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/AuthContext.jsx';
+import { useAuth } from '../../../../../../app/AuthContext.jsx';
 
 export default function AccountIdBlock() {
   const { user } = useAuth();
