@@ -136,15 +136,14 @@ export const createProfileActions = (uid) => {
     let createdRequest = null;
 
     const nextExtras = persistExtras(uid, (current) => {
-      const fields = {
+      const requestedCandidates = {
         email: Boolean(statusMap.email),
         phone: Boolean(statusMap.phone),
         address: Boolean(statusMap.address),
         doc: Boolean(statusMap.doc),
       };
 
-      const totalFields = Object.keys(fields).length || 4;
-      const completedCount = Object.values(fields).filter(Boolean).length;
+      const totalFields = Object.keys(requestedCandidates).length || 4;
       const nowIso = new Date().toISOString();
 
       const baseRequest = {
@@ -156,9 +155,6 @@ export const createProfileActions = (uid) => {
         status: 'pending',
         submittedAt: nowIso,
         updatedAt: nowIso,
-        completedFields: fields,
-        completedCount,
-        totalFields,
       };
 
       const requests = Array.isArray(current.verificationRequests)
@@ -169,13 +165,34 @@ export const createProfileActions = (uid) => {
         (request) => request && request.status !== 'approved' && request.status !== 'rejected',
       );
 
+      const normalizeFields = (fields = {}) => ({
+        email: Boolean(fields.email),
+        phone: Boolean(fields.phone),
+        address: Boolean(fields.address),
+        doc: Boolean(fields.doc),
+      });
+
       if (openIndex >= 0) {
-        const existing = requests[openIndex];
+        const existing = requests[openIndex] || {};
+        const previousCompleted = normalizeFields(existing.completedFields);
+        const filteredRequested = normalizeFields({
+          email: requestedCandidates.email && !previousCompleted.email,
+          phone: requestedCandidates.phone && !previousCompleted.phone,
+          address: requestedCandidates.address && !previousCompleted.address,
+          doc: requestedCandidates.doc && !previousCompleted.doc,
+        });
+        const completedCount = Object.values(previousCompleted).filter(Boolean).length;
         const updatedRequest = {
           ...existing,
           ...baseRequest,
           id: existing.id || baseRequest.id,
-          submittedAt: nowIso,
+          completedFields: previousCompleted,
+          requestedFields: filteredRequested,
+          completedCount,
+          totalFields: existing.totalFields || totalFields,
+          reviewerId: '',
+          reviewerName: '',
+          reviewerRole: '',
         };
 
         createdRequest = updatedRequest;
@@ -186,10 +203,21 @@ export const createProfileActions = (uid) => {
         };
       }
 
-      createdRequest = baseRequest;
+      const completedFields = normalizeFields();
+      const filteredRequested = normalizeFields(requestedCandidates);
+      const completedCount = 0;
+      const nextRequest = {
+        ...baseRequest,
+        completedFields,
+        requestedFields: filteredRequested,
+        completedCount,
+        totalFields,
+      };
+
+      createdRequest = nextRequest;
       return {
         ...current,
-        verificationRequests: [baseRequest, ...requests],
+        verificationRequests: [nextRequest, ...requests],
       };
     });
 

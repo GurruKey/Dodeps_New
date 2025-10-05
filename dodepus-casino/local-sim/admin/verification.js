@@ -33,10 +33,10 @@ const normalizeStatus = (value) => {
 };
 
 const normalizeFields = (fields = {}) => ({
-  email: Boolean(fields.email),
-  phone: Boolean(fields.phone),
-  address: Boolean(fields.address),
-  doc: Boolean(fields.doc),
+  email: Boolean(fields?.email),
+  phone: Boolean(fields?.phone),
+  address: Boolean(fields?.address),
+  doc: Boolean(fields?.doc),
 });
 
 const toNumber = (value, fallback = 0) => {
@@ -92,9 +92,14 @@ const buildRequestEntry = (client, request) => {
   const id = normalizeString(request.id);
   if (!id) return null;
 
-  const fields = normalizeFields(request.completedFields);
-  const totalFields = clamp(toNumber(request.totalFields, Object.keys(fields).length || 4), 1, 10);
-  const calculatedCompleted = Object.values(fields).filter(Boolean).length;
+  const completedFields = normalizeFields(request.completedFields);
+  const requestedFields = normalizeFields(request.requestedFields ?? request.completedFields);
+  const totalFields = clamp(
+    toNumber(request.totalFields, Object.keys(requestedFields).length || 4),
+    1,
+    10,
+  );
+  const calculatedCompleted = Object.values(completedFields).filter(Boolean).length;
   const completedCount = clamp(toNumber(request.completedCount, calculatedCompleted), 0, totalFields);
 
   const submittedAt = normalizeString(
@@ -119,7 +124,8 @@ const buildRequestEntry = (client, request) => {
     submittedAt,
     updatedAt,
     reviewedAt,
-    completedFields: { ...fields },
+    completedFields: { ...completedFields },
+    requestedFields: { ...requestedFields },
     completedCount,
     totalFields,
     attachments,
@@ -279,14 +285,40 @@ export const updateVerificationRequestStatus = ({ requestId, status, reviewer } 
   const reviewerInfo = buildReviewerInfo(reviewer);
   const nowIso = new Date().toISOString();
 
+  const previous = requests[index] || {};
+  const normalizedCompleted = normalizeFields(previous.completedFields);
+  const normalizedRequested = normalizeFields(previous.requestedFields ?? previous.completedFields);
+
+  let nextCompleted = { ...normalizedCompleted };
+  let nextRequested = { ...normalizedRequested };
+
+  if (normalizedStatus === 'approved' || normalizedStatus === 'partial') {
+    nextCompleted = {
+      ...normalizedCompleted,
+      ...normalizedRequested,
+    };
+    nextRequested = { ...nextCompleted };
+  }
+
+  const completedCount = Object.values(nextCompleted).filter(Boolean).length;
+  const totalFields = clamp(
+    toNumber(previous.totalFields, Object.keys(nextRequested).length || 4),
+    1,
+    10,
+  );
+
   const updatedRequest = {
-    ...requests[index],
+    ...previous,
     status: normalizedStatus,
     reviewerId: reviewerInfo.id,
     reviewerName: reviewerInfo.name,
     reviewerRole: reviewerInfo.role,
     reviewedAt: nowIso,
     updatedAt: nowIso,
+    completedFields: nextCompleted,
+    requestedFields: nextRequested,
+    completedCount,
+    totalFields,
   };
 
   const nextRequests = requests.slice();

@@ -31,12 +31,40 @@ export const getProgressLabel = ({ completedCount = 0, totalFields = 0 } = {}) =
   return `${Math.max(0, completed)} / ${Math.max(0, total)}`;
 };
 
-export const getFieldEntries = (fields = {}) => {
-  return Object.entries(FIELD_LABELS).map(([key, label]) => ({
-    key,
-    label,
-    done: Boolean(fields?.[key]),
-  }));
+const resolveFieldVariant = ({
+  done = false,
+  status = 'pending',
+  requested = false,
+}) => {
+  if (!done) {
+    return requested ? 'warning' : 'secondary';
+  }
+
+  switch (status) {
+    case 'approved':
+    case 'partial':
+      return 'success';
+    case 'rejected':
+      return requested ? 'danger' : 'success';
+    default:
+      return requested ? 'warning' : 'success';
+  }
+};
+
+export const getFieldEntries = (fields = {}, { status, requested } = {}) => {
+  const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : '';
+  const requestedFields = requested && typeof requested === 'object' ? requested : null;
+
+  return Object.entries(FIELD_LABELS).map(([key, label]) => {
+    const done = Boolean(fields?.[key]);
+    const isRequested = Boolean(requestedFields ? requestedFields[key] : done);
+
+    return {
+      key,
+      label,
+      variant: resolveFieldVariant({ done, status: normalizedStatus, requested: isRequested }),
+    };
+  });
 };
 
 export const getUserDisplayName = (request = {}) => {
