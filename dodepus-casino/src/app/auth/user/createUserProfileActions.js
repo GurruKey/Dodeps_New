@@ -1,4 +1,5 @@
 import { createProfileActions as createSimProfileActions } from '../../../../local-sim/auth/profileActions';
+import { updateUserContacts } from '../../../../local-sim/auth/api';
 
 const ensureAuthed = (user) => {
   if (!user?.id) {
@@ -37,6 +38,13 @@ export function createUserProfileActions({ user, setUser }) {
 
   const updateProfile = (patch) => syncExtras((actions) => actions.updateProfile(patch));
 
+  const updateContacts = async (patch = {}) => {
+    const authedUser = ensureAuthed(user);
+    const result = await updateUserContacts({ userId: authedUser.id, ...patch });
+    setUser(result);
+    return result;
+  };
+
   const addTransaction = (txn) => syncExtras((actions) => actions.addTransaction(txn));
 
   const addVerificationUpload = (file) =>
@@ -57,6 +65,7 @@ export function createUserProfileActions({ user, setUser }) {
     addCasinoBalance,
     setNickname,
     updateProfile,
+    updateContacts,
     addTransaction,
     addVerificationUpload,
     submitVerificationRequest,

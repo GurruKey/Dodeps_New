@@ -6,7 +6,7 @@ import {
   ensureSeededAuthStorage,
 } from './accounts/seedLocalAuth';
 import { composeUser } from './composeUser';
-import { loadExtras } from './profileExtras';
+import { loadExtras, saveExtras } from './profileExtras';
 import { availableRoles } from '../../src/pages/Admin/roles/data/roleConfigs.js';
 
 const USERS_KEY = 'dodepus_local_users_v1';
@@ -388,6 +388,97 @@ export async function assignUserRole({ userId, roleId, delay = WAIT_ASSIGN_ROLE_
   }
 
   return composeUserWithExtras(updatedRecord);
+}
+
+const isEmailDuplicate = (users, email, currentId) =>
+  users.some((user) => user.id !== currentId && user.email && user.email === email);
+
+const isPhoneDuplicate = (users, phone, currentId) =>
+  users.some((user) => user.id !== currentId && user.phone && user.phone === phone);
+
+export async function updateUserContacts({ userId, email, phone } = {}) {
+  const normalizedUserId = String(userId ?? '').trim();
+  if (!normalizedUserId) {
+    throw new Error('Укажите ID пользователя.');
+  }
+
+  const storage = requireStorage();
+  const users = readUsers(storage);
+  const index = users.findIndex((user) => user.id === normalizedUserId);
+
+  if (index === -1) {
+    throw new Error('Пользователь с таким ID не найден.');
+  }
+
+  const record = users[index];
+
+  const patchEmail = email !== undefined;
+  const patchPhone = phone !== undefined;
+
+  if (!patchEmail && !patchPhone) {
+    return composeUserWithExtras(record);
+  }
+
+  const normalizedEmail = patchEmail
+    ? String(email ?? '')
+        .trim()
+        .toLowerCase()
+    : record.email ?? '';
+
+  if (patchEmail) {
+    if (normalizedEmail && !EMAIL_RE.test(normalizedEmail)) {
+      throw new Error('Некорректный адрес e-mail.');
+    }
+
+    if (normalizedEmail && isEmailDuplicate(users, normalizedEmail, record.id)) {
+      throw new Error('E-mail уже используется другим пользователем.');
+    }
+  }
+
+  const normalizedPhone = patchPhone ? normalizePhone(phone) : record.phone ?? '';
+
+  if (patchPhone) {
+    if (normalizedPhone && !PHONE_RE.test(normalizedPhone)) {
+      throw new Error('Некорректный номер телефона.');
+    }
+
+    if (normalizedPhone && isPhoneDuplicate(users, normalizedPhone, record.id)) {
+      throw new Error('Номер телефона уже используется другим пользователем.');
+    }
+  }
+
+  const updatedRecord = { ...record };
+
+  if (patchEmail) {
+    updatedRecord.email = normalizedEmail;
+    if ((record.email ?? '') !== normalizedEmail) {
+      updatedRecord.email_confirmed_at = null;
+    }
+  }
+
+  if (patchPhone) {
+    updatedRecord.phone = normalizedPhone;
+    if ((record.phone ?? '') !== normalizedPhone) {
+      updatedRecord.phone_confirmed_at = null;
+    }
+  }
+
+  users[index] = updatedRecord;
+  writeUsers(users, storage);
+
+  let extras = loadExtras(record.id);
+  let extrasChanged = false;
+
+  if (patchEmail && (record.email ?? '') !== normalizedEmail) {
+    extras = { ...extras, emailVerified: false };
+    extrasChanged = true;
+  }
+
+  if (extrasChanged) {
+    saveExtras(record.id, extras);
+  }
+
+  return composeUser(updatedRecord, extras);
 }
 
 export const __localAuthInternals = {
