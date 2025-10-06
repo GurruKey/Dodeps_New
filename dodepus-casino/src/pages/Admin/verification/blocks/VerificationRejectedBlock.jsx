@@ -1,10 +1,11 @@
-import { Card, ListGroup } from 'react-bootstrap';
+import { Button, Card, ListGroup, Spinner } from 'react-bootstrap';
 import VerificationFieldBadges from '../components/VerificationFieldBadges.jsx';
 import { formatDateTime, getUserDisplayName } from '../utils.js';
 
 export default function VerificationRejectedBlock({
   requests = [],
   loading = false,
+  onReload,
   onOpen,
 }) {
   const totalRequests = Array.isArray(requests) ? requests.length : 0;
@@ -29,6 +30,20 @@ export default function VerificationRejectedBlock({
               Заявки, которые не прошли проверку. Пользователю потребуется повторно отправить данные.
             </Card.Text>
           </div>
+          {onReload && (
+            <div className="d-flex align-items-center gap-2">
+              <Button variant="outline-primary" onClick={onReload} disabled={loading}>
+                {loading ? (
+                  <>
+                    <Spinner size="sm" animation="border" className="me-2" />
+                    Обновление…
+                  </>
+                ) : (
+                  'Обновить'
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       </Card.Body>
 

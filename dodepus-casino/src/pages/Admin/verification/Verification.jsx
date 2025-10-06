@@ -245,18 +245,21 @@ export default function Verification() {
       <VerificationPartialBlock
         requests={grouped.partial}
         loading={loading}
+        onReload={reload}
         onOpen={openRequestModal}
       />
 
       <VerificationRejectedBlock
         requests={grouped.rejected}
         loading={loading}
+        onReload={reload}
         onOpen={openRequestModal}
       />
 
       <VerificationApprovedBlock
         requests={grouped.approved}
         loading={loading}
+        onReload={reload}
         onOpen={openRequestModal}
       />
 
