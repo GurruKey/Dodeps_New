@@ -1,19 +1,17 @@
-import { Card, ListGroup, Button } from 'react-bootstrap';
+import { Card, ListGroup } from 'react-bootstrap';
 import VerificationFieldBadges from '../components/VerificationFieldBadges.jsx';
 import { formatDateTime, getProgressLabel, getUserDisplayName } from '../utils.js';
 
 export default function VerificationApprovedBlock({
   requests = [],
   loading = false,
-  onView,
   onOpen,
-  isVisible = true,
 }) {
   const totalRequests = Array.isArray(requests) ? requests.length : 0;
 
-  const handleOpen = (request, intent = 'view') => {
+  const handleOpen = (request) => {
     if (!onOpen) return;
-    onOpen(request, intent);
+    onOpen(request);
   };
 
   return (
@@ -31,19 +29,10 @@ export default function VerificationApprovedBlock({
               Запросы, полностью прошедшие проверку. Данные пользователя подтверждены.
             </Card.Text>
           </div>
-          {onView && (
-            <Button variant="primary" onClick={onView} disabled={loading}>
-              Просмотр
-            </Button>
-          )}
         </div>
       </Card.Body>
 
-      {!isVisible ? (
-        <Card.Body className="border-top text-secondary small">
-          Список скрыт. Нажмите «Просмотр», чтобы загрузить заявки.
-        </Card.Body>
-      ) : totalRequests === 0 ? (
+      {totalRequests === 0 ? (
         <Card.Body className="border-top text-secondary small">
           {loading ? 'Загрузка…' : 'Пока нет завершённых заявок.'}
         </Card.Body>
@@ -54,7 +43,7 @@ export default function VerificationApprovedBlock({
               key={request.id}
               className="py-3"
               action={Boolean(onOpen)}
-              onClick={() => handleOpen(request, 'view')}
+              onClick={() => handleOpen(request)}
               style={onOpen ? { cursor: 'pointer' } : undefined}
             >
               <div className="d-flex flex-column flex-xl-row gap-3 align-items-xl-start justify-content-between">
