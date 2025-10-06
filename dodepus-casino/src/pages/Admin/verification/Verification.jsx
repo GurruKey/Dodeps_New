@@ -1,10 +1,9 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Stack } from 'react-bootstrap';
 import { useAuth } from '../../../app/AuthContext.jsx';
 import {
   updateVerificationRequestStatus,
 } from '../../../../local-sim/admin/verification';
-import { appendAdminLog } from '../../../../local-sim/admin/logs/index.js';
 import { useAdminVerificationRequests } from './hooks/useAdminVerificationRequests.js';
 import VerificationRequestsBlock from './blocks/VerificationRequestsBlock.jsx';
 import VerificationPartialBlock from './blocks/VerificationPartialBlock.jsx';
@@ -22,17 +21,18 @@ export default function Verification() {
   const { user } = useAuth();
   const [actionError, setActionError] = useState(null);
   const [busyId, setBusyId] = useState(null);
-  const [visibleSections, setVisibleSections] = useState(() => ({
-    pending: false,
-    partial: false,
-    rejected: false,
-    approved: false,
-  }));
   const [modalState, setModalState] = useState(() => ({
     show: false,
     requestId: null,
     intent: 'view',
   }));
+
+  useEffect(() => {
+    const maybePromise = ensureLoaded?.();
+    if (maybePromise && typeof maybePromise.catch === 'function') {
+      maybePromise.catch(() => {});
+    }
+  }, [ensureLoaded]);
 
   const latestRequests = useMemo(() => {
     if (!Array.isArray(requests) || requests.length === 0) {
@@ -184,9 +184,9 @@ export default function Verification() {
     [ensureLoaded, reviewer],
   );
 
-  const openRequestModal = useCallback((request, intent = 'view') => {
+  const openRequestModal = useCallback((request) => {
     if (!request) return;
-    setModalState({ show: true, requestId: request.id, intent });
+    setModalState({ show: true, requestId: request.id, intent: 'view' });
   }, []);
 
   const closeRequestModal = useCallback(() => {
@@ -227,53 +227,6 @@ export default function Verification() {
 
   const displayError = actionError || error;
 
-  const handleViewSection = useCallback(
-    (sectionKey) => {
-      if (!sectionKey) {
-        return;
-      }
-
-      setVisibleSections((prev) => {
-        if (prev[sectionKey]) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          [sectionKey]: true,
-        };
-      });
-
-      const sectionActionMap = {
-        pending: 'Запросил просмотр очереди запросов на верификацию',
-        partial: 'Запросил просмотр частично подтверждённых заявок на верификацию',
-        rejected: 'Запросил просмотр отклонённых заявок на верификацию',
-        approved: 'Запросил просмотр подтверждённых заявок на верификацию',
-      };
-
-      const action = sectionActionMap[sectionKey] ?? 'Запросил просмотр раздела верификации';
-
-      try {
-        appendAdminLog({
-          section: 'verification',
-          action,
-          adminId: reviewer.id,
-          adminName: reviewer.name,
-          role: reviewer.role,
-          context: `verification-view:${sectionKey}`,
-        });
-      } catch (err) {
-        console.warn('Не удалось записать лог просмотра раздела верификации', err);
-      }
-
-      const maybePromise = ensureLoaded?.();
-      if (maybePromise && typeof maybePromise.catch === 'function') {
-        maybePromise.catch(() => {});
-      }
-    },
-    [ensureLoaded, reviewer],
-  );
-
   return (
     <Stack gap={3}>
       {displayError && (
@@ -286,35 +239,25 @@ export default function Verification() {
         requests={grouped.pending}
         loading={loading}
         onReload={reload}
-        onView={() => handleViewSection('pending')}
         onOpen={openRequestModal}
-        busyId={busyId}
-        isVisible={visibleSections.pending}
       />
 
       <VerificationPartialBlock
         requests={grouped.partial}
         loading={loading}
         onOpen={openRequestModal}
-        busyId={busyId}
-        onView={() => handleViewSection('partial')}
-        isVisible={visibleSections.partial}
       />
 
       <VerificationRejectedBlock
         requests={grouped.rejected}
         loading={loading}
-        onView={() => handleViewSection('rejected')}
         onOpen={openRequestModal}
-        isVisible={visibleSections.rejected}
       />
 
       <VerificationApprovedBlock
         requests={grouped.approved}
         loading={loading}
-        onView={() => handleViewSection('approved')}
         onOpen={openRequestModal}
-        isVisible={visibleSections.approved}
       />
 
       <VerificationRequestModal

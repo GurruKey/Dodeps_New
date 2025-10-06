@@ -11,17 +11,13 @@ export default function VerificationRequestsBlock({
   requests = [],
   loading = false,
   onReload,
-  onView,
   onOpen,
-  busyId,
-  isVisible = true,
 }) {
-  const isBusy = (requestId) => busyId === requestId;
   const totalRequests = Array.isArray(requests) ? requests.length : 0;
   const pendingCountClassName = getPendingVerificationTextClass(totalRequests);
-  const handleOpen = (request, intent = 'view') => {
+  const handleOpen = (request) => {
     if (!onOpen) return;
-    onOpen(request, intent);
+    onOpen(request);
   };
 
   return (
@@ -39,39 +35,24 @@ export default function VerificationRequestsBlock({
               Новые заявки от пользователей, ожидающие проверки администратором.
             </Card.Text>
           </div>
-          {(onReload || onView) && (
+          {onReload && (
             <div className="d-flex align-items-center gap-2">
-              {onView && (
-                <Button variant="primary" onClick={onView} disabled={loading}>
-                  Просмотр
-                </Button>
-              )}
-              {onReload && (
-                <Button
-                  variant="outline-primary"
-                  onClick={onReload}
-                  disabled={!isVisible || loading}
-                >
-                  {loading ? (
-                    <>
-                      <Spinner size="sm" animation="border" className="me-2" />
-                      Обновление…
-                    </>
-                  ) : (
-                    'Обновить'
-                  )}
-                </Button>
-              )}
+              <Button variant="outline-primary" onClick={onReload} disabled={loading}>
+                {loading ? (
+                  <>
+                    <Spinner size="sm" animation="border" className="me-2" />
+                    Обновление…
+                  </>
+                ) : (
+                  'Обновить'
+                )}
+              </Button>
             </div>
           )}
         </div>
       </Card.Body>
 
-      {!isVisible ? (
-        <Card.Body className="border-top text-secondary small">
-          Список скрыт. Нажмите «Просмотр», чтобы загрузить заявки.
-        </Card.Body>
-      ) : totalRequests === 0 ? (
+      {totalRequests === 0 ? (
         <Card.Body className="border-top text-secondary small">
           {loading ? 'Загрузка запросов…' : 'Новых запросов нет.'}
         </Card.Body>
@@ -82,7 +63,7 @@ export default function VerificationRequestsBlock({
               key={request.id}
               className="py-3"
               action={Boolean(onOpen)}
-              onClick={() => handleOpen(request, 'view')}
+              onClick={() => handleOpen(request)}
               style={onOpen ? { cursor: 'pointer' } : undefined}
             >
               <div className="d-flex flex-column flex-xl-row gap-3 align-items-xl-start justify-content-between">
@@ -111,29 +92,8 @@ export default function VerificationRequestsBlock({
                     <div className="text-muted small">Обновлено {formatDateTime(request.updatedAt)}</div>
                   )}
                 </div>
-                <div className="d-flex flex-column flex-sm-row flex-xl-column gap-2">
-                  <Button
-                    size="sm"
-                    variant="success"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleOpen(request, 'approve');
-                    }}
-                    disabled={!onOpen || isBusy(request.id)}
-                  >
-                    {isBusy(request.id) ? 'Обработка…' : 'Проверить'}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline-danger"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleOpen(request, 'reject');
-                    }}
-                    disabled={!onOpen || isBusy(request.id)}
-                  >
-                    Отказать
-                  </Button>
+                <div className="text-muted small text-xl-end" style={{ minWidth: 160 }}>
+                  Нажмите, чтобы открыть заявку
                 </div>
               </div>
             </ListGroup.Item>
