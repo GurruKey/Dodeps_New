@@ -10,6 +10,15 @@ export default function VerificationUploadBlock() {
   const [category, setCategory] = useState('identity');
   const [documentType, setDocumentType] = useState('');
   const [error, setError] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+
+  const readFileAsDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('Не удалось прочитать выбранный файл.'));
+      reader.readAsDataURL(file);
+    });
 
   const categoryOptions = useMemo(
     () => [
@@ -52,7 +61,7 @@ export default function VerificationUploadBlock() {
     setError('');
   };
 
-  const onChange = (e) => {
+  const onChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!documentType) {
@@ -61,14 +70,33 @@ export default function VerificationUploadBlock() {
       return;
     }
 
-    addVerificationUpload?.({
-      file,
-      verificationKind: category,
-      verificationType: documentType,
-      verificationLabel: selectedDocument?.label,
-    });
-    setError('');
-    e.target.value = ''; // позволить выбрать тот же файл повторно
+    setIsUploading(true);
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      await Promise.resolve(
+        addVerificationUpload?.({
+          file: {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            lastModified: file.lastModified,
+            dataUrl,
+            previewUrl: dataUrl,
+          },
+          verificationKind: category,
+          verificationType: documentType,
+          verificationLabel: selectedDocument?.label,
+        }),
+      );
+      setError('');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Не удалось загрузить документ.';
+      setError(message);
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
   };
 
   return (
@@ -143,6 +171,7 @@ export default function VerificationUploadBlock() {
           accept=".pdf,.jpg,.jpeg,.png,.webp"
           className="d-none"
           onChange={onChange}
+          disabled={isUploading}
         />
       </Card.Body>
     </Card>
