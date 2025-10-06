@@ -218,6 +218,13 @@ export default function Verification() {
     [activeRequest, handleReject],
   );
 
+  const modalBusy = useMemo(() => {
+    if (!busyId || !activeRequest) {
+      return false;
+    }
+    return busyId === activeRequest.id;
+  }, [activeRequest, busyId]);
+
   const displayError = actionError || error;
 
   const handleViewSection = useCallback(
