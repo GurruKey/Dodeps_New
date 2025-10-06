@@ -4,6 +4,8 @@ import { Circle, CheckCircle, CircleHelp, CircleAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../../app/AuthContext.jsx';
 
+const FIELD_KEYS = Object.freeze(['email', 'phone', 'address', 'doc']);
+
 const ICON_LABELS = Object.freeze({
   idle: 'требуется подтверждение',
   pending: 'ожидает проверки',
@@ -97,19 +99,53 @@ export default function VerificationStatusBlock() {
     return latestRequest.status.toLowerCase();
   }, [latestRequest]);
 
-  const completedFields = useMemo(() => {
-    if (!latestRequest || typeof latestRequest.completedFields !== 'object') {
+  const fieldSnapshots = useMemo(() => {
+    if (!Array.isArray(user?.verificationRequests)) {
       return {};
     }
-    return latestRequest.completedFields;
-  }, [latestRequest]);
 
-  const requestedFields = useMemo(() => {
-    if (!latestRequest || typeof latestRequest.requestedFields !== 'object') {
-      return {};
-    }
-    return latestRequest.requestedFields;
-  }, [latestRequest]);
+    const toTimestamp = (value) => {
+      if (!value) return 0;
+      const parsed = Date.parse(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+
+    return user.verificationRequests.reduce((acc, request) => {
+      if (!request || typeof request !== 'object') {
+        return acc;
+      }
+
+      const timestamp = toTimestamp(
+        request.updatedAt || request.reviewedAt || request.submittedAt,
+      );
+      const status = typeof request.status === 'string'
+        ? request.status.toLowerCase()
+        : '';
+
+      FIELD_KEYS.forEach((key) => {
+        const completed = Boolean(request?.completedFields?.[key]);
+        const requested = Boolean(
+          request?.requestedFields?.[key] ?? request?.completedFields?.[key],
+        );
+
+        if (!completed && !requested) {
+          return;
+        }
+
+        const current = acc[key];
+        if (!current || timestamp >= current.timestamp) {
+          acc[key] = {
+            completed,
+            requested,
+            status,
+            timestamp,
+          };
+        }
+      });
+
+      return acc;
+    }, {});
+  }, [user?.verificationRequests]);
 
   const isRequestPending = requestStatus === 'pending' || requestStatus === 'partial';
   const isRequestRejected = requestStatus === 'rejected';
@@ -178,18 +214,23 @@ export default function VerificationStatusBlock() {
   };
 
   const getStateForItem = (itemKey) => {
-    const isCompleted = Boolean(completedFields?.[itemKey]);
-    const isRequested = Boolean(requestedFields?.[itemKey]);
+    const snapshot = fieldSnapshots[itemKey];
+    const snapshotStatus = snapshot?.status || requestStatus;
+    const snapshotCompleted = Boolean(snapshot?.completed);
+    const snapshotRequested = Boolean(snapshot?.requested);
+
+    const fallbackCompleted = itemKey === 'email' ? Boolean(user?.emailVerified) : false;
+    const isCompleted = snapshot ? snapshotCompleted : fallbackCompleted;
 
     if (isCompleted) {
       return 'approved';
     }
 
-    if (isRequested) {
-      if (isRequestRejected) {
+    if (snapshotRequested) {
+      if (snapshotStatus === 'rejected') {
         return 'rejected';
       }
-      if (isRequestPending) {
+      if (snapshotStatus === 'pending' || snapshotStatus === 'partial') {
         return 'pending';
       }
     }
