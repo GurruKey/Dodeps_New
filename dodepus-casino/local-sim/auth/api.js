@@ -256,9 +256,9 @@ function createUserRecord({ email, phone, password }) {
     phone: phone ?? '',
     password,
     created_at: ts,
-    confirmed_at: ts,
-    email_confirmed_at: email ? ts : null,
-    phone_confirmed_at: phone ? ts : null,
+    confirmed_at: null,
+    email_confirmed_at: null,
+    phone_confirmed_at: null,
     last_sign_in_at: ts,
     app_metadata: {
       provider: email ? 'email' : 'phone',

@@ -31,23 +31,32 @@ export const getProgressLabel = ({ completedCount = 0, totalFields = 0 } = {}) =
   return `${Math.max(0, completed)} / ${Math.max(0, total)}`;
 };
 
-const resolveFieldVariant = ({
-  done = false,
-  status = 'pending',
-  requested = false,
-}) => {
-  if (!done) {
-    return requested ? 'warning' : 'secondary';
+const resolveFieldState = ({ done = false, status = 'pending', requested = false }) => {
+  if (done) {
+    return 'approved';
   }
 
-  switch (status) {
+  if (status === 'rejected') {
+    return requested ? 'rejected' : 'idle';
+  }
+
+  if (requested) {
+    return 'pending';
+  }
+
+  return 'idle';
+};
+
+const resolveFieldVariant = (state) => {
+  switch (state) {
     case 'approved':
-    case 'partial':
       return 'success';
     case 'rejected':
-      return requested ? 'danger' : 'success';
+      return 'danger';
+    case 'pending':
+      return 'warning';
     default:
-      return requested ? 'warning' : 'success';
+      return 'secondary';
   }
 };
 
@@ -58,11 +67,15 @@ export const getFieldEntries = (fields = {}, { status, requested } = {}) => {
   return Object.entries(FIELD_LABELS).map(([key, label]) => {
     const done = Boolean(fields?.[key]);
     const isRequested = Boolean(requestedFields ? requestedFields[key] : done);
+    const state = resolveFieldState({ done, status: normalizedStatus, requested: isRequested });
 
     return {
       key,
       label,
-      variant: resolveFieldVariant({ done, status: normalizedStatus, requested: isRequested }),
+      state,
+      variant: resolveFieldVariant(state),
+      done,
+      requested: isRequested,
     };
   });
 };

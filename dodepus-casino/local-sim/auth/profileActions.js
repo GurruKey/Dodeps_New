@@ -140,6 +140,30 @@ export const createProfileActions = (uid) => {
         return 'identity';
       })();
 
+      const previewUrl = (() => {
+        if (typeof file.previewUrl === 'string' && file.previewUrl.trim()) {
+          return file.previewUrl;
+        }
+
+        if (typeof file.dataUrl === 'string' && file.dataUrl.trim()) {
+          return file.dataUrl;
+        }
+
+        if (typeof file.url === 'string' && file.url.trim()) {
+          return file.url;
+        }
+
+        if (typeof file.preview === 'string' && file.preview.trim()) {
+          return file.preview;
+        }
+
+        if (typeof file.path === 'string' && file.path.trim()) {
+          return file.path;
+        }
+
+        return '';
+      })();
+
       const entry = {
         id:
           file.id ||
@@ -154,6 +178,7 @@ export const createProfileActions = (uid) => {
           typeof payload.documentType === 'string' ? payload.documentType : '',
         documentLabel:
           typeof payload.documentLabel === 'string' ? payload.documentLabel : '',
+        previewUrl,
       };
 
       return {
