@@ -119,7 +119,11 @@ export default function VerificationRequestModal({
   onReject,
   busy = false,
 }) {
-  const initialMode = request?.status === 'approved' ? 'view' : 'approve';
+  const status = request?.status;
+  const isPending = status === 'pending';
+  const isReadOnly = !isPending;
+
+  const initialMode = isPending ? 'approve' : 'view';
   const [mode, setMode] = useState(initialMode);
   const [completedSelection, setCompletedSelection] = useState(() =>
     buildCompletedSelection(request),
@@ -133,7 +137,7 @@ export default function VerificationRequestModal({
   const [historyLimit, setHistoryLimit] = useState(3);
 
   useEffect(() => {
-    const nextMode = request?.status === 'approved' ? 'view' : 'approve';
+    const nextMode = request?.status === 'pending' ? 'approve' : 'view';
     setMode(nextMode);
     setCompletedSelection(buildCompletedSelection(request));
     setRejectedSelection(buildRejectedSelection(request));
@@ -152,8 +156,7 @@ export default function VerificationRequestModal({
   const requestedFields = useMemo(() => normalizeFieldState(request?.requestedFields), [request]);
   const completedFields = useMemo(() => normalizeFieldState(request?.completedFields), [request]);
 
-  const isApproved = request?.status === 'approved';
-  const canEditProfile = mode === 'approve' || mode === 'reject';
+  const canEditProfile = isPending && (mode === 'approve' || mode === 'reject');
   const activeSelection = mode === 'reject' ? rejectedSelection : completedSelection;
   const hasCompletedSelection = useMemo(
     () => Object.values(completedSelection).some(Boolean),
@@ -164,8 +167,25 @@ export default function VerificationRequestModal({
     [rejectedSelection],
   );
 
+  const readOnlyNotice = useMemo(() => {
+    if (isPending) {
+      return '';
+    }
+
+    switch (status) {
+      case 'partial':
+        return 'Заявка находится в статусе частичной верификации и ожидает новых данных от пользователя. Редактирование недоступно.';
+      case 'approved':
+        return 'Запрос уже подтверждён. Редактирование и изменение решения недоступны.';
+      case 'rejected':
+        return 'Запрос отклонён. Изменение данных доступно только после новой заявки от пользователя.';
+      default:
+        return 'Редактирование доступно только для новых запросов на верификацию.';
+    }
+  }, [isPending, status]);
+
   const handleToggleField = (key) => {
-    if (busy || mode === 'view') {
+    if (busy || mode === 'view' || isReadOnly) {
       return;
     }
 
@@ -194,7 +214,7 @@ export default function VerificationRequestModal({
   };
 
   const handleConfirm = () => {
-    if (!request) return;
+    if (!request || !isPending) return;
 
     if (mode === 'reject') {
       setMode('approve');
@@ -215,13 +235,16 @@ export default function VerificationRequestModal({
   };
 
   const enterRejectMode = () => {
+    if (!isPending) {
+      return;
+    }
     setMode('reject');
     setRejectedSelection(buildRejectedSelection(request));
     setFormError('');
   };
 
   const handleReject = () => {
-    if (!request) return;
+    if (!request || !isPending) return;
 
     if (mode !== 'reject') {
       enterRejectMode();
@@ -241,7 +264,7 @@ export default function VerificationRequestModal({
   };
 
   const handleCancelReject = () => {
-    setMode(isApproved ? 'view' : 'approve');
+    setMode(isPending ? 'approve' : 'view');
     setRejectedSelection(buildRejectedSelection(request));
     setFormError('');
   };
@@ -272,7 +295,7 @@ export default function VerificationRequestModal({
   };
 
   const isFieldToggleDisabled = (key) => {
-    if (busy || mode === 'view') {
+    if (busy || mode === 'view' || isReadOnly) {
       return true;
     }
 
@@ -340,9 +363,9 @@ export default function VerificationRequestModal({
                     Выберите пункты, по которым необходимо отказать пользователю.
                   </Alert>
                 ) : null}
-                {isApproved && mode === 'view' ? (
-                  <Alert variant="info" className="mb-0">
-                    Запрос уже подтверждён. Чтобы изменить решение, нажмите «Отказать».
+                {readOnlyNotice ? (
+                  <Alert variant="secondary" className="mb-0">
+                    {readOnlyNotice}
                   </Alert>
                 ) : null}
 
@@ -464,7 +487,7 @@ export default function VerificationRequestModal({
               </Stack>
             </section>
 
-            {attachments.length > 0 ? (
+            {attachments.length > 0 && isPending ? (
               <section>
                 <h5 className="mb-3">Документы пользователя</h5>
                 <ListGroup>
@@ -523,6 +546,11 @@ export default function VerificationRequestModal({
                   })}
                 </ListGroup>
               </section>
+            ) : null}
+            {!isPending && attachments.length > 0 ? (
+              <Alert variant="secondary" className="mb-0">
+                Документы доступны для просмотра только в новых запросах на верификацию.
+              </Alert>
             ) : null}
 
             <section>
@@ -583,7 +611,7 @@ export default function VerificationRequestModal({
           Назад
         </Button>
         <div className="d-flex flex-column flex-sm-row gap-2 align-items-stretch">
-          {mode === 'reject' ? (
+          {mode === 'reject' && isPending ? (
             <Button
               variant="link"
               className="text-decoration-none"
@@ -593,26 +621,28 @@ export default function VerificationRequestModal({
               Отменить отказ
             </Button>
           ) : null}
-          <Button
-            variant="outline-danger"
-            onClick={handleReject}
-            disabled={busy || !request}
-          >
-            {mode === 'reject' ? 'Подтвердить отказ' : 'Отказать'}
-          </Button>
-          {!isApproved ? (
-            <Button
-              variant="success"
-              onClick={handleConfirm}
-              disabled={
-                busy ||
-                !request ||
-                mode !== 'approve' ||
-                !hasCompletedSelection
-              }
-            >
-              Подтвердить
-            </Button>
+          {isPending ? (
+            <>
+              <Button
+                variant="outline-danger"
+                onClick={handleReject}
+                disabled={busy || !request}
+              >
+                {mode === 'reject' ? 'Подтвердить отказ' : 'Отказать'}
+              </Button>
+              <Button
+                variant="success"
+                onClick={handleConfirm}
+                disabled={
+                  busy ||
+                  !request ||
+                  mode !== 'approve' ||
+                  !hasCompletedSelection
+                }
+              >
+                Подтвердить
+              </Button>
+            </>
           ) : null}
         </div>
       </Modal.Footer>
