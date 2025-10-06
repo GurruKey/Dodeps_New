@@ -74,20 +74,33 @@ export default function VerificationStatusBlock() {
   const hasAddressUpload = uploads.some((upload) => normalizeUploadCategory(upload) === 'address');
   const hasIdentityUpload = uploads.some((upload) => normalizeUploadCategory(upload) === 'identity');
 
-  const emailDone = Boolean(user?.emailVerified);
-  const phoneDone = !!(user?.phone && String(user.phone).replace(/\D/g, '').length >= 10);
-  const addressInfoProvided = !!(user?.address && String(user.address).trim().length >= 5);
-  const addressDone = addressInfoProvided && hasAddressUpload;
-  const docDone = hasIdentityUpload;
+  const normalizeString = (value) => (typeof value === 'string' ? value.trim() : '');
+  const hasEmailValue = normalizeString(user?.email).length >= 3;
+  const phoneDigits = user?.phone ? String(user.phone).replace(/\D/g, '') : '';
+  const hasPhoneValue = phoneDigits.length >= 10;
+  const hasAddressStrings = ['country', 'city', 'address'].every((key) =>
+    normalizeString(user?.[key]).length >= 2,
+  );
+  const addressReady = hasAddressStrings && hasAddressUpload;
+  const genderValue = String(user?.gender || '').toLowerCase();
+  const hasDocStrings =
+    normalizeString(user?.firstName).length >= 2 &&
+    normalizeString(user?.lastName).length >= 2 &&
+    /^\d{4}-\d{2}-\d{2}$/.test(String(user?.dob || '')) &&
+    (genderValue === 'male' || genderValue === 'female');
+  const docReady = hasDocStrings && hasIdentityUpload;
+
+  const emailReady = hasEmailValue;
+  const phoneReady = hasPhoneValue;
 
   const items = [
-    { key: 'email', label: 'Почта', done: emailDone },
-    { key: 'phone', label: 'Телефон', done: phoneDone },
-    { key: 'address', label: 'Адрес', done: addressDone },
-    { key: 'doc', label: 'Документ', done: docDone },
+    { key: 'email', label: 'Почта', isReady: emailReady },
+    { key: 'phone', label: 'Телефон', isReady: phoneReady },
+    { key: 'address', label: 'Адрес', isReady: addressReady },
+    { key: 'doc', label: 'Документ', isReady: docReady },
   ];
 
-  const hasAnyCompleted = items.some((item) => item.done);
+  const hasAnyReady = items.some((item) => item.isReady);
 
   const latestRequest = useMemo(
     () => getLatestRequest(user?.verificationRequests),
@@ -160,7 +173,7 @@ export default function VerificationStatusBlock() {
       return;
     }
 
-    if (!hasAnyCompleted) {
+    if (!hasAnyReady) {
       setSubmitError('Заполните данные профиля перед отправкой заявки.');
       return;
     }
@@ -170,10 +183,10 @@ export default function VerificationStatusBlock() {
 
     try {
       const availableFields = {
-        email: emailDone,
-        phone: phoneDone,
-        address: addressDone,
-        doc: docDone,
+        email: emailReady,
+        phone: phoneReady,
+        address: addressReady,
+        doc: docReady,
       };
 
       const requestedFieldKeys = (() => {
@@ -248,7 +261,7 @@ export default function VerificationStatusBlock() {
     if (isRequestApproved) {
       return 'Ваша заявка одобрена. Дополнительных действий не требуется.';
     }
-    return hasAnyCompleted
+    return hasAnyReady
       ? 'После заполнения данных отправьте заявку на проверку под нужным пунктом.'
       : 'Заполните хотя бы один пункт, чтобы отправить заявку на проверку.';
   })();
@@ -272,12 +285,42 @@ export default function VerificationStatusBlock() {
                 </span>
               );
 
-              const canNavigateToPersonal = !item.done && (state === 'idle' || state === 'rejected');
-              const canSubmit = item.done && (state === 'idle' || state === 'rejected');
+              const canNavigateToPersonal = !item.isReady && (state === 'idle' || state === 'rejected');
+              const canSubmit = item.isReady && (state === 'idle' || state === 'rejected');
               const buttonVariant = state === 'rejected' ? 'warning' : 'primary';
               const buttonLabel =
                 isSubmitting && submittingKey === item.key ? 'Отправка…' : 'Подтвердить';
-              const showFillHint = !item.done && (state === 'idle' || state === 'rejected');
+              const showFillHint = !item.isReady && (state === 'idle' || state === 'rejected');
+              const hintMessage = (() => {
+                switch (item.key) {
+                  case 'email':
+                    return hasEmailValue
+                      ? null
+                      : 'Добавьте почту в разделе «Персональные данные».';
+                  case 'phone':
+                    return hasPhoneValue
+                      ? null
+                      : 'Укажите номер телефона в разделе «Персональные данные».';
+                  case 'address':
+                    if (!hasAddressStrings) {
+                      return 'Заполните страну, город и адрес проживания.';
+                    }
+                    if (!hasAddressUpload) {
+                      return 'Загрузите документ для подтверждения адреса.';
+                    }
+                    return null;
+                  case 'doc':
+                    if (!hasDocStrings) {
+                      return 'Заполните ФИО, дату рождения и выберите пол.';
+                    }
+                    if (!hasIdentityUpload) {
+                      return 'Загрузите документ, подтверждающий личность.';
+                    }
+                    return null;
+                  default:
+                    return null;
+                }
+              })();
 
               return (
                 <Col key={item.key} xs={6} md={3} className="d-flex flex-column align-items-center">
@@ -325,7 +368,9 @@ export default function VerificationStatusBlock() {
                       ? null
                       : showFillHint
                         ? (
-                            <div className="mt-2 small text-muted">Заполните данные профиля</div>
+                            <div className="mt-2 small text-muted">
+                              {hintMessage || 'Заполните данные профиля'}
+                            </div>
                           )
                         : null}
                 </Col>
