@@ -15,6 +15,7 @@ import { Eye } from 'lucide-react';
 import { FIELD_LABELS, formatDateTime, getStatusLabel } from '../utils.js';
 
 const EMPTY_FIELDS = Object.freeze({ email: false, phone: false, address: false, doc: false });
+const FIELD_KEYS = Object.freeze(Object.keys(FIELD_LABELS));
 
 const normalizeFieldState = (fields = {}) => ({
   email: Boolean(fields?.email),
@@ -33,7 +34,7 @@ const buildCompletedSelection = (request) => {
 
   const next = { ...EMPTY_FIELDS };
 
-  Object.keys(next).forEach((key) => {
+  FIELD_KEYS.forEach((key) => {
     if (completed[key]) {
       next[key] = true;
       return;
@@ -52,7 +53,18 @@ const buildRejectedSelection = (request) => {
     return { ...EMPTY_FIELDS };
   }
 
-  return { ...EMPTY_FIELDS };
+  const requested = normalizeFieldState(request.requestedFields);
+  const completed = normalizeFieldState(request.completedFields);
+
+  const next = { ...EMPTY_FIELDS };
+
+  FIELD_KEYS.forEach((key) => {
+    if (requested[key] && !completed[key]) {
+      next[key] = true;
+    }
+  });
+
+  return next;
 };
 
 const buildProfileDraft = (request) => {
@@ -98,8 +110,6 @@ const STATUS_VARIANT = Object.freeze({
   rejected: 'danger',
   approved: 'success',
 });
-
-const fieldOrder = Object.keys(FIELD_LABELS);
 
 export default function VerificationRequestModal({
   show = false,
@@ -199,7 +209,6 @@ export default function VerificationRequestModal({
 
     onConfirm?.({
       completedFields: completedSelection,
-      requestedFields: completedSelection,
       notes,
       profilePatch: profileDraft,
     });
@@ -337,7 +346,7 @@ export default function VerificationRequestModal({
                   </Alert>
                 ) : null}
 
-                {fieldOrder.map((key) => {
+                {FIELD_KEYS.map((key) => {
                   const label = FIELD_LABELS[key];
                   const isRequested = requestedFields[key];
                   const isCompleted = completedFields[key];
