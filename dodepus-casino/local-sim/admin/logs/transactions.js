@@ -81,13 +81,21 @@ const sanitizeMetadata = (value) => {
 
 const createTransactionLogEntry = (details = {}) => {
   const now = new Date().toISOString();
+  const section = normalizeString(details.section, 'transactions') || 'transactions';
+  const defaultAction =
+    section === 'verification'
+      ? 'Выполнил действие с верификацией'
+      : section === 'transactions'
+        ? 'Выполнил действие с транзакциями'
+        : 'Выполнил действие';
+
   const entry = {
     id: generateLogId(),
     adminId: normalizeString(details.adminId, 'UNKNOWN'),
     adminName: normalizeString(details.adminName, 'Неизвестный админ'),
     role: normalizeString(details.role, 'admin'),
-    section: 'transactions',
-    action: normalizeString(details.action, 'Выполнил действие с транзакциями'),
+    section,
+    action: normalizeString(details.action, defaultAction) || defaultAction,
     createdAt: now,
   };
 
