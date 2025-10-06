@@ -6,9 +6,15 @@ export default function VerificationApprovedBlock({
   requests = [],
   loading = false,
   onView,
+  onOpen,
   isVisible = true,
 }) {
   const totalRequests = Array.isArray(requests) ? requests.length : 0;
+
+  const handleOpen = (request, intent = 'view') => {
+    if (!onOpen) return;
+    onOpen(request, intent);
+  };
 
   return (
     <Card>
@@ -44,7 +50,13 @@ export default function VerificationApprovedBlock({
       ) : (
         <ListGroup variant="flush">
           {requests.map((request) => (
-            <ListGroup.Item key={request.id} className="py-3">
+            <ListGroup.Item
+              key={request.id}
+              className="py-3"
+              action={Boolean(onOpen)}
+              onClick={() => handleOpen(request, 'view')}
+              style={onOpen ? { cursor: 'pointer' } : undefined}
+            >
               <div className="d-flex flex-column flex-xl-row gap-3 align-items-xl-start justify-content-between">
                 <div className="flex-grow-1">
                   <div className="fw-semibold">{getUserDisplayName(request)}</div>

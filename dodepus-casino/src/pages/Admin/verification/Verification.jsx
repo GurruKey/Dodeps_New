@@ -10,6 +10,7 @@ import VerificationRequestsBlock from './blocks/VerificationRequestsBlock.jsx';
 import VerificationPartialBlock from './blocks/VerificationPartialBlock.jsx';
 import VerificationRejectedBlock from './blocks/VerificationRejectedBlock.jsx';
 import VerificationApprovedBlock from './blocks/VerificationApprovedBlock.jsx';
+import VerificationRequestModal from './components/VerificationRequestModal.jsx';
 import {
   getAdminDisplayName,
   getAdminId,
@@ -26,6 +27,11 @@ export default function Verification() {
     partial: false,
     rejected: false,
     approved: false,
+  }));
+  const [modalState, setModalState] = useState(() => ({
+    show: false,
+    requestId: null,
+    intent: 'view',
   }));
 
   const latestRequests = useMemo(() => {
@@ -86,6 +92,17 @@ export default function Verification() {
     return byStatus;
   }, [latestRequests]);
 
+  const activeRequest = useMemo(() => {
+    if (!modalState.requestId) {
+      return null;
+    }
+
+    const fromLatest = latestRequests.find((entry) => entry?.id === modalState.requestId);
+    return fromLatest || null;
+  }, [latestRequests, modalState.requestId]);
+
+  const modalIntent = modalState.intent;
+
   const reviewer = useMemo(
     () => ({
       id: getAdminId(user),
@@ -96,66 +113,34 @@ export default function Verification() {
   );
 
   const handleConfirm = useCallback(
-    async (request) => {
-      if (!request) return;
+    async (request, payload = {}) => {
+      if (!request) return false;
 
       setActionError(null);
       setBusyId(request.id);
-
-      const completedFields =
-        request?.completedFields && typeof request.completedFields === 'object'
-          ? request.completedFields
-          : {};
-      const requestedFields =
-        request?.requestedFields && typeof request.requestedFields === 'object'
-          ? request.requestedFields
-          : {};
-
-      const completedTrueCount = Object.values(completedFields).filter(Boolean).length;
-      const outstandingRequestedCount = Object.entries(requestedFields).reduce(
-        (total, [key, isRequested]) => {
-          if (!isRequested) {
-            return total;
-          }
-          return completedFields[key] ? total : total + 1;
-        },
-        0,
-      );
-
-      const relevantKeys = new Set([
-        ...Object.entries(completedFields)
-          .filter(([, value]) => Boolean(value))
-          .map(([key]) => key),
-        ...Object.entries(requestedFields)
-          .filter(([, value]) => Boolean(value))
-          .map(([key]) => key),
-      ]);
-
-      const relevantTotal = relevantKeys.size || completedTrueCount + outstandingRequestedCount;
-      const nextCompletedCount = Math.min(
-        relevantTotal,
-        completedTrueCount + outstandingRequestedCount,
-      );
-
-      const nextStatus =
-        relevantTotal === 0 || nextCompletedCount >= relevantTotal ? 'approved' : 'partial';
 
       try {
         await Promise.resolve(
           updateVerificationRequestStatus({
             requestId: request.id,
-            status: nextStatus,
+            status: 'approved',
             reviewer,
+            notes: payload.notes,
+            completedFields: payload.completedFields,
+            requestedFields: payload.requestedFields,
+            profilePatch: payload.profilePatch,
           }),
         );
         const maybePromise = ensureLoaded?.();
         if (maybePromise && typeof maybePromise.catch === 'function') {
           maybePromise.catch(() => {});
         }
+        return true;
       } catch (err) {
         const normalizedError =
           err instanceof Error ? err : new Error('Не удалось обновить статус запроса');
         setActionError(normalizedError);
+        return false;
       } finally {
         setBusyId(null);
       }
@@ -164,8 +149,8 @@ export default function Verification() {
   );
 
   const handleReject = useCallback(
-    async (request) => {
-      if (!request) return;
+    async (request, payload = {}) => {
+      if (!request) return false;
 
       setActionError(null);
       setBusyId(request.id);
@@ -176,21 +161,61 @@ export default function Verification() {
             requestId: request.id,
             status: 'rejected',
             reviewer,
+            notes: payload.notes,
+            completedFields: payload.completedFields,
+            requestedFields: payload.requestedFields,
+            profilePatch: payload.profilePatch,
           }),
         );
         const maybePromise = ensureLoaded?.();
         if (maybePromise && typeof maybePromise.catch === 'function') {
           maybePromise.catch(() => {});
         }
+        return true;
       } catch (err) {
         const normalizedError =
           err instanceof Error ? err : new Error('Не удалось обновить статус запроса');
         setActionError(normalizedError);
+        return false;
       } finally {
         setBusyId(null);
       }
     },
     [ensureLoaded, reviewer],
+  );
+
+  const openRequestModal = useCallback((request, intent = 'view') => {
+    if (!request) return;
+    setModalState({ show: true, requestId: request.id, intent });
+  }, []);
+
+  const closeRequestModal = useCallback(() => {
+    if (busyId) {
+      return;
+    }
+    setModalState({ show: false, requestId: null, intent: 'view' });
+  }, [busyId]);
+
+  const handleModalConfirm = useCallback(
+    async (payload) => {
+      if (!activeRequest) return;
+      const ok = await handleConfirm(activeRequest, payload);
+      if (ok) {
+        setModalState({ show: false, requestId: null, intent: 'view' });
+      }
+    },
+    [activeRequest, handleConfirm],
+  );
+
+  const handleModalReject = useCallback(
+    async (payload) => {
+      if (!activeRequest) return;
+      const ok = await handleReject(activeRequest, payload);
+      if (ok) {
+        setModalState({ show: false, requestId: null, intent: 'view' });
+      }
+    },
+    [activeRequest, handleReject],
   );
 
   const displayError = actionError || error;
@@ -255,8 +280,7 @@ export default function Verification() {
         loading={loading}
         onReload={reload}
         onView={() => handleViewSection('pending')}
-        onConfirm={handleConfirm}
-        onReject={handleReject}
+        onOpen={openRequestModal}
         busyId={busyId}
         isVisible={visibleSections.pending}
       />
@@ -264,8 +288,7 @@ export default function Verification() {
       <VerificationPartialBlock
         requests={grouped.partial}
         loading={loading}
-        onConfirm={handleConfirm}
-        onReject={handleReject}
+        onOpen={openRequestModal}
         busyId={busyId}
         onView={() => handleViewSection('partial')}
         isVisible={visibleSections.partial}
@@ -275,6 +298,7 @@ export default function Verification() {
         requests={grouped.rejected}
         loading={loading}
         onView={() => handleViewSection('rejected')}
+        onOpen={openRequestModal}
         isVisible={visibleSections.rejected}
       />
 
@@ -282,7 +306,18 @@ export default function Verification() {
         requests={grouped.approved}
         loading={loading}
         onView={() => handleViewSection('approved')}
+        onOpen={openRequestModal}
         isVisible={visibleSections.approved}
+      />
+
+      <VerificationRequestModal
+        show={modalState.show && Boolean(activeRequest)}
+        request={activeRequest}
+        intent={modalIntent}
+        onClose={closeRequestModal}
+        onConfirm={handleModalConfirm}
+        onReject={handleModalReject}
+        busy={modalBusy}
       />
     </Stack>
   );

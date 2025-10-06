@@ -133,12 +133,35 @@ export default function VerificationStatusBlock() {
     setSubmittingKey(originKey);
 
     try {
+      const availableFields = {
+        email: emailDone,
+        phone: phoneDone,
+        address: addressDone,
+        doc: docDone,
+      };
+
+      const requestedFieldKeys = (() => {
+        if (
+          originKey &&
+          Object.prototype.hasOwnProperty.call(availableFields, originKey)
+        ) {
+          return availableFields[originKey] ? { [originKey]: true } : {};
+        }
+
+        return Object.fromEntries(
+          Object.entries(availableFields).filter(([, value]) => Boolean(value)),
+        );
+      })();
+
+      if (!Object.keys(requestedFieldKeys).length) {
+        setSubmitError('Выберите пункт, который нужно отправить на проверку.');
+        return;
+      }
+
       await Promise.resolve(
         submitVerificationRequest({
-          email: emailDone,
-          phone: phoneDone,
-          address: addressDone,
-          doc: docDone,
+          fields: requestedFieldKeys,
+          originKey,
         }),
       );
       setShowSuccessToast(true);

@@ -5,14 +5,18 @@ import { formatDateTime, getProgressLabel, getUserDisplayName } from '../utils.j
 export default function VerificationPartialBlock({
   requests = [],
   loading = false,
-  onConfirm,
-  onReject,
-  busyId,
   onView,
+  onOpen,
+  busyId,
   isVisible = true,
 }) {
   const isBusy = (requestId) => busyId === requestId;
   const totalRequests = Array.isArray(requests) ? requests.length : 0;
+
+  const handleOpen = (request, intent = 'view') => {
+    if (!onOpen) return;
+    onOpen(request, intent);
+  };
 
   return (
     <Card>
@@ -48,7 +52,13 @@ export default function VerificationPartialBlock({
       ) : (
         <ListGroup variant="flush">
           {requests.map((request) => (
-            <ListGroup.Item key={request.id} className="py-3">
+            <ListGroup.Item
+              key={request.id}
+              className="py-3"
+              action={Boolean(onOpen)}
+              onClick={() => handleOpen(request, 'view')}
+              style={onOpen ? { cursor: 'pointer' } : undefined}
+            >
               <div className="d-flex flex-column flex-xl-row gap-3 align-items-xl-start justify-content-between">
                 <div className="flex-grow-1">
                   <div className="fw-semibold">{getUserDisplayName(request)}</div>
@@ -73,16 +83,22 @@ export default function VerificationPartialBlock({
                   <Button
                     size="sm"
                     variant="success"
-                    onClick={() => onConfirm?.(request)}
-                    disabled={!onConfirm || isBusy(request.id)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleOpen(request, 'approve');
+                    }}
+                    disabled={!onOpen || isBusy(request.id)}
                   >
                     {isBusy(request.id) ? 'Обработка…' : 'Завершить'}
                   </Button>
                   <Button
                     size="sm"
                     variant="outline-danger"
-                    onClick={() => onReject?.(request)}
-                    disabled={!onReject || isBusy(request.id)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleOpen(request, 'reject');
+                    }}
+                    disabled={!onOpen || isBusy(request.id)}
                   >
                     Отказать
                   </Button>

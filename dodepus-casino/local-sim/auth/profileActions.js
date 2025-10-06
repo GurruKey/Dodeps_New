@@ -162,18 +162,70 @@ export const createProfileActions = (uid) => {
       };
     });
 
+  const normalizeRequestedCandidates = (input = {}) => {
+    if (typeof input === 'string') {
+      const key = input.trim().toLowerCase();
+      if (!key) {
+        return {};
+      }
+      return { [key]: true };
+    }
+
+    if (Array.isArray(input)) {
+      return input.reduce((acc, value) => {
+        if (typeof value !== 'string') {
+          return acc;
+        }
+
+        const key = value.trim().toLowerCase();
+        if (key) {
+          acc[key] = true;
+        }
+
+        return acc;
+      }, {});
+    }
+
+    if (input && typeof input === 'object') {
+      if (input.fields && typeof input.fields === 'object') {
+        return normalizeRequestedCandidates(input.fields);
+      }
+
+      if (typeof input.field === 'string') {
+        return normalizeRequestedCandidates(input.field);
+      }
+
+      return {
+        email: Boolean(input.email),
+        phone: Boolean(input.phone),
+        address: Boolean(input.address),
+        doc: Boolean(input.doc || input.document),
+      };
+    }
+
+    return {};
+  };
+
   const submitVerificationRequest = (statusMap = {}) => {
     let createdRequest = null;
 
     const nextExtras = persistExtras(uid, (current) => {
-      const requestedCandidates = {
-        email: Boolean(statusMap.email),
-        phone: Boolean(statusMap.phone),
-        address: Boolean(statusMap.address),
-        doc: Boolean(statusMap.doc),
-      };
+      const requestedCandidates = normalizeRequestedCandidates(statusMap);
 
-      const totalFields = Object.keys(requestedCandidates).length || 4;
+      const requestedKeys = Object.keys(requestedCandidates).filter((key) =>
+        ['email', 'phone', 'address', 'doc'].includes(key),
+      );
+
+      if (requestedKeys.length === 0) {
+        return current;
+      }
+
+      const normalizedRequested = requestedKeys.reduce((acc, key) => {
+        acc[key] = Boolean(requestedCandidates[key]);
+        return acc;
+      }, {});
+
+      const totalFields = requestedKeys.length || 4;
       const nowIso = new Date().toISOString();
 
       const baseRequest = {
@@ -205,11 +257,15 @@ export const createProfileActions = (uid) => {
       if (openIndex >= 0) {
         const existing = requests[openIndex] || {};
         const previousCompleted = normalizeFields(existing.completedFields);
+        const previousRequested = normalizeFields(existing.requestedFields ?? existing.completedFields);
         const filteredRequested = normalizeFields({
-          email: requestedCandidates.email && !previousCompleted.email,
-          phone: requestedCandidates.phone && !previousCompleted.phone,
-          address: requestedCandidates.address && !previousCompleted.address,
-          doc: requestedCandidates.doc && !previousCompleted.doc,
+          email:
+            (normalizedRequested.email || previousRequested.email) && !previousCompleted.email,
+          phone:
+            (normalizedRequested.phone || previousRequested.phone) && !previousCompleted.phone,
+          address:
+            (normalizedRequested.address || previousRequested.address) && !previousCompleted.address,
+          doc: (normalizedRequested.doc || previousRequested.doc) && !previousCompleted.doc,
         });
         const completedCount = Object.values(previousCompleted).filter(Boolean).length;
         const updatedRequest = {
@@ -223,6 +279,7 @@ export const createProfileActions = (uid) => {
           reviewerId: '',
           reviewerName: '',
           reviewerRole: '',
+          history: Array.isArray(existing.history) ? existing.history.slice() : [],
         };
 
         createdRequest = updatedRequest;
@@ -234,7 +291,7 @@ export const createProfileActions = (uid) => {
       }
 
       const completedFields = normalizeFields();
-      const filteredRequested = normalizeFields(requestedCandidates);
+      const filteredRequested = normalizeFields(normalizedRequested);
       const completedCount = 0;
       const nextRequest = {
         ...baseRequest,
@@ -242,6 +299,7 @@ export const createProfileActions = (uid) => {
         requestedFields: filteredRequested,
         completedCount,
         totalFields,
+        history: [],
       };
 
       createdRequest = nextRequest;

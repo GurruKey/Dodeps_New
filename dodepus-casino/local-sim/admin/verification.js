@@ -1,5 +1,6 @@
 import { readAdminClients } from './clients';
 import { loadExtras, saveExtras } from '../auth/profileExtras';
+import { appendAdminLog } from './logs/index.js';
 
 export const ADMIN_VERIFICATION_EVENT = 'dodepus:admin-verification-change';
 
@@ -39,6 +40,110 @@ const normalizeFields = (fields = {}) => ({
   doc: Boolean(fields?.doc),
 });
 
+const normalizeFieldsPatch = (fields = {}) => {
+  if (!fields || typeof fields !== 'object') {
+    return {};
+  }
+
+  const patch = {};
+
+  if ('email' in fields) {
+    patch.email = Boolean(fields.email);
+  }
+
+  if ('phone' in fields) {
+    patch.phone = Boolean(fields.phone);
+  }
+
+  if ('address' in fields) {
+    patch.address = Boolean(fields.address);
+  }
+
+  if ('doc' in fields) {
+    patch.doc = Boolean(fields.doc);
+  }
+
+  if ('document' in fields) {
+    patch.doc = Boolean(fields.document);
+  }
+
+  return patch;
+};
+
+const mergeFieldStates = (current = {}, patch = {}) => {
+  const normalizedCurrent = normalizeFields(current);
+  const normalizedPatch = normalizeFieldsPatch(patch);
+  const keys = new Set([
+    ...Object.keys(normalizedCurrent),
+    ...Object.keys(normalizedPatch),
+  ]);
+
+  const result = {};
+  keys.forEach((key) => {
+    if (!key) return;
+    result[key] = normalizedPatch[key] ?? normalizedCurrent[key] ?? false;
+  });
+
+  return normalizeFields(result);
+};
+
+const normalizeNotes = (value) => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : '';
+};
+
+const normalizeProfilePatch = (patch = {}) => {
+  if (!patch || typeof patch !== 'object') {
+    return {};
+  }
+
+  const normalized = {};
+
+  if ('address' in patch) {
+    normalized.address = normalizeString(patch.address);
+  }
+
+  if ('city' in patch) {
+    normalized.city = normalizeString(patch.city);
+  }
+
+  if ('country' in patch) {
+    normalized.country = normalizeString(patch.country);
+  }
+
+  if ('firstName' in patch) {
+    normalized.firstName = normalizeString(patch.firstName);
+  }
+
+  if ('lastName' in patch) {
+    normalized.lastName = normalizeString(patch.lastName);
+  }
+
+  if ('dob' in patch) {
+    const normalizedDob = normalizeString(patch.dob);
+    normalized.dob = normalizedDob || null;
+  }
+
+  if ('gender' in patch) {
+    const normalizedGender = normalizeString(patch.gender).toLowerCase();
+    if (['male', 'female', 'unspecified', 'other'].includes(normalizedGender)) {
+      normalized.gender = normalizedGender;
+    } else if (normalizedGender === 'm' || normalizedGender === 'man') {
+      normalized.gender = 'male';
+    } else if (normalizedGender === 'f' || normalizedGender === 'woman') {
+      normalized.gender = 'female';
+    } else {
+      normalized.gender = normalizedGender || 'unspecified';
+    }
+  }
+
+  return normalized;
+};
+
 const toNumber = (value, fallback = 0) => {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : fallback;
@@ -63,6 +168,86 @@ const clone = (value) => {
   } catch {
     return value;
   }
+};
+
+const buildProfileSnapshot = (client, extras) => {
+  const source = extras && typeof extras === 'object' ? extras : client?.profile;
+
+  return {
+    email: normalizeString(client?.email),
+    phone: normalizeString(client?.phone),
+    address: normalizeString(source?.address),
+    city: normalizeString(source?.city),
+    country: normalizeString(source?.country),
+    firstName: normalizeString(source?.firstName),
+    lastName: normalizeString(source?.lastName),
+    dob: normalizeString(source?.dob),
+    gender: normalizeString(source?.gender || source?.sex || ''),
+  };
+};
+
+const createHistoryEntry = ({
+  request,
+  reviewer,
+  status,
+  notes,
+  completedFields,
+  requestedFields,
+}) => {
+  const timestamp = new Date().toISOString();
+  return {
+    id: `vrh_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+    requestId: normalizeString(request?.id),
+    status: normalizeStatus(status),
+    reviewer: {
+      id: normalizeString(reviewer?.id),
+      name: normalizeString(reviewer?.name),
+      role: normalizeString(reviewer?.role),
+    },
+    notes: normalizeNotes(notes),
+    updatedAt: timestamp,
+    completedFields: normalizeFields(completedFields),
+    requestedFields: normalizeFields(requestedFields ?? completedFields),
+  };
+};
+
+const sanitizeHistoryEntries = (history, fallbackRequest) => {
+  if (!Array.isArray(history)) {
+    return [];
+  }
+
+  return history
+    .map((entry) => {
+      if (!entry || typeof entry !== 'object') {
+        return null;
+      }
+
+      const status = normalizeStatus(entry.status ?? fallbackRequest?.status);
+      const normalizedCompleted = normalizeFields(
+        entry.completedFields ?? fallbackRequest?.completedFields,
+      );
+      const normalizedRequested = normalizeFields(
+        entry.requestedFields ?? entry.completedFields ?? fallbackRequest?.requestedFields,
+      );
+
+      const updatedAt = normalizeString(entry.updatedAt) || fallbackRequest?.updatedAt;
+
+      return {
+        id: normalizeString(entry.id) || `vrh_${Math.random().toString(36).slice(2, 8)}`,
+        requestId: normalizeString(entry.requestId ?? fallbackRequest?.id),
+        status,
+        reviewer: {
+          id: normalizeString(entry.reviewer?.id),
+          name: normalizeString(entry.reviewer?.name),
+          role: normalizeString(entry.reviewer?.role),
+        },
+        notes: normalizeNotes(entry.notes),
+        updatedAt: updatedAt || new Date().toISOString(),
+        completedFields: normalizedCompleted,
+        requestedFields: normalizedRequested,
+      };
+    })
+    .filter(Boolean);
 };
 
 const getEventTarget = () => {
@@ -111,6 +296,9 @@ const buildRequestEntry = (client, request) => {
     ? client.profile.verificationUploads.map((upload) => clone(upload))
     : [];
 
+  const profile = buildProfileSnapshot(client, client?.profile);
+  const history = sanitizeHistoryEntries(request.history, request);
+
   return {
     id,
     requestId: id,
@@ -127,12 +315,14 @@ const buildRequestEntry = (client, request) => {
     completedCount,
     totalFields,
     attachments,
+    profile,
+    history,
     reviewer: {
       id: normalizeString(request.reviewerId),
       name: normalizeString(request.reviewerName),
       role: normalizeString(request.reviewerRole),
     },
-    notes: normalizeString(request.notes),
+    notes: normalizeNotes(request.notes),
     metadata: request.metadata && typeof request.metadata === 'object' ? clone(request.metadata) : undefined,
     sortTimestamp: parseTimestamp(updatedAt) ?? parseTimestamp(submittedAt) ?? 0,
   };
@@ -264,7 +454,15 @@ const ensureValidStatus = (status) => {
   return normalized;
 };
 
-export const updateVerificationRequestStatus = ({ requestId, status, reviewer } = {}) => {
+export const updateVerificationRequestStatus = ({
+  requestId,
+  status,
+  reviewer,
+  notes,
+  completedFields,
+  requestedFields,
+  profilePatch,
+} = {}) => {
   const normalizedStatus = ensureValidStatus(status);
   const owner = findRequestOwner(requestId);
   if (!owner) {
@@ -287,20 +485,26 @@ export const updateVerificationRequestStatus = ({ requestId, status, reviewer } 
   const normalizedCompleted = normalizeFields(previous.completedFields);
   const normalizedRequested = normalizeFields(previous.requestedFields ?? previous.completedFields);
 
-  let nextCompleted = { ...normalizedCompleted };
-  let nextRequested = { ...normalizedRequested };
+  const mergedCompleted = mergeFieldStates(normalizedCompleted, completedFields);
+  const mergedRequested = mergeFieldStates(normalizedRequested, requestedFields);
+
+  let nextCompleted = mergedCompleted;
+  let nextRequested = mergedRequested;
 
   if (normalizedStatus === 'approved' || normalizedStatus === 'partial') {
-    nextCompleted = {
-      ...normalizedCompleted,
-      ...normalizedRequested,
-    };
-    nextRequested = { ...nextCompleted };
+    const autoCompleted = mergeFieldStates(mergedCompleted, mergedRequested);
+    nextCompleted = autoCompleted;
+    nextRequested = mergeFieldStates(mergedRequested, autoCompleted);
   }
 
   const completedTrueCount = Object.values(nextCompleted).filter(Boolean).length;
   const requestedTrueCount = Object.values(nextRequested).filter(Boolean).length;
-  const relevantTotal = Math.max(requestedTrueCount, completedTrueCount);
+  const relevantTotal = Math.max(
+    requestedTrueCount,
+    completedTrueCount,
+    Object.keys(nextCompleted).length,
+    Object.keys(nextRequested).length,
+  );
 
   const totalFields = clamp(relevantTotal || Object.keys(nextRequested).length || 4, 1, 10);
   const completedCount = clamp(completedTrueCount, 0, totalFields);
@@ -308,9 +512,22 @@ export const updateVerificationRequestStatus = ({ requestId, status, reviewer } 
   const finalStatus =
     normalizedStatus === 'rejected'
       ? 'rejected'
-      : hasOutstanding
-        ? 'partial'
-        : 'approved';
+        : hasOutstanding
+          ? 'partial'
+          : 'approved';
+
+  const normalizedNotes = normalizeNotes(notes);
+  const previousHistory = sanitizeHistoryEntries(previous.history, previous);
+  const historyEntry = createHistoryEntry({
+    request: previous,
+    reviewer: reviewerInfo,
+    status: finalStatus,
+    notes: normalizedNotes,
+    completedFields: nextCompleted,
+    requestedFields: nextRequested,
+  });
+
+  const nextHistory = [historyEntry, ...previousHistory];
 
   const updatedRequest = {
     ...previous,
@@ -324,13 +541,18 @@ export const updateVerificationRequestStatus = ({ requestId, status, reviewer } 
     requestedFields: nextRequested,
     completedCount,
     totalFields,
+    notes: normalizedNotes,
+    history: nextHistory,
   };
 
   const nextRequests = requests.slice();
   nextRequests[index] = updatedRequest;
 
+  const normalizedProfilePatch = normalizeProfilePatch(profilePatch);
+
   const nextExtras = {
     ...extras,
+    ...normalizedProfilePatch,
     verificationRequests: nextRequests,
   };
 
@@ -345,6 +567,38 @@ export const updateVerificationRequestStatus = ({ requestId, status, reviewer } 
     });
   } catch (error) {
     console.warn('Failed to broadcast admin verification status change', error);
+  }
+
+  try {
+    const contextStatus = finalStatus === 'approved' ? 'approved' : finalStatus === 'rejected' ? 'rejected' : 'partial';
+    const actionLabel = (() => {
+      switch (contextStatus) {
+        case 'approved':
+          return `Подтвердил запрос верификации #${requestId}`;
+        case 'rejected':
+          return `Отклонил запрос верификации #${requestId}`;
+        default:
+          return `Обновил запрос верификации #${requestId}`;
+      }
+    })();
+
+    appendAdminLog({
+      section: 'verification',
+      action: actionLabel,
+      adminId: reviewerInfo.id,
+      adminName: reviewerInfo.name,
+      role: reviewerInfo.role,
+      context: `verification:${contextStatus}:${requestId}`,
+      metadata: {
+        requestId,
+        userId: owner.id,
+        status: finalStatus,
+        completedFields: nextCompleted,
+        requestedFields: nextRequested,
+      },
+    });
+  } catch (error) {
+    console.warn('Не удалось записать лог действия верификации', error);
   }
 
   const clientForEntry = {
