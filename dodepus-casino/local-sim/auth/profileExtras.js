@@ -1,10 +1,72 @@
 import { PROFILE_KEY } from './constants';
 
+const GENDER_MALE_VALUES = Object.freeze([
+  'male',
+  'm',
+  'man',
+  'м',
+  'м.',
+  'муж',
+  'муж.',
+  'мужчина',
+  'мужской',
+]);
+
+const GENDER_FEMALE_VALUES = Object.freeze([
+  'female',
+  'f',
+  'woman',
+  'ж',
+  'ж.',
+  'жен',
+  'жен.',
+  'женщина',
+  'женский',
+]);
+
+const GENDER_CLEAR_VALUES = Object.freeze([
+  '',
+  'unspecified',
+  'не указан',
+  'не указано',
+  'не выбрано',
+  'не выбран',
+  'не выбрана',
+  'unknown',
+  'другое',
+  'other',
+]);
+
+const normalizeGender = (value) => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) {
+    return '';
+  }
+
+  if (GENDER_MALE_VALUES.includes(normalized)) {
+    return 'male';
+  }
+
+  if (GENDER_FEMALE_VALUES.includes(normalized)) {
+    return 'female';
+  }
+
+  if (GENDER_CLEAR_VALUES.includes(normalized)) {
+    return '';
+  }
+
+  return '';
+};
+
 export const pickExtras = (u = {}) => ({
   nickname: u.nickname ?? (u.email || ''),
   firstName: u.firstName ?? '',
   lastName: u.lastName ?? '',
-  gender: u.gender ?? 'unspecified',
+  gender: normalizeGender(u.gender),
   dob: u.dob ?? null,
   phone: u.phone ?? '',
   country: u.country ?? '',
