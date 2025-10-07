@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Stack } from 'react-bootstrap';
+import { Alert, Stack, Form } from 'react-bootstrap';
 import { useAuth } from '../../../app/AuthContext.jsx';
 import {
   updateVerificationRequestStatus,
@@ -14,18 +14,160 @@ import {
   getAdminDisplayName,
   getAdminId,
   getAdminRole,
+  getUserDisplayName,
 } from './utils.js';
+import {
+  deriveModuleStatesFromRequests,
+  summarizeModuleStates,
+  VERIFICATION_MODULES,
+} from '../../../shared/verification/index.js';
+
+const parseTimestamp = (value) => {
+  if (!value) return 0;
+  try {
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  } catch {
+    return 0;
+  }
+};
+
+const getRequestSortTimestamp = (request) => {
+  if (!request) return 0;
+  if (Number.isFinite(request.sortTimestamp)) {
+    return request.sortTimestamp;
+  }
+
+  const candidates = [request.updatedAt, request.reviewedAt, request.submittedAt];
+  for (const value of candidates) {
+    const ts = parseTimestamp(value);
+    if (ts) {
+      return ts;
+    }
+  }
+
+  return 0;
+};
+
+const buildUserEntries = (rawRequests = []) => {
+  const byUser = new Map();
+
+  rawRequests.forEach((request) => {
+    if (!request || typeof request !== 'object') {
+      return;
+    }
+
+    const userId = request.userId || request.id;
+    if (!userId) {
+      return;
+    }
+
+    if (!byUser.has(userId)) {
+      byUser.set(userId, []);
+    }
+    byUser.get(userId).push(request);
+  });
+
+  return Array.from(byUser.entries()).map(([userId, userRequests]) => {
+    const modulesMap = deriveModuleStatesFromRequests(userRequests);
+    const summary = summarizeModuleStates(modulesMap);
+    const sorted = userRequests
+      .slice()
+      .sort((a, b) => getRequestSortTimestamp(b) - getRequestSortTimestamp(a));
+
+    const findByStatus = (status) => sorted.find((request) => request?.status === status) || null;
+
+    const pendingRequest = findByStatus('pending');
+    const partialRequest = findByStatus('partial');
+    const rejectedRequest = findByStatus('rejected');
+    const approvedRequest = findByStatus('approved');
+    const latestRequest = sorted[0] || null;
+
+    const primaryRequest =
+      pendingRequest || partialRequest || rejectedRequest || approvedRequest || latestRequest;
+
+    const baseRequest = primaryRequest || latestRequest || null;
+    const normalizedUserId = baseRequest?.userId || userId || '';
+    const displayName = getUserDisplayName(baseRequest || { userId: normalizedUserId });
+
+    const searchIndex = [
+      normalizedUserId,
+      displayName,
+      baseRequest?.userEmail,
+      baseRequest?.userPhone,
+      baseRequest?.profile?.firstName,
+      baseRequest?.profile?.lastName,
+      baseRequest?.profile?.nickname,
+    ]
+      .filter(Boolean)
+      .map((value) => String(value).toLowerCase())
+      .join(' ');
+
+    const modules = VERIFICATION_MODULES.map((module) => ({
+      key: module.key,
+      label: module.label,
+      status: modulesMap[module.key]?.status || 'idle',
+    }));
+
+    const attachmentsCount = Array.isArray(primaryRequest?.attachments)
+      ? primaryRequest.attachments.length
+      : 0;
+
+    const section = summary.hasPending
+      ? 'requests'
+      : summary.hasRejected
+        ? 'rejected'
+        : summary.allApproved
+          ? 'verified'
+          : 'partial';
+
+    const sortTimestamp = Math.max(
+      summary.latestTimestamp || 0,
+      ...sorted.map((request) => getRequestSortTimestamp(request)),
+    );
+
+    return {
+      userId: normalizedUserId,
+      displayName,
+      modules,
+      modulesMap,
+      summary,
+      attachmentsCount,
+      primaryRequest,
+      pendingRequest,
+      partialRequest,
+      rejectedRequest,
+      approvedRequest,
+      latestRequest,
+      sortTimestamp,
+      searchIndex,
+      section,
+      submittedAt: primaryRequest?.submittedAt || '',
+      updatedAt: primaryRequest?.updatedAt || '',
+      reviewedAt: primaryRequest?.reviewedAt || '',
+      reviewer: primaryRequest?.reviewer || {},
+      status: primaryRequest?.status || '',
+    };
+  });
+};
 
 export default function Verification() {
   const { requests, loading, error, reload, ensureLoaded } = useAdminVerificationRequests();
   const { user } = useAuth();
   const [actionError, setActionError] = useState(null);
   const [busyId, setBusyId] = useState(null);
-  const [modalState, setModalState] = useState(() => ({
-    show: false,
-    requestId: null,
-    intent: 'view',
-  }));
+  const createInitialModalState = useCallback(
+    () => ({
+      show: false,
+      requestId: null,
+      defaultMode: 'view',
+      moduleKey: null,
+      moduleStatus: null,
+    }),
+    [],
+  );
+  const [modalState, setModalState] = useState(() => createInitialModalState());
+  const [expandedSection, setExpandedSection] = useState(null);
 
   useEffect(() => {
     const maybePromise = ensureLoaded?.();
@@ -34,74 +176,51 @@ export default function Verification() {
     }
   }, [ensureLoaded]);
 
-  const latestRequests = useMemo(() => {
-    if (!Array.isArray(requests) || requests.length === 0) {
-      return [];
+  const [search, setSearch] = useState('');
+  const normalizedSearch = search.trim().toLowerCase();
+
+  const userEntries = useMemo(
+    () => buildUserEntries(Array.isArray(requests) ? requests : []),
+    [requests],
+  );
+
+  const filteredEntries = useMemo(() => {
+    if (!normalizedSearch) {
+      return userEntries;
     }
-
-    const byUser = new Map();
-    const getTimestamp = (entry) => {
-      if (!entry) return 0;
-      if (Number.isFinite(entry.sortTimestamp)) {
-        return entry.sortTimestamp;
-      }
-      const candidates = [entry.updatedAt, entry.reviewedAt, entry.submittedAt];
-      for (const value of candidates) {
-        if (!value) continue;
-        const parsed = Date.parse(value);
-        if (Number.isFinite(parsed)) {
-          return parsed;
-        }
-      }
-      return 0;
-    };
-
-    requests.forEach((request) => {
-      if (!request || typeof request !== 'object') {
-        return;
-      }
-
-      const key = request.userId || request.id;
-      if (!key) {
-        return;
-      }
-
-      const current = byUser.get(key);
-      if (!current || getTimestamp(request) >= getTimestamp(current)) {
-        byUser.set(key, request);
-      }
-    });
-
-    return Array.from(byUser.values()).sort((a, b) => getTimestamp(b) - getTimestamp(a));
-  }, [requests]);
+    return userEntries.filter((entry) => entry.searchIndex.includes(normalizedSearch));
+  }, [userEntries, normalizedSearch]);
 
   const grouped = useMemo(() => {
-    const byStatus = {
-      pending: [],
+    const buckets = {
+      requests: [],
       partial: [],
       rejected: [],
-      approved: [],
+      verified: [],
     };
 
-    latestRequests.forEach((request) => {
-      if (!request) return;
-      const bucket = byStatus[request.status] ?? byStatus.pending;
-      bucket.push(request);
+    filteredEntries.forEach((entry) => {
+      buckets[entry.section].push(entry);
     });
 
-    return byStatus;
-  }, [latestRequests]);
+    Object.values(buckets).forEach((items) => {
+      items.sort((a, b) => (b.sortTimestamp || 0) - (a.sortTimestamp || 0));
+    });
+
+    return buckets;
+  }, [filteredEntries]);
 
   const activeRequest = useMemo(() => {
     if (!modalState.requestId) {
       return null;
     }
 
-    const fromLatest = latestRequests.find((entry) => entry?.id === modalState.requestId);
-    return fromLatest || null;
-  }, [latestRequests, modalState.requestId]);
+    if (!Array.isArray(requests)) {
+      return null;
+    }
 
-  const modalIntent = modalState.intent;
+    return requests.find((entry) => entry?.id === modalState.requestId) || null;
+  }, [requests, modalState.requestId]);
 
   const reviewer = useMemo(
     () => ({
@@ -184,27 +303,43 @@ export default function Verification() {
     [ensureLoaded, reviewer],
   );
 
-  const openRequestModal = useCallback((request) => {
-    if (!request) return;
-    setModalState({ show: true, requestId: request.id, intent: 'view' });
-  }, []);
+  const openRequestModal = useCallback(
+    (request, options = {}) => {
+      if (!request) return;
+      const nextMode = (() => {
+        if (options.defaultMode) {
+          return options.defaultMode;
+        }
+        return request.status === 'pending' ? 'approve' : 'view';
+      })();
+
+      setModalState({
+        show: true,
+        requestId: request.id,
+        defaultMode: nextMode,
+        moduleKey: options.moduleKey || null,
+        moduleStatus: options.moduleStatus || null,
+      });
+    },
+    [],
+  );
 
   const closeRequestModal = useCallback(() => {
     if (busyId) {
       return;
     }
-    setModalState({ show: false, requestId: null, intent: 'view' });
-  }, [busyId]);
+    setModalState(createInitialModalState());
+  }, [busyId, createInitialModalState]);
 
   const handleModalConfirm = useCallback(
     async (payload) => {
       if (!activeRequest) return;
       const ok = await handleConfirm(activeRequest, payload);
       if (ok) {
-        setModalState({ show: false, requestId: null, intent: 'view' });
+        setModalState(createInitialModalState());
       }
     },
-    [activeRequest, handleConfirm],
+    [activeRequest, handleConfirm, createInitialModalState],
   );
 
   const handleModalReject = useCallback(
@@ -212,10 +347,53 @@ export default function Verification() {
       if (!activeRequest) return;
       const ok = await handleReject(activeRequest, payload);
       if (ok) {
-        setModalState({ show: false, requestId: null, intent: 'view' });
+        setModalState(createInitialModalState());
       }
     },
-    [activeRequest, handleReject],
+    [activeRequest, handleReject, createInitialModalState],
+  );
+
+  const toggleSection = useCallback((section) => {
+    setExpandedSection((current) => (current === section ? null : section));
+  }, []);
+
+  const handleOpenEntry = useCallback(
+    (entry) => {
+      if (!entry) return;
+      const request =
+        entry.primaryRequest || entry.pendingRequest || entry.latestRequest || null;
+      if (!request) {
+        return;
+      }
+      openRequestModal(request, {
+        defaultMode: request.status === 'pending' ? 'approve' : 'view',
+      });
+    },
+    [openRequestModal],
+  );
+
+  const handleOpenModule = useCallback(
+    (entry, module) => {
+      if (!entry || !module) {
+        return;
+      }
+      const request =
+        entry.primaryRequest || entry.pendingRequest || entry.latestRequest || null;
+      if (!request) {
+        return;
+      }
+
+      const moduleStatus = module.status || 'idle';
+      const defaultMode =
+        request.status === 'pending' && moduleStatus !== 'approved' ? 'approve' : 'view';
+
+      openRequestModal(request, {
+        defaultMode,
+        moduleKey: module.key || null,
+        moduleStatus,
+      });
+    },
+    [openRequestModal],
   );
 
   const modalBusy = useMemo(() => {
@@ -235,42 +413,65 @@ export default function Verification() {
         </Alert>
       )}
 
+      <Form className="mb-0" onSubmit={(event) => event.preventDefault()}>
+        <Form.Control
+          type="search"
+          placeholder="Поиск по ID, почте, телефону или имени"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+      </Form>
+
       <VerificationRequestsBlock
-        requests={grouped.pending}
+        requests={grouped.requests}
         loading={loading}
         onReload={reload}
-        onOpen={openRequestModal}
+        onOpen={handleOpenEntry}
+        onOpenModule={handleOpenModule}
+        expanded={expandedSection === 'requests'}
+        onToggle={() => toggleSection('requests')}
       />
 
       <VerificationPartialBlock
         requests={grouped.partial}
         loading={loading}
         onReload={reload}
-        onOpen={openRequestModal}
+        onOpen={handleOpenEntry}
+        onOpenModule={handleOpenModule}
+        expanded={expandedSection === 'partial'}
+        onToggle={() => toggleSection('partial')}
       />
 
       <VerificationRejectedBlock
         requests={grouped.rejected}
         loading={loading}
         onReload={reload}
-        onOpen={openRequestModal}
+        onOpen={handleOpenEntry}
+        onOpenModule={handleOpenModule}
+        expanded={expandedSection === 'rejected'}
+        onToggle={() => toggleSection('rejected')}
       />
 
       <VerificationApprovedBlock
-        requests={grouped.approved}
+        requests={grouped.verified}
         loading={loading}
         onReload={reload}
-        onOpen={openRequestModal}
+        onOpen={handleOpenEntry}
+        onOpenModule={handleOpenModule}
+        expanded={expandedSection === 'verified'}
+        onToggle={() => toggleSection('verified')}
       />
 
       <VerificationRequestModal
         show={modalState.show && Boolean(activeRequest)}
         request={activeRequest}
-        intent={modalIntent}
         onClose={closeRequestModal}
         onConfirm={handleModalConfirm}
         onReject={handleModalReject}
         busy={modalBusy}
+        defaultMode={modalState.defaultMode}
+        focusModule={modalState.moduleKey}
+        focusStatus={modalState.moduleStatus}
       />
     </Stack>
   );

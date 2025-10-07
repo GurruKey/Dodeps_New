@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Card, Form, Row, Col, InputGroup, Dropdown, Alert } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/AuthContext.jsx';
+import { useVerificationModules } from '../../../../../shared/verification/index.js';
 
 const DIAL_CODES = ['+380', '+7', '+375', '+370', '+371', '+372', '+48', '+995', '+374'];
-
-const LOCK_STATUSES = new Set(['pending', 'processing', 'partial', 'approved']);
 
 function splitPhone(full) {
   if (!full || !full.startsWith('+')) return { dial: '+380', number: '' };
@@ -13,31 +12,9 @@ function splitPhone(full) {
   return { dial: '+380', number: full.replace(/^\+/, '') };
 }
 
-const toTimestamp = (value) => {
-  if (!value) return 0;
-  const parsed = Date.parse(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-const getLatestFieldRequest = (requests, fieldKey) => {
-  if (!Array.isArray(requests)) return null;
-
-  return requests.reduce((latest, current) => {
-    if (!current || typeof current !== 'object') return latest;
-    const hasField = Boolean(
-      current?.completedFields?.[fieldKey] || current?.requestedFields?.[fieldKey],
-    );
-    if (!hasField) return latest;
-    if (!latest) return current;
-
-    const latestTs = toTimestamp(latest.updatedAt || latest.reviewedAt || latest.submittedAt);
-    const currentTs = toTimestamp(current.updatedAt || current.reviewedAt || current.submittedAt);
-    return currentTs > latestTs ? current : latest;
-  }, null);
-};
-
 export default function ContactsBlock() {
   const { user, updateContacts } = useAuth();
+  const { modules: verificationModules = {} } = useVerificationModules(user);
 
   const phoneInitial = useMemo(() => splitPhone(user?.phone || ''), [user?.phone]);
   const [dial, setDial] = useState(phoneInitial.dial);
@@ -63,18 +40,9 @@ export default function ContactsBlock() {
     return digits ? `${origin.dial}${digits}` : '';
   }, [user?.phone]);
 
-  const phoneRequest = useMemo(
-    () => getLatestFieldRequest(user?.verificationRequests, 'phone'),
-    [user?.verificationRequests],
-  );
-
-  const phoneRequestStatus = useMemo(
-    () => String(phoneRequest?.status || '').toLowerCase(),
-    [phoneRequest],
-  );
-
+  const phoneStatus = String(verificationModules?.phone?.status || '').toLowerCase();
   const emailLocked = true;
-  const phoneLocked = LOCK_STATUSES.has(phoneRequestStatus);
+  const phoneLocked = phoneStatus === 'pending' || phoneStatus === 'approved';
 
   const phoneChanged = !phoneLocked && currentPhone !== originalPhone;
   const hasChanges = phoneChanged;
@@ -123,14 +91,18 @@ export default function ContactsBlock() {
   const controlHeight = { minHeight: 'calc(1.5em + .75rem + 2px)' };
 
   const phoneLockHint = (() => {
-    if (phoneRequestStatus === 'approved') {
+    if (phoneStatus === 'approved') {
       return 'Номер подтверждён и недоступен для изменения.';
     }
-    if (LOCK_STATUSES.has(phoneRequestStatus) && phoneRequestStatus !== 'approved') {
+    if (phoneStatus === 'pending') {
       return 'Изменения номера заблокированы на время проверки.';
     }
     return null;
   })();
+
+  const phoneRejectedHint = phoneStatus === 'rejected'
+    ? 'Номер отклонён. Исправьте его и отправьте повторно на проверку.'
+    : null;
 
   return (
     <Card>
@@ -185,6 +157,9 @@ export default function ContactsBlock() {
               )}
               {phoneLockHint && (
                 <Form.Text className="text-muted d-block mt-1">{phoneLockHint}</Form.Text>
+              )}
+              {phoneRejectedHint && (
+                <Form.Text className="text-warning d-block mt-1">{phoneRejectedHint}</Form.Text>
               )}
             </Form>
           </Col>

@@ -4,7 +4,7 @@ export const FIELD_LABELS = Object.freeze({
   email: 'Почта',
   phone: 'Телефон',
   address: 'Адрес',
-  doc: 'Документ',
+  doc: 'Документы',
 });
 
 export const formatDateTime = (value, { withTime = true } = {}) => {
@@ -23,61 +23,6 @@ export const formatDateTime = (value, { withTime = true } = {}) => {
   }
 
   return value;
-};
-
-export const getProgressLabel = ({ completedCount = 0, totalFields = 0 } = {}) => {
-  const total = Number.isFinite(Number(totalFields)) ? Number(totalFields) : 0;
-  const completed = Number.isFinite(Number(completedCount)) ? Number(completedCount) : 0;
-  return `${Math.max(0, completed)} / ${Math.max(0, total)}`;
-};
-
-const resolveFieldState = ({ done = false, status = 'pending', requested = false }) => {
-  if (done) {
-    return 'approved';
-  }
-
-  if (status === 'rejected') {
-    return requested ? 'rejected' : 'idle';
-  }
-
-  if (requested) {
-    return 'pending';
-  }
-
-  return 'idle';
-};
-
-const resolveFieldVariant = (state) => {
-  switch (state) {
-    case 'approved':
-      return 'success';
-    case 'rejected':
-      return 'danger';
-    case 'pending':
-      return 'warning';
-    default:
-      return 'secondary';
-  }
-};
-
-export const getFieldEntries = (fields = {}, { status, requested } = {}) => {
-  const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : '';
-  const requestedFields = requested && typeof requested === 'object' ? requested : null;
-
-  return Object.entries(FIELD_LABELS).map(([key, label]) => {
-    const done = Boolean(fields?.[key]);
-    const isRequested = Boolean(requestedFields ? requestedFields[key] : done);
-    const state = resolveFieldState({ done, status: normalizedStatus, requested: isRequested });
-
-    return {
-      key,
-      label,
-      state,
-      variant: resolveFieldVariant(state),
-      done,
-      requested: isRequested,
-    };
-  });
 };
 
 export const getUserDisplayName = (request = {}) => {
