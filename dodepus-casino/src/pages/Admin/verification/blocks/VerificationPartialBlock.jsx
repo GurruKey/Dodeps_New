@@ -70,7 +70,7 @@ export default function VerificationPartialBlock({
         <div id={`${sectionId}-content`}>
           <Card.Body className="border-top">
             <Card.Text className="text-muted mb-0">
-              Заявки, в которых подтверждены не все поля. Проверьте обновлённые данные и завершите процесс.
+              Пользователи с частично подтверждёнными модулями. Проверьте новые данные и завершите процесс.
             </Card.Text>
           </Card.Body>
 
@@ -91,7 +91,6 @@ export default function VerificationPartialBlock({
                   <div className="d-flex flex-column flex-xl-row gap-3 align-items-xl-start justify-content-between">
                     <div className="flex-grow-1">
                       <div className="fw-semibold">{entry.userId}</div>
-                      <div className="text-muted small">{entry.displayName}</div>
                       <div className="mt-3">
                         <VerificationFieldBadges
                           modules={entry.modules}
@@ -109,11 +108,6 @@ export default function VerificationPartialBlock({
                       <div className="text-muted small">Последнее обновление</div>
                       <div className="fw-medium">{formatDateTime(entry.updatedAt)}</div>
                     </div>
-                    {onOpen && (
-                      <div className="text-muted small text-xl-end" style={{ minWidth: 160 }}>
-                        Нажмите, чтобы открыть заявку
-                      </div>
-                    )}
                   </div>
                 </ListGroup.Item>
               ))}

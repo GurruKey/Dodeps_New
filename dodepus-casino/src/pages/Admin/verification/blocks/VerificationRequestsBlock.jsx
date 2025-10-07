@@ -1,7 +1,7 @@
 import { Badge, Button, Card, Collapse, ListGroup, Spinner } from 'react-bootstrap';
 import { ChevronDown } from 'lucide-react';
 import VerificationFieldBadges from '../components/VerificationFieldBadges.jsx';
-import { formatDateTime, getPendingVerificationVariant } from '../utils.js';
+import { formatDateTime, getInReviewVerificationVariant } from '../utils.js';
 
 export default function VerificationRequestsBlock({
   requests = [],
@@ -13,7 +13,7 @@ export default function VerificationRequestsBlock({
   onToggle,
 }) {
   const totalRequests = Array.isArray(requests) ? requests.length : 0;
-  const pendingBadgeVariant = getPendingVerificationVariant(totalRequests);
+  const inReviewBadgeVariant = getInReviewVerificationVariant(totalRequests);
   const handleOpen = (entry) => {
     if (!onOpen) return;
     onOpen(entry);
@@ -48,7 +48,7 @@ export default function VerificationRequestsBlock({
                   }}
                 />
                 <span className="fw-semibold">Запросы на верификацию</span>
-                <Badge bg={pendingBadgeVariant}>{totalRequests}</Badge>
+                <Badge bg={inReviewBadgeVariant}>{totalRequests}</Badge>
               </span>
           </button>
           {onReload && (
@@ -70,7 +70,7 @@ export default function VerificationRequestsBlock({
         <div id={`${sectionId}-content`}>
           <Card.Body className="border-top">
             <Card.Text className="text-muted mb-0">
-              Новые заявки от пользователей, ожидающие проверки администратором.
+              Новые запросы от пользователей, ожидающие проверки администратором.
             </Card.Text>
           </Card.Body>
 
@@ -91,7 +91,6 @@ export default function VerificationRequestsBlock({
                   <div className="d-flex flex-column flex-xl-row gap-3 align-items-xl-start justify-content-between">
                     <div className="flex-grow-1">
                       <div className="fw-semibold">{entry.userId}</div>
-                      <div className="text-muted small">{entry.displayName}</div>
                       <div className="mt-3">
                         <VerificationFieldBadges
                           modules={entry.modules}
@@ -117,11 +116,6 @@ export default function VerificationRequestsBlock({
                         </div>
                       )}
                     </div>
-                    {onOpen && (
-                      <div className="text-muted small text-xl-end" style={{ minWidth: 160 }}>
-                        Нажмите, чтобы открыть заявку
-                      </div>
-                    )}
                   </div>
                 </ListGroup.Item>
               ))}

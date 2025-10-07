@@ -4,7 +4,7 @@ import { appendAdminLog } from './logs/index.js';
 
 export const ADMIN_VERIFICATION_EVENT = 'dodepus:admin-verification-change';
 
-const VALID_STATUSES = Object.freeze(['pending', 'partial', 'rejected', 'approved']);
+const VALID_STATUSES = Object.freeze(['waiting', 'in_review', 'partial', 'rejected', 'approved']);
 
 const normalizeString = (value, fallback = '') => {
   if (typeof value !== 'string') return fallback;
@@ -14,23 +14,26 @@ const normalizeString = (value, fallback = '') => {
 
 const normalizeStatus = (value) => {
   const normalized = normalizeString(value).toLowerCase();
-  if (!normalized) return 'pending';
+  if (!normalized) return 'in_review';
   if (normalized === 'approved' || normalized === 'verified' || normalized === 'done') {
     return 'approved';
   }
   if (normalized === 'rejected' || normalized === 'declined' || normalized === 'denied') {
     return 'rejected';
   }
-  if (normalized === 'partial' || normalized === 'inreview' || normalized === 'in_review') {
+  if (normalized === 'partial') {
     return 'partial';
   }
+  if (['in_review', 'inreview', 'pending', 'processing'].includes(normalized)) {
+    return 'in_review';
+  }
   if (normalized === 'waiting' || normalized === 'new' || normalized === 'requested') {
-    return 'pending';
+    return 'waiting';
   }
   if (VALID_STATUSES.includes(normalized)) {
     return normalized;
   }
-  return 'pending';
+  return 'in_review';
 };
 
 const normalizeFields = (fields = {}) => ({

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Stack, Form } from 'react-bootstrap';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../app/AuthContext.jsx';
 import {
   updateVerificationRequestStatus,
@@ -78,14 +79,14 @@ const buildUserEntries = (rawRequests = []) => {
 
     const findByStatus = (status) => sorted.find((request) => request?.status === status) || null;
 
-    const pendingRequest = findByStatus('pending');
+    const inReviewRequest = findByStatus('in_review');
     const partialRequest = findByStatus('partial');
     const rejectedRequest = findByStatus('rejected');
     const approvedRequest = findByStatus('approved');
     const latestRequest = sorted[0] || null;
 
     const primaryRequest =
-      pendingRequest || partialRequest || rejectedRequest || approvedRequest || latestRequest;
+      inReviewRequest || partialRequest || rejectedRequest || approvedRequest || latestRequest;
 
     const baseRequest = primaryRequest || latestRequest || null;
     const normalizedUserId = baseRequest?.userId || userId || '';
@@ -107,14 +108,14 @@ const buildUserEntries = (rawRequests = []) => {
     const modules = VERIFICATION_MODULES.map((module) => ({
       key: module.key,
       label: module.label,
-      status: modulesMap[module.key]?.status || 'idle',
+      status: modulesMap[module.key]?.status || 'waiting',
     }));
 
     const attachmentsCount = Array.isArray(primaryRequest?.attachments)
       ? primaryRequest.attachments.length
       : 0;
 
-    const section = summary.hasPending
+    const section = summary.hasInReview
       ? 'requests'
       : summary.hasRejected
         ? 'rejected'
@@ -135,7 +136,7 @@ const buildUserEntries = (rawRequests = []) => {
       summary,
       attachmentsCount,
       primaryRequest,
-      pendingRequest,
+      inReviewRequest,
       partialRequest,
       rejectedRequest,
       approvedRequest,
@@ -177,8 +178,43 @@ export default function Verification() {
     }
   }, [ensureLoaded]);
 
-  const [search, setSearch] = useState('');
-  const normalizedSearch = search.trim().toLowerCase();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchInput, setSearchInput] = useState(() => searchParams.get('q') || '');
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+
+  useEffect(() => {
+    const paramValue = searchParams.get('q') || '';
+    setSearchInput((current) => (current === paramValue ? current : paramValue));
+    setSearchQuery((current) => (current === paramValue ? current : paramValue));
+  }, [searchParams]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchQuery(searchInput);
+
+      const nextQuery = searchInput.trim();
+      const currentQuery = searchParams.get('q') || '';
+      const hasParam = searchParams.has('q');
+
+      if (nextQuery === currentQuery) {
+        if ((nextQuery && hasParam) || (!nextQuery && !hasParam)) {
+          return;
+        }
+      }
+
+      const nextParams = new URLSearchParams(searchParams);
+      if (nextQuery) {
+        nextParams.set('q', nextQuery);
+      } else {
+        nextParams.delete('q');
+      }
+
+      setSearchParams(nextParams, { replace: true });
+    }, 400);
+
+    return () => clearTimeout(handler);
+  }, [searchInput, searchParams, setSearchParams]);
 
   const userEntries = useMemo(
     () => buildUserEntries(Array.isArray(requests) ? requests : []),
@@ -311,7 +347,7 @@ export default function Verification() {
         if (options.defaultMode) {
           return options.defaultMode;
         }
-        if (request.status === 'pending') {
+        if (request.status === 'in_review') {
           return 'approve';
         }
         if (request.status === 'approved') {
@@ -400,12 +436,12 @@ export default function Verification() {
     (entry) => {
       if (!entry) return;
       const request =
-        entry.primaryRequest || entry.pendingRequest || entry.latestRequest || null;
+        entry.primaryRequest || entry.inReviewRequest || entry.latestRequest || null;
       if (!request) {
         return;
       }
       openRequestModal(request, {
-        defaultMode: request.status === 'pending' ? 'approve' : 'view',
+        defaultMode: request.status === 'in_review' ? 'approve' : 'view',
       });
     },
     [openRequestModal],
@@ -417,14 +453,14 @@ export default function Verification() {
         return;
       }
       const request =
-        entry.primaryRequest || entry.pendingRequest || entry.latestRequest || null;
+        entry.primaryRequest || entry.inReviewRequest || entry.latestRequest || null;
       if (!request) {
         return;
       }
 
-      const moduleStatus = module.status || 'idle';
+      const moduleStatus = module.status || 'waiting';
       const defaultMode =
-        request.status === 'pending' && moduleStatus !== 'approved' ? 'approve' : 'view';
+        request.status === 'in_review' && moduleStatus !== 'approved' ? 'approve' : 'view';
 
       openRequestModal(request, {
         defaultMode,
@@ -469,9 +505,9 @@ export default function Verification() {
       <Form className="mb-0" onSubmit={(event) => event.preventDefault()}>
         <Form.Control
           type="search"
-          placeholder="Поиск по ID, почте, телефону или имени"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Поиск по ID, имени, фамилии, e-mail, телефону или никнейму"
+          value={searchInput}
+          onChange={(event) => setSearchInput(event.target.value)}
         />
       </Form>
 

@@ -89,6 +89,10 @@ export const getAdminRole = (user) => {
 
 export const getStatusLabel = (status) => {
   switch (status) {
+    case 'waiting':
+      return 'Не отправлено';
+    case 'in_review':
+      return 'На проверке';
     case 'approved':
       return 'Верифицировано';
     case 'rejected':
@@ -98,7 +102,7 @@ export const getStatusLabel = (status) => {
     case 'reset':
       return 'Статусы сброшены';
     default:
-      return 'В ожидании проверки';
+      return 'На проверке';
   }
 };
 
@@ -107,7 +111,7 @@ const toFiniteNumber = (value) => {
   return Number.isFinite(numeric) ? numeric : 0;
 };
 
-export const getPendingVerificationVariant = (count) => {
+export const getInReviewVerificationVariant = (count) => {
   const numeric = Math.max(0, toFiniteNumber(count));
   if (numeric >= 16) {
     return 'danger';
@@ -118,8 +122,8 @@ export const getPendingVerificationVariant = (count) => {
   return 'success';
 };
 
-export const getPendingVerificationTextClass = (count) => {
-  const variant = getPendingVerificationVariant(count);
+export const getInReviewVerificationTextClass = (count) => {
+  const variant = getInReviewVerificationVariant(count);
   if (variant === 'danger') {
     return 'text-danger';
   }

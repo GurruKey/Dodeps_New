@@ -9,22 +9,22 @@ import {
 } from '../../../../../shared/verification/index.js';
 
 const ICON_LABELS = Object.freeze({
-  idle: 'требуется подтверждение',
-  pending: 'ожидает проверки',
+  waiting: 'требуется подтверждение',
+  in_review: 'на проверке',
   rejected: 'отклонено',
   approved: 'подтверждено',
 });
 
 const ICON_BG_CLASS = Object.freeze({
-  idle: 'bg-primary-subtle border-primary-subtle',
-  pending: 'bg-warning-subtle border-warning-subtle',
+  waiting: 'bg-primary-subtle border-primary-subtle',
+  in_review: 'bg-warning-subtle border-warning-subtle',
   rejected: 'bg-danger-subtle border-danger-subtle',
   approved: 'bg-success-subtle border-success-subtle',
 });
 
 const ICON_COMPONENT = Object.freeze({
-  idle: (size) => <Circle size={size} className="text-primary" />,
-  pending: (size) => <CircleHelp size={size} className="text-warning" />,
+  waiting: (size) => <Circle size={size} className="text-primary" />,
+  in_review: (size) => <CircleHelp size={size} className="text-warning" />,
   rejected: (size) => <CircleAlert size={size} className="text-danger" />,
   approved: (size) => <CheckCircle size={size} className="text-success" />,
 });
@@ -89,11 +89,11 @@ export default function VerificationStatusBlock() {
     key: module.key,
     label: module.label,
     isReady: readinessMap[module.key],
-    state: moduleStates?.[module.key]?.status || 'idle',
+    state: moduleStates?.[module.key]?.status || 'waiting',
   }));
 
   const hasAnyReady = items.some((item) => item.isReady);
-  const isRequestPending = Boolean(summary?.hasPending);
+  const isRequestPending = Boolean(summary?.hasInReview);
   const isRequestRejected = Boolean(summary?.hasRejected);
   const isRequestApproved = Boolean(summary?.allApproved);
 
@@ -107,7 +107,7 @@ export default function VerificationStatusBlock() {
     }
 
     if (!hasAnyReady) {
-      setSubmitError('Заполните данные профиля перед отправкой заявки.');
+      setSubmitError('Заполните данные профиля перед отправкой на проверку.');
       return;
     }
 
@@ -121,8 +121,8 @@ export default function VerificationStatusBlock() {
             return false;
           }
 
-          const state = moduleStates?.[key]?.status || 'idle';
-          return state === 'idle' || state === 'rejected';
+          const state = moduleStates?.[key]?.status || 'waiting';
+          return state === 'waiting' || state === 'rejected';
         }),
       );
 
@@ -163,7 +163,7 @@ export default function VerificationStatusBlock() {
 
   const statusMessage = (() => {
     if (isRequestPending) {
-      return 'Заявка отправлена и ожидает проверки администратора.';
+      return 'Запрос отправлен и находится на проверке у администратора.';
     }
     if (isRequestRejected) {
       return 'Некоторые пункты отклонены. Обновите данные и отправьте их повторно.';
@@ -172,8 +172,8 @@ export default function VerificationStatusBlock() {
       return 'Все модули подтверждены. Изменения станут доступны после сброса статусов администратором.';
     }
     return hasAnyReady
-      ? 'После заполнения данных отправьте заявку на проверку под нужным пунктом.'
-      : 'Заполните хотя бы один пункт, чтобы отправить заявку на проверку.';
+      ? 'После заполнения данных отправьте модуль на проверку под нужным пунктом.'
+      : 'Заполните хотя бы один пункт, чтобы отправить модуль на проверку.';
   })();
 
   return (
@@ -195,12 +195,14 @@ export default function VerificationStatusBlock() {
                 </span>
               );
 
-              const canNavigateToPersonal = !item.isReady && (state === 'idle' || state === 'rejected');
-              const canSubmit = item.isReady && (state === 'idle' || state === 'rejected');
+              const canNavigateToPersonal =
+                !item.isReady && (state === 'waiting' || state === 'rejected');
+              const canSubmit = item.isReady && (state === 'waiting' || state === 'rejected');
               const buttonVariant = state === 'rejected' ? 'warning' : 'primary';
               const buttonLabel =
                 isSubmitting && submittingKey === item.key ? 'Отправка…' : 'Подтвердить';
-              const showFillHint = !item.isReady && (state === 'idle' || state === 'rejected');
+              const showFillHint =
+                !item.isReady && (state === 'waiting' || state === 'rejected');
               const hintMessage = (() => {
                 switch (item.key) {
                   case 'email':
@@ -259,7 +261,7 @@ export default function VerificationStatusBlock() {
                     </div>
                   )}
 
-                  {state === 'pending' ? (
+                {state === 'in_review' ? (
                     <div className="mt-2 small fw-semibold text-warning">Ожидание</div>
                   ) : null}
 
@@ -280,7 +282,7 @@ export default function VerificationStatusBlock() {
 
                   {state === 'approved'
                     ? null
-                    : state === 'pending'
+                    : state === 'in_review'
                       ? null
                       : showFillHint
                         ? (
