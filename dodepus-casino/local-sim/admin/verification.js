@@ -244,6 +244,7 @@ const createHistoryEntry = ({
   notes,
   completedFields,
   requestedFields,
+  clearedFields,
 }) => {
   const timestamp = new Date().toISOString();
   return {
@@ -259,6 +260,7 @@ const createHistoryEntry = ({
     updatedAt: timestamp,
     completedFields: normalizeFields(completedFields),
     requestedFields: normalizeFields(requestedFields ?? completedFields),
+    clearedFields: normalizeFields(clearedFields),
   };
 };
 
@@ -296,6 +298,7 @@ const sanitizeHistoryEntries = (history, fallbackRequest) => {
         updatedAt: updatedAt || new Date().toISOString(),
         completedFields: normalizedCompleted,
         requestedFields: normalizedRequested,
+        clearedFields: normalizeFields(entry.clearedFields),
       };
     })
     .filter(Boolean);
@@ -570,6 +573,7 @@ export const updateVerificationRequestStatus = ({
     notes: normalizedNotes,
     completedFields: nextCompleted,
     requestedFields: nextRequested,
+    clearedFields: previous.clearedFields,
   });
 
   const nextHistory = [historyEntry, ...previousHistory];
@@ -656,6 +660,148 @@ export const updateVerificationRequestStatus = ({
   };
 
   return buildRequestEntry(clientForEntry, updatedRequest);
+};
+
+const buildClearedSelection = (modules = {}) => {
+  const normalized = normalizeFields(modules);
+  const result = {};
+  Object.keys(normalized).forEach((key) => {
+    if (!normalized[key]) {
+      return;
+    }
+    result[key] = true;
+  });
+  return normalizeFields(result);
+};
+
+export const resetVerificationRequestModules = ({
+  requestId,
+  modules,
+  reviewer,
+  notes,
+} = {}) => {
+  const clearedMap = buildClearedSelection(modules);
+  const clearedKeys = Object.keys(clearedMap).filter((key) => clearedMap[key]);
+
+  if (!clearedKeys.length) {
+    throw new Error('Выберите хотя бы один модуль для сброса');
+  }
+
+  const owner = findRequestOwner(requestId);
+  if (!owner) {
+    throw new Error('Запрос верификации не найден');
+  }
+
+  const extras = loadExtras(owner.id);
+  const requests = Array.isArray(extras?.verificationRequests)
+    ? extras.verificationRequests.slice()
+    : [];
+
+  const index = requests.findIndex((entry) => entry?.id === requestId);
+  if (index === -1) {
+    throw new Error('Запрос верификации не найден');
+  }
+
+  const previous = requests[index];
+  const reviewerInfo = buildReviewerInfo(reviewer);
+  const normalizedCompleted = normalizeFields(previous.completedFields);
+  const normalizedRequested = normalizeFields(previous.requestedFields ?? previous.completedFields);
+
+  clearedKeys.forEach((key) => {
+    normalizedCompleted[key] = false;
+    normalizedRequested[key] = false;
+  });
+
+  const completedTrueCount = Object.values(normalizedCompleted).filter(Boolean).length;
+  const requestedTrueCount = Object.values(normalizedRequested).filter(Boolean).length;
+  const relevantTotal = Math.max(
+    requestedTrueCount,
+    completedTrueCount,
+    Object.keys(normalizedCompleted).length,
+    Object.keys(normalizedRequested).length,
+  );
+
+  const totalFields = clamp(relevantTotal || Object.keys(normalizedRequested).length || 4, 1, 10);
+  const completedCount = clamp(completedTrueCount, 0, totalFields);
+  const normalizedNotes = normalizeNotes(notes);
+  const nowIso = new Date().toISOString();
+
+  const historyEntry = createHistoryEntry({
+    request: previous,
+    reviewer: reviewerInfo,
+    status: 'reset',
+    notes: normalizedNotes,
+    completedFields: normalizedCompleted,
+    requestedFields: normalizedRequested,
+    clearedFields: clearedMap,
+  });
+
+  const previousHistory = sanitizeHistoryEntries(previous.history, previous);
+  const nextHistory = [historyEntry, ...previousHistory];
+
+  const nextRequest = {
+    ...previous,
+    status: completedTrueCount > 0 ? 'partial' : 'partial',
+    reviewerId: reviewerInfo.id,
+    reviewerName: reviewerInfo.name,
+    reviewerRole: reviewerInfo.role,
+    reviewedAt: nowIso,
+    updatedAt: nowIso,
+    completedFields: normalizedCompleted,
+    requestedFields: normalizedRequested,
+    completedCount,
+    totalFields,
+    notes: normalizedNotes,
+    history: nextHistory,
+  };
+
+  requests[index] = nextRequest;
+
+  const nextExtras = {
+    ...extras,
+    verificationRequests: requests,
+  };
+
+  saveExtras(owner.id, nextExtras);
+
+  try {
+    notifyAdminVerificationRequestsChanged({
+      type: 'reset',
+      requestId,
+      userId: owner.id,
+    });
+  } catch (error) {
+    console.warn('Failed to broadcast admin verification reset', error);
+  }
+
+  try {
+    appendAdminLog({
+      section: 'verification',
+      action: `Сбросил статусы модулей для запроса #${requestId}`,
+      adminId: reviewerInfo.id,
+      adminName: reviewerInfo.name,
+      role: reviewerInfo.role,
+      context: `verification:reset:${requestId}`,
+      metadata: {
+        requestId,
+        userId: owner.id,
+        clearedFields: clearedMap,
+      },
+    });
+  } catch (error) {
+    console.warn('Не удалось записать лог сброса верификации', error);
+  }
+
+  const clientForEntry = {
+    ...owner,
+    profile: {
+      ...owner.profile,
+      ...nextExtras,
+      verificationRequests: requests,
+    },
+  };
+
+  return buildRequestEntry(clientForEntry, nextRequest);
 };
 
 export const __internals = Object.freeze({

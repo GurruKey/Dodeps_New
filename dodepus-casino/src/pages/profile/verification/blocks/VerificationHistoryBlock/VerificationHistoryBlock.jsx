@@ -57,6 +57,10 @@ const getStatusLabel = (event) => {
     return 'Запрос отправлен';
   }
 
+  if (event.type === 'reset' || event.status === 'reset') {
+    return 'Статусы сброшены';
+  }
+
   const status = String(event.status || '').toLowerCase();
   return VERIFICATION_STATUS_LABELS[status] || 'Обновление';
 };

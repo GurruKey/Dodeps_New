@@ -95,6 +95,8 @@ export const getStatusLabel = (status) => {
       return 'Отказано';
     case 'partial':
       return 'Частично подтверждено';
+    case 'reset':
+      return 'Статусы сброшены';
     default:
       return 'В ожидании проверки';
   }
