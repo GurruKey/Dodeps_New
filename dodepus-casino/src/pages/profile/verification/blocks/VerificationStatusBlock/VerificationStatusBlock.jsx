@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Row, Col, Card, Button, Toast, ToastContainer, Alert } from 'react-bootstrap';
-import { Circle, CheckCircle, CircleHelp, CircleAlert } from 'lucide-react';
+import { Circle, CheckCircle, CircleHelp, CircleX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../../app/AuthContext.jsx';
 import {
@@ -25,7 +25,7 @@ const ICON_BG_CLASS = Object.freeze({
 const ICON_COMPONENT = Object.freeze({
   waiting: (size) => <Circle size={size} className="text-primary" />,
   in_review: (size) => <CircleHelp size={size} className="text-warning" />,
-  rejected: (size) => <CircleAlert size={size} className="text-danger" />,
+  rejected: (size) => <CircleX size={size} className="text-danger" />,
   approved: (size) => <CheckCircle size={size} className="text-success" />,
 });
 
