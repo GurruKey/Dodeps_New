@@ -8,22 +8,22 @@ export const VERIFICATION_MODULES = Object.freeze([
 ]);
 
 export const VERIFICATION_STATUS_LABELS = Object.freeze({
-  pending: 'Ожидает проверки',
+  in_review: 'На проверке',
   partial: 'Частично подтверждено',
   approved: 'Подтверждено',
   rejected: 'Отклонено',
-  idle: 'Не отправлено',
+  waiting: 'Не отправлено',
   reset: 'Статусы сброшены',
 });
 
 const normalizeStatus = (value) => {
   if (typeof value !== 'string') {
-    return 'idle';
+    return 'waiting';
   }
 
   const normalized = value.trim().toLowerCase();
-  if (['pending', 'processing', 'in_review'].includes(normalized)) {
-    return 'pending';
+  if (['pending', 'processing', 'in_review', 'review'].includes(normalized)) {
+    return 'in_review';
   }
 
   if (normalized === 'partial') {
@@ -38,11 +38,15 @@ const normalizeStatus = (value) => {
     return 'rejected';
   }
 
-  if (['idle', 'new', 'created'].includes(normalized)) {
-    return 'idle';
+  if (['waiting', 'idle', 'new', 'created', 'requested'].includes(normalized)) {
+    return 'waiting';
   }
 
-  return normalized || 'idle';
+  if (normalized === 'reset') {
+    return 'reset';
+  }
+
+  return normalized || 'waiting';
 };
 
 const normalizeBooleanMap = (input = {}) => {
@@ -77,7 +81,7 @@ const parseTimestamp = (value) => {
 };
 
 const createEmptyModuleState = () => ({
-  status: 'idle',
+  status: 'waiting',
   requested: false,
   completed: false,
   timestamp: 0,
@@ -215,19 +219,19 @@ export const deriveModuleStatesFromRequests = (
         return;
       }
 
-      let status = 'idle';
+      let status = 'waiting';
       if (record.cleared) {
-        status = 'idle';
+        status = 'waiting';
       } else if (record.completed) {
         status = 'approved';
       } else if (record.status === 'rejected') {
         status = 'rejected';
       } else if (record.status === 'approved') {
-        status = record.requested ? 'approved' : 'idle';
-      } else if (record.status === 'partial' || record.status === 'pending') {
-        status = record.requested ? 'pending' : current.status;
+        status = record.requested ? 'approved' : 'waiting';
+      } else if (record.status === 'partial' || record.status === 'in_review') {
+        status = record.requested ? 'in_review' : current.status;
       } else {
-        status = record.requested ? 'pending' : 'idle';
+        status = record.requested ? 'in_review' : 'waiting';
       }
 
       map[record.key] = {
@@ -246,7 +250,7 @@ export const deriveModuleStatesFromRequests = (
 
   if (emailVerified) {
     const current = next.email || createEmptyModuleState();
-    if (current.status === 'idle') {
+    if (current.status === 'waiting') {
       next.email = {
         ...current,
         status: 'approved',
@@ -266,9 +270,9 @@ export const summarizeModuleStates = (moduleMap) => {
   const summary = {
     total: MODULE_KEYS.length,
     approved: 0,
-    pending: 0,
+    inReview: 0,
     rejected: 0,
-    idle: 0,
+    waiting: 0,
     latestTimestamp: 0,
   };
 
@@ -279,30 +283,30 @@ export const summarizeModuleStates = (moduleMap) => {
       case 'approved':
         summary.approved += 1;
         break;
-      case 'pending':
-        summary.pending += 1;
+      case 'in_review':
+        summary.inReview += 1;
         break;
       case 'rejected':
         summary.rejected += 1;
         break;
       default:
-        summary.idle += 1;
+        summary.waiting += 1;
         break;
     }
   });
 
   summary.allApproved = summary.approved === summary.total;
-  summary.hasPending = summary.pending > 0;
+  summary.hasInReview = summary.inReview > 0;
   summary.hasRejected = summary.rejected > 0;
 
-  if (summary.hasPending) {
-    summary.overall = 'pending';
+  if (summary.hasInReview) {
+    summary.overall = 'in_review';
   } else if (summary.hasRejected) {
     summary.overall = 'rejected';
   } else if (summary.allApproved) {
     summary.overall = 'approved';
   } else {
-    summary.overall = 'idle';
+    summary.overall = 'waiting';
   }
 
   return summary;
@@ -328,7 +332,7 @@ export const buildVerificationTimeline = (requests) => {
       events.push({
         id: `${requestId}:submitted:${submittedTimestamp}`,
         type: 'submitted',
-        status: 'pending',
+        status: 'in_review',
         modules: requestedFields,
         updatedAt: submittedAt,
         timestamp: submittedTimestamp,

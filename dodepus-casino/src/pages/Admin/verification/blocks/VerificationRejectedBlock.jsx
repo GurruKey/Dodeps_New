@@ -70,7 +70,7 @@ export default function VerificationRejectedBlock({
         <div id={`${sectionId}-content`}>
           <Card.Body className="border-top">
             <Card.Text className="text-muted mb-0">
-              Заявки, которые не прошли проверку. Пользователю потребуется повторно отправить данные.
+              Пользователи с отклонёнными модулями. Требуется повторная отправка данных.
             </Card.Text>
           </Card.Body>
 
@@ -91,7 +91,6 @@ export default function VerificationRejectedBlock({
                   <div className="d-flex flex-column flex-xl-row gap-3 align-items-xl-start justify-content-between">
                     <div className="flex-grow-1">
                       <div className="fw-semibold">{entry.userId}</div>
-                      <div className="text-muted small">{entry.displayName}</div>
                       <div className="mt-3">
                         <VerificationFieldBadges
                           modules={entry.modules}
@@ -110,11 +109,6 @@ export default function VerificationRejectedBlock({
                         {entry.reviewer.role && (
                           <div className="text-muted small">{entry.reviewer.role}</div>
                         )}
-                      </div>
-                    )}
-                    {onOpen && (
-                      <div className="text-muted small text-xl-end" style={{ minWidth: 160 }}>
-                        Нажмите, чтобы открыть заявку
                       </div>
                     )}
                   </div>

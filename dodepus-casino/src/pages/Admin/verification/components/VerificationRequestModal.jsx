@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Modal,
   Button,
@@ -158,18 +158,19 @@ const GENDER_OPTIONS = [
 ];
 
 const STATUS_VARIANT = Object.freeze({
-  pending: 'warning',
+  in_review: 'warning',
   partial: 'info',
   rejected: 'danger',
   approved: 'success',
+  waiting: 'secondary',
 });
 
 const MODULE_STATUS_LABELS = Object.freeze({
-  pending: 'Ожидает проверки',
+  in_review: 'На проверке',
   partial: 'Частично подтверждено',
   rejected: 'Отклонено',
   approved: 'Подтверждено',
-  idle: 'Не отправлено',
+  waiting: 'Не отправлено',
 });
 
 export default function VerificationRequestModal({
@@ -185,13 +186,13 @@ export default function VerificationRequestModal({
   focusStatus = null,
 }) {
   const status = request?.status;
-  const isPending = status === 'pending';
+  const isInReview = status === 'in_review';
 
   const normalizedDefaultMode = useMemo(() => {
     if (defaultMode === 'reset') {
       return 'reset';
     }
-    if (!isPending) {
+    if (!isInReview) {
       return 'view';
     }
     if (defaultMode === 'reject') {
@@ -201,7 +202,7 @@ export default function VerificationRequestModal({
       return 'view';
     }
     return 'approve';
-  }, [isPending, defaultMode]);
+  }, [isInReview, defaultMode]);
 
   const [mode, setMode] = useState(normalizedDefaultMode);
   const [completedSelection, setCompletedSelection] = useState(() =>
@@ -220,35 +221,47 @@ export default function VerificationRequestModal({
   const [highlightKey, setHighlightKey] = useState('');
 
   const isResetMode = mode === 'reset';
-  const isReadOnly = !isPending && !isResetMode;
+  const isReadOnly = !isInReview && !isResetMode;
 
   useEffect(() => {
     const completedSnapshot = normalizeFieldState(request?.completedFields);
-    const hasEligibleReset = FIELD_KEYS.some((key) => completedSnapshot[key]);
+    const hasEligibleReset = Boolean(activeModuleKey && completedSnapshot[activeModuleKey]);
 
     const nextMode = (() => {
       if (defaultMode === 'reset' && hasEligibleReset && typeof onReset === 'function') {
         return 'reset';
       }
-      if (request?.status === 'pending') {
+      if (request?.status === 'in_review') {
         return normalizedDefaultMode;
       }
       return 'view';
     })();
 
     setMode(nextMode);
-    setCompletedSelection(buildCompletedSelection(request));
-    setRejectedSelection(buildRejectedSelection(request));
+
+    const nextCompleted = buildCompletedSelection(request);
+    setCompletedSelection(projectToActive(nextCompleted));
+
+    const nextRejected = buildRejectedSelection(request);
+    setRejectedSelection(projectToActive(nextRejected));
+
     setResetSelection(
       buildResetSelection(request, {
-        focusKey: focusModule && hasEligibleReset ? focusModule : undefined,
+        focusKey: hasEligibleReset ? activeModuleKey : undefined,
       }),
     );
     setNotes(request?.notes || '');
     setProfileDraft(buildProfileDraft(request));
     setFormError('');
     setHistoryLimit(3);
-  }, [request, normalizedDefaultMode, defaultMode, focusModule, onReset]);
+  }, [
+    request,
+    normalizedDefaultMode,
+    defaultMode,
+    activeModuleKey,
+    onReset,
+    projectToActive,
+  ]);
 
   useEffect(() => {
     if (!show) {
@@ -257,15 +270,15 @@ export default function VerificationRequestModal({
   }, [show]);
 
   useEffect(() => {
-    if (!show || !focusModule) {
+    if (!show || !activeModuleKey) {
       setHighlightKey('');
       return;
     }
 
-    setHighlightKey(focusModule);
+    setHighlightKey(activeModuleKey);
 
     if (typeof document !== 'undefined') {
-      const element = document.getElementById(`verification-field-${focusModule}`);
+      const element = document.getElementById(`verification-field-${activeModuleKey}`);
       if (element && typeof element.scrollIntoView === 'function') {
         setTimeout(() => {
           element.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -275,13 +288,39 @@ export default function VerificationRequestModal({
 
     const timer = setTimeout(() => setHighlightKey(''), 1800);
     return () => clearTimeout(timer);
-  }, [show, focusModule]);
+  }, [show, activeModuleKey]);
 
   const requestedFields = useMemo(() => normalizeFieldState(request?.requestedFields), [request]);
   const completedFields = useMemo(() => normalizeFieldState(request?.completedFields), [request]);
-  const resetEligibleKeys = useMemo(
-    () => FIELD_KEYS.filter((key) => completedFields[key]),
-    [completedFields],
+  const activeModuleKey = useMemo(() => {
+    if (focusModule && FIELD_KEYS.includes(focusModule)) {
+      return focusModule;
+    }
+    const requestedKey = FIELD_KEYS.find((key) => requestedFields[key]);
+    if (requestedKey) {
+      return requestedKey;
+    }
+    const completedKey = FIELD_KEYS.find((key) => completedFields[key]);
+    if (completedKey) {
+      return completedKey;
+    }
+    return FIELD_KEYS[0];
+  }, [focusModule, requestedFields, completedFields]);
+  const resetEligibleKeys = useMemo(() => {
+    if (!activeModuleKey) {
+      return [];
+    }
+    return completedFields[activeModuleKey] ? [activeModuleKey] : [];
+  }, [completedFields, activeModuleKey]);
+  const projectToActive = useCallback(
+    (selection) => {
+      const projected = { ...EMPTY_FIELDS };
+      if (activeModuleKey) {
+        projected[activeModuleKey] = Boolean(selection?.[activeModuleKey]);
+      }
+      return projected;
+    },
+    [activeModuleKey],
   );
   const canReset = useMemo(
     () => typeof onReset === 'function' && resetEligibleKeys.length > 0,
@@ -293,7 +332,7 @@ export default function VerificationRequestModal({
   );
   const trimmedNotes = notes.trim();
 
-  const canEditProfile = isPending && (mode === 'approve' || mode === 'reject');
+  const canEditProfile = isInReview && (mode === 'approve' || mode === 'reject');
   const activeSelection = mode === 'reject' ? rejectedSelection : completedSelection;
   const hasCompletedSelection = useMemo(
     () => Object.values(completedSelection).some(Boolean),
@@ -306,29 +345,33 @@ export default function VerificationRequestModal({
 
   const readOnlyNotice = useMemo(() => {
     if (isResetMode) {
-      return 'Выберите подтверждённые модули, которые необходимо вернуть в статус «Не отправлено».';
+      return 'Выберите подтверждённый модуль, который необходимо вернуть в статус «Не отправлено».';
     }
 
-    if (isPending) {
+    if (isInReview) {
       if (mode === 'view') {
-        return 'Просмотр заявки. Нажмите «Начать проверку», чтобы изменить статусы.';
+        return 'Просмотр модульной проверки. Нажмите «Начать проверку», чтобы изменить статус.';
       }
       return '';
     }
 
     switch (status) {
       case 'partial':
-        return 'Заявка находится в статусе частичной верификации и ожидает новых данных от пользователя. Редактирование недоступно.';
+        return 'Запрос находится в статусе частичной проверки и ожидает новых данных от пользователя. Редактирование недоступно.';
       case 'approved':
         return 'Запрос уже подтверждён. Редактирование и изменение решения недоступны.';
       case 'rejected':
-        return 'Запрос отклонён. Изменение данных доступно только после новой заявки от пользователя.';
+        return 'Запрос отклонён. Изменение данных доступно только после новой отправки от пользователя.';
       default:
         return 'Редактирование доступно только для новых запросов на верификацию.';
     }
-  }, [isPending, mode, status]);
+  }, [isInReview, isResetMode, mode, status]);
 
   const handleToggleField = (key) => {
+    if (key !== activeModuleKey) {
+      return;
+    }
+
     if (busy || mode === 'view' || isReadOnly || mode === 'reset') {
       return;
     }
@@ -350,6 +393,10 @@ export default function VerificationRequestModal({
   };
 
   const handleResetToggle = (key) => {
+    if (key !== activeModuleKey) {
+      return;
+    }
+
     if (!isResetMode || busy || !completedFields[key]) {
       return;
     }
@@ -370,7 +417,7 @@ export default function VerificationRequestModal({
   };
 
   const handleConfirm = () => {
-    if (!request || !isPending) return;
+    if (!request || !isInReview) return;
 
     if (mode === 'reject') {
       setMode('approve');
@@ -379,7 +426,7 @@ export default function VerificationRequestModal({
     }
 
     if (!hasCompletedSelection) {
-      setFormError('Отметьте поля, которые готовы к подтверждению.');
+      setFormError('Отметьте модуль, который готов к подтверждению.');
       return;
     }
 
@@ -391,16 +438,16 @@ export default function VerificationRequestModal({
   };
 
   const enterRejectMode = () => {
-    if (!isPending) {
+    if (!isInReview) {
       return;
     }
     setMode('reject');
-    setRejectedSelection(buildRejectedSelection(request));
+    setRejectedSelection(projectToActive(buildRejectedSelection(request)));
     setFormError('');
   };
 
   const handleReject = () => {
-    if (!request || !isPending) return;
+    if (!request || !isInReview) return;
 
     if (mode !== 'reject') {
       enterRejectMode();
@@ -408,7 +455,7 @@ export default function VerificationRequestModal({
     }
 
     if (!hasRejectedSelection) {
-      setFormError('Выберите пункт(ы), по которым требуется отказ.');
+      setFormError('Укажите, требуется ли отказ по модулю.');
       return;
     }
 
@@ -420,13 +467,13 @@ export default function VerificationRequestModal({
   };
 
   const handleCancelReject = () => {
-    setMode(isPending ? 'approve' : 'view');
-    setRejectedSelection(buildRejectedSelection(request));
+    setMode(isInReview ? 'approve' : 'view');
+    setRejectedSelection(projectToActive(buildRejectedSelection(request)));
     setFormError('');
   };
 
   const enterApproveMode = () => {
-    if (!isPending) {
+    if (!isInReview) {
       return;
     }
     setMode('approve');
@@ -439,13 +486,13 @@ export default function VerificationRequestModal({
     }
     setMode('reset');
     setFormError('');
-    setResetSelection(buildResetSelection(request, { focusKey: focusModule }));
+    setResetSelection(buildResetSelection(request, { focusKey: activeModuleKey }));
   };
 
   const handleCancelReset = () => {
     setMode('view');
     setFormError('');
-    setResetSelection(buildResetSelection(request, { focusKey: focusModule }));
+    setResetSelection(buildResetSelection(request, { focusKey: activeModuleKey }));
   };
 
   const handleResetSubmit = () => {
@@ -454,7 +501,7 @@ export default function VerificationRequestModal({
     }
 
     if (!hasResetSelection) {
-      setFormError('Выберите модуль(и) для сброса статуса.');
+      setFormError('Выберите модуль для сброса статуса.');
       return;
     }
 
@@ -485,6 +532,35 @@ export default function VerificationRequestModal({
   };
 
   const attachments = Array.isArray(request?.attachments) ? request.attachments : [];
+  const visibleFieldKeys = useMemo(
+    () => (activeModuleKey ? [activeModuleKey] : FIELD_KEYS),
+    [activeModuleKey],
+  );
+  const activeModuleStatus = useMemo(() => {
+    if (!activeModuleKey) {
+      return focusStatus || '';
+    }
+    if (focusStatus && focusModule === activeModuleKey) {
+      return focusStatus;
+    }
+    if (completedFields[activeModuleKey]) {
+      return 'approved';
+    }
+    if (status === 'rejected') {
+      return 'rejected';
+    }
+    if (requestedFields[activeModuleKey]) {
+      return 'in_review';
+    }
+    return 'waiting';
+  }, [
+    activeModuleKey,
+    focusStatus,
+    focusModule,
+    completedFields,
+    requestedFields,
+    status,
+  ]);
 
   const renderFieldLabel = (key) => {
     if (mode === 'reject') {
@@ -516,11 +592,14 @@ export default function VerificationRequestModal({
           <Badge bg={statusVariant} className="align-self-start">
             {getStatusLabel(request?.status)}
           </Badge>
-          {focusModule ? (
+          {activeModuleKey ? (
             <span className="text-muted small">
-              Модуль: {FIELD_LABELS[focusModule] || '—'}
-              {focusStatus
-                ? ` · ${MODULE_STATUS_LABELS[focusStatus] || MODULE_STATUS_LABELS.pending}`
+              Модуль: {FIELD_LABELS[activeModuleKey] || '—'}
+              {activeModuleStatus
+                ? ` · ${
+                    MODULE_STATUS_LABELS[activeModuleStatus] ||
+                    MODULE_STATUS_LABELS.in_review
+                  }`
                 : ''}
             </span>
           ) : null}
@@ -568,7 +647,7 @@ export default function VerificationRequestModal({
                 ) : null}
                 {mode === 'reject' ? (
                   <Alert variant="warning" className="mb-0">
-                    Выберите пункты, по которым необходимо отказать пользователю.
+                    Укажите, требуется ли отказ по модулю.
                   </Alert>
                 ) : null}
                 {readOnlyNotice ? (
@@ -577,7 +656,7 @@ export default function VerificationRequestModal({
                   </Alert>
                 ) : null}
 
-                {FIELD_KEYS.map((key) => {
+                {visibleFieldKeys.map((key) => {
                   const label = FIELD_LABELS[key];
                   const isRequested = requestedFields[key];
                   const isHighlighted = highlightKey === key;
@@ -703,7 +782,7 @@ export default function VerificationRequestModal({
 
                 {isResetMode ? (
                   <div className="mt-3">
-                    <h6 className="fw-semibold mb-2">Выберите модули для сброса</h6>
+                    <h6 className="fw-semibold mb-2">Выберите модуль для сброса</h6>
                     {resetEligibleKeys.length === 0 ? (
                       <div className="text-muted small">
                         Нет подтверждённых модулей для сброса.
@@ -731,7 +810,7 @@ export default function VerificationRequestModal({
               </Stack>
             </section>
 
-            {attachments.length > 0 && isPending ? (
+            {attachments.length > 0 && isInReview ? (
               <section>
                 <h5 className="mb-3">Документы пользователя</h5>
                 <ListGroup>
@@ -791,7 +870,7 @@ export default function VerificationRequestModal({
                 </ListGroup>
               </section>
             ) : null}
-            {!isPending && attachments.length > 0 ? (
+            {!isInReview && attachments.length > 0 ? (
               <Alert variant="secondary" className="mb-0">
                 Документы доступны для просмотра только в новых запросах на верификацию.
               </Alert>
@@ -875,7 +954,7 @@ export default function VerificationRequestModal({
             </>
           ) : (
             <>
-              {mode === 'reject' && isPending ? (
+              {mode === 'reject' && isInReview ? (
                 <Button
                   variant="link"
                   className="text-decoration-none"
@@ -885,7 +964,7 @@ export default function VerificationRequestModal({
                   Отменить отказ
                 </Button>
               ) : null}
-              {isPending ? (
+              {isInReview ? (
                 <>
                   <Button
                     variant="outline-danger"

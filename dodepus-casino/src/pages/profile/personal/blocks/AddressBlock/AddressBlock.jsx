@@ -16,7 +16,7 @@ export default function AddressBlock() {
   const { modules: verificationModules = {} } = useVerificationModules(user);
 
   const addressStatus = String(verificationModules?.address?.status || '').toLowerCase();
-  const addressLocked = addressStatus === 'pending' || addressStatus === 'approved';
+  const addressLocked = addressStatus === 'in_review' || addressStatus === 'approved';
 
   const [country, setCountry] = useState(user?.country ?? '');
   const [city, setCity]       = useState(user?.city ?? '');
@@ -92,7 +92,7 @@ export default function AddressBlock() {
               />
             </Col>
           </Row>
-          {addressStatus === 'pending' && (
+          {addressStatus === 'in_review' && (
             <Form.Text className="text-muted d-block mt-2">
               Данные отправлены на проверку. Изменить адрес можно после решения администратора.
             </Form.Text>

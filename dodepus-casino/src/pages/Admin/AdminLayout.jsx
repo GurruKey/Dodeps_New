@@ -5,7 +5,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../app/AuthContext.jsx';
 import { availableRoles, rolePermissionMatrix } from './roles/data/roleConfigs.js';
 import { useAdminVerificationRequests } from './verification/hooks/useAdminVerificationRequests.js';
-import { getPendingVerificationTextClass } from './verification/utils.js';
+import { getInReviewVerificationTextClass } from './verification/utils.js';
 
 const NAV_ITEMS = [
   { key: 'overview', to: 'overview', label: 'Обзор', permission: 'overview' },
@@ -141,18 +141,19 @@ export default function AdminLayout({ clients, isLoading, error, onReload }) {
     ensureLoaded: ensureVerificationRequestsLoaded,
   } = useAdminVerificationRequests();
 
-  const pendingVerificationCount = useMemo(() => {
+  const inReviewVerificationCount = useMemo(() => {
     if (!Array.isArray(verificationRequests)) {
       return 0;
     }
 
     return verificationRequests.reduce(
-      (acc, request) => (request?.status === 'pending' ? acc + 1 : acc),
+      (acc, request) => (request?.status === 'in_review' ? acc + 1 : acc),
       0,
     );
   }, [verificationRequests]);
 
-  const pendingVerificationClassName = getPendingVerificationTextClass(pendingVerificationCount);
+  const inReviewVerificationClassName =
+    getInReviewVerificationTextClass(inReviewVerificationCount);
 
   const permissions = useMemo(() => resolvePermissionsForUser(user), [user]);
 
@@ -237,8 +238,8 @@ export default function AdminLayout({ clients, isLoading, error, onReload }) {
                       <span className="d-flex align-items-center justify-content-between w-100">
                         <span>{item.label}</span>
                         {item.key === 'verification' && (
-                          <span className={`fw-semibold small ${pendingVerificationClassName}`}>
-                            {pendingVerificationCount}
+                          <span className={`fw-semibold small ${inReviewVerificationClassName}`}>
+                            {inReviewVerificationCount}
                           </span>
                         )}
                       </span>

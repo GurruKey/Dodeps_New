@@ -77,13 +77,13 @@ export default function VerificationApprovedBlock({
         <div id={`${sectionId}-content`}>
           <Card.Body className="border-top">
             <Card.Text className="text-muted mb-0">
-              Запросы, полностью прошедшие проверку. Данные пользователя подтверждены.
+              Пользователи с полностью подтверждёнными модулями. Все данные проверены.
             </Card.Text>
           </Card.Body>
 
           {totalRequests === 0 ? (
             <Card.Body className="border-top text-secondary small">
-              {loading ? 'Загрузка…' : 'Пока нет завершённых заявок.'}
+              {loading ? 'Загрузка…' : 'Пока нет завершённых проверок.'}
             </Card.Body>
           ) : (
             <ListGroup variant="flush" className="border-top">
@@ -98,7 +98,6 @@ export default function VerificationApprovedBlock({
                   <div className="d-flex flex-column flex-xl-row gap-3 align-items-xl-start justify-content-between">
                     <div className="flex-grow-1">
                       <div className="fw-semibold">{entry.userId}</div>
-                      <div className="text-muted small">{entry.displayName}</div>
                       <div className="mt-3">
                         <VerificationFieldBadges
                           modules={entry.modules}
@@ -131,11 +130,6 @@ export default function VerificationApprovedBlock({
                         >
                           Сбросить статусы
                         </Button>
-                      )}
-                      {onOpen && (
-                        <div className="text-muted small text-xl-end">
-                          Нажмите, чтобы открыть заявку
-                        </div>
                       )}
                     </div>
                   </div>

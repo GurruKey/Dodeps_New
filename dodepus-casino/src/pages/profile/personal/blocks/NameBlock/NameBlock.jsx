@@ -8,7 +8,7 @@ export default function NameBlock() {
   const { modules: verificationModules = {} } = useVerificationModules(user);
 
   const docStatus = String(verificationModules?.doc?.status || '').toLowerCase();
-  const docLocked = docStatus === 'pending' || docStatus === 'approved';
+  const docLocked = docStatus === 'in_review' || docStatus === 'approved';
 
   const [firstName, setFirstName] = useState(user?.firstName ?? '');
   const [lastName, setLastName] = useState(user?.lastName ?? '');
@@ -70,7 +70,7 @@ export default function NameBlock() {
               />
             </Col>
           </Row>
-          {docStatus === 'pending' && (
+          {docStatus === 'in_review' && (
             <Form.Text className="text-muted d-block mt-2">
               Данные отправлены на проверку. Изменить ФИО можно после решения администратора.
             </Form.Text>
