@@ -151,6 +151,14 @@ const STATUS_VARIANT = Object.freeze({
   approved: 'success',
 });
 
+const MODULE_STATUS_LABELS = Object.freeze({
+  pending: 'Ожидает проверки',
+  partial: 'Частично подтверждено',
+  rejected: 'Отклонено',
+  approved: 'Подтверждено',
+  idle: 'Не отправлено',
+});
+
 export default function VerificationRequestModal({
   show = false,
   request = null,
@@ -158,13 +166,28 @@ export default function VerificationRequestModal({
   onConfirm,
   onReject,
   busy = false,
+  defaultMode = 'approve',
+  focusModule = null,
+  focusStatus = null,
 }) {
   const status = request?.status;
   const isPending = status === 'pending';
   const isReadOnly = !isPending;
 
-  const initialMode = isPending ? 'approve' : 'view';
-  const [mode, setMode] = useState(initialMode);
+  const normalizedDefaultMode = useMemo(() => {
+    if (!isPending) {
+      return 'view';
+    }
+    if (defaultMode === 'reject') {
+      return 'reject';
+    }
+    if (defaultMode === 'view') {
+      return 'view';
+    }
+    return 'approve';
+  }, [isPending, defaultMode]);
+
+  const [mode, setMode] = useState(normalizedDefaultMode);
   const [completedSelection, setCompletedSelection] = useState(() =>
     buildCompletedSelection(request),
   );
@@ -175,9 +198,10 @@ export default function VerificationRequestModal({
   const [profileDraft, setProfileDraft] = useState(() => buildProfileDraft(request));
   const [formError, setFormError] = useState('');
   const [historyLimit, setHistoryLimit] = useState(3);
+  const [highlightKey, setHighlightKey] = useState('');
 
   useEffect(() => {
-    const nextMode = request?.status === 'pending' ? 'approve' : 'view';
+    const nextMode = request?.status === 'pending' ? normalizedDefaultMode : 'view';
     setMode(nextMode);
     setCompletedSelection(buildCompletedSelection(request));
     setRejectedSelection(buildRejectedSelection(request));
@@ -185,13 +209,34 @@ export default function VerificationRequestModal({
     setProfileDraft(buildProfileDraft(request));
     setFormError('');
     setHistoryLimit(3);
-  }, [request]);
+  }, [request, normalizedDefaultMode]);
 
   useEffect(() => {
     if (!show) {
       setFormError('');
     }
   }, [show]);
+
+  useEffect(() => {
+    if (!show || !focusModule) {
+      setHighlightKey('');
+      return;
+    }
+
+    setHighlightKey(focusModule);
+
+    if (typeof document !== 'undefined') {
+      const element = document.getElementById(`verification-field-${focusModule}`);
+      if (element && typeof element.scrollIntoView === 'function') {
+        setTimeout(() => {
+          element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }, 120);
+      }
+    }
+
+    const timer = setTimeout(() => setHighlightKey(''), 1800);
+    return () => clearTimeout(timer);
+  }, [show, focusModule]);
 
   const requestedFields = useMemo(() => normalizeFieldState(request?.requestedFields), [request]);
   const completedFields = useMemo(() => normalizeFieldState(request?.completedFields), [request]);
@@ -209,6 +254,9 @@ export default function VerificationRequestModal({
 
   const readOnlyNotice = useMemo(() => {
     if (isPending) {
+      if (mode === 'view') {
+        return 'Просмотр заявки. Нажмите «Начать проверку», чтобы изменить статусы.';
+      }
       return '';
     }
 
@@ -222,7 +270,7 @@ export default function VerificationRequestModal({
       default:
         return 'Редактирование доступно только для новых запросов на верификацию.';
     }
-  }, [isPending, status]);
+  }, [isPending, mode, status]);
 
   const handleToggleField = (key) => {
     if (busy || mode === 'view' || isReadOnly) {
@@ -309,6 +357,14 @@ export default function VerificationRequestModal({
     setFormError('');
   };
 
+  const enterApproveMode = () => {
+    if (!isPending) {
+      return;
+    }
+    setMode('approve');
+    setFormError('');
+  };
+
   const statusVariant = STATUS_VARIANT[request?.status] || 'secondary';
 
   const historyEntries = useMemo(() => {
@@ -356,6 +412,14 @@ export default function VerificationRequestModal({
           <Badge bg={statusVariant} className="align-self-start">
             {getStatusLabel(request?.status)}
           </Badge>
+          {focusModule ? (
+            <span className="text-muted small">
+              Модуль: {FIELD_LABELS[focusModule] || '—'}
+              {focusStatus
+                ? ` · ${MODULE_STATUS_LABELS[focusStatus] || MODULE_STATUS_LABELS.pending}`
+                : ''}
+            </span>
+          ) : null}
         </Modal.Title>
       </Modal.Header>
 
@@ -412,8 +476,17 @@ export default function VerificationRequestModal({
                 {FIELD_KEYS.map((key) => {
                   const label = FIELD_LABELS[key];
                   const isRequested = requestedFields[key];
+                  const isHighlighted = highlightKey === key;
+                  const fieldClassName = [
+                    'rounded p-3',
+                    isHighlighted ? 'border border-2 border-primary shadow-sm' : 'border',
+                  ].join(' ');
                   return (
-                    <div key={key} className="border rounded p-3">
+                    <div
+                      key={key}
+                      id={`verification-field-${key}`}
+                      className={fieldClassName}
+                    >
                       <div className="d-flex flex-column flex-md-row justify-content-between gap-3">
                         <div>
                           <div className="fw-semibold">{label}</div>
@@ -669,18 +742,28 @@ export default function VerificationRequestModal({
               >
                 {mode === 'reject' ? 'Подтвердить отказ' : 'Отказать'}
               </Button>
-              <Button
-                variant="success"
-                onClick={handleConfirm}
-                disabled={
-                  busy ||
-                  !request ||
-                  mode !== 'approve' ||
-                  !hasCompletedSelection
-                }
-              >
-                Подтвердить
-              </Button>
+              {mode === 'view' ? (
+                <Button
+                  variant="primary"
+                  onClick={enterApproveMode}
+                  disabled={busy || !request}
+                >
+                  Начать проверку
+                </Button>
+              ) : (
+                <Button
+                  variant="success"
+                  onClick={handleConfirm}
+                  disabled={
+                    busy ||
+                    !request ||
+                    mode !== 'approve' ||
+                    !hasCompletedSelection
+                  }
+                >
+                  Подтвердить
+                </Button>
+              )}
             </>
           ) : null}
         </div>

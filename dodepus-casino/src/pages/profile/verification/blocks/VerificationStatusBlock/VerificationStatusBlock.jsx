@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Row, Col, Card, Button, Toast, ToastContainer, Alert } from 'react-bootstrap';
 import { Circle, CheckCircle, CircleHelp, CircleAlert } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../../app/AuthContext.jsx';
-
-const FIELD_KEYS = Object.freeze(['email', 'phone', 'address', 'doc']);
+import {
+  VERIFICATION_MODULES,
+  useVerificationModules,
+} from '../../../../../shared/verification/index.js';
 
 const ICON_LABELS = Object.freeze({
   idle: 'требуется подтверждение',
@@ -29,25 +31,6 @@ const ICON_COMPONENT = Object.freeze({
 
 const ICON_SIZE = 56;
 
-const getLatestRequest = (requests) => {
-  if (!Array.isArray(requests)) return null;
-
-  return requests.reduce((latest, current) => {
-    if (!current || typeof current !== 'object') return latest;
-    if (!latest) return current;
-
-    const toTimestamp = (value) => {
-      if (!value) return 0;
-      const parsed = Date.parse(value);
-      return Number.isFinite(parsed) ? parsed : 0;
-    };
-
-    const latestTs = toTimestamp(latest.updatedAt || latest.submittedAt);
-    const currentTs = toTimestamp(current.updatedAt || current.submittedAt);
-    return currentTs > latestTs ? current : latest;
-  }, null);
-};
-
 export default function VerificationStatusBlock() {
   const navigate = useNavigate();
   const { user, submitVerificationRequest } = useAuth();
@@ -55,6 +38,8 @@ export default function VerificationStatusBlock() {
   const [submittingKey, setSubmittingKey] = useState(null);
   const [submitError, setSubmitError] = useState(null);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+
+  const { modules: moduleStates = {}, summary = {} } = useVerificationModules(user);
 
   const uploads = Array.isArray(user?.verificationUploads)
     ? user.verificationUploads
@@ -81,88 +66,36 @@ export default function VerificationStatusBlock() {
   const hasAddressStrings = ['country', 'city', 'address'].every((key) =>
     normalizeString(user?.[key]).length >= 2,
   );
-  const addressReady = hasAddressStrings && hasAddressUpload;
+  const addressReady = hasAddressStrings || hasAddressUpload;
   const genderValue = String(user?.gender || '').toLowerCase();
   const hasDocStrings =
     normalizeString(user?.firstName).length >= 2 &&
     normalizeString(user?.lastName).length >= 2 &&
     /^\d{4}-\d{2}-\d{2}$/.test(String(user?.dob || '')) &&
     (genderValue === 'male' || genderValue === 'female');
-  const docReady = hasDocStrings && hasIdentityUpload;
+  const docReady = hasDocStrings || hasIdentityUpload;
 
   const emailReady = hasEmailValue;
   const phoneReady = hasPhoneValue;
 
-  const items = [
-    { key: 'email', label: 'Почта', isReady: emailReady },
-    { key: 'phone', label: 'Телефон', isReady: phoneReady },
-    { key: 'address', label: 'Адрес', isReady: addressReady },
-    { key: 'doc', label: 'Документ', isReady: docReady },
-  ];
+  const readinessMap = {
+    email: emailReady,
+    phone: phoneReady,
+    address: addressReady,
+    doc: docReady,
+  };
+
+  const items = VERIFICATION_MODULES.map((module) => ({
+    key: module.key,
+    label: module.label,
+    isReady: readinessMap[module.key],
+    state: moduleStates?.[module.key]?.status || 'idle',
+  }));
 
   const hasAnyReady = items.some((item) => item.isReady);
-
-  const latestRequest = useMemo(
-    () => getLatestRequest(user?.verificationRequests),
-    [user?.verificationRequests],
-  );
-
-  const requestStatus = useMemo(() => {
-    if (!latestRequest || typeof latestRequest.status !== 'string') return '';
-    return latestRequest.status.toLowerCase();
-  }, [latestRequest]);
-
-  const fieldSnapshots = useMemo(() => {
-    if (!Array.isArray(user?.verificationRequests)) {
-      return {};
-    }
-
-    const toTimestamp = (value) => {
-      if (!value) return 0;
-      const parsed = Date.parse(value);
-      return Number.isFinite(parsed) ? parsed : 0;
-    };
-
-    return user.verificationRequests.reduce((acc, request) => {
-      if (!request || typeof request !== 'object') {
-        return acc;
-      }
-
-      const timestamp = toTimestamp(
-        request.updatedAt || request.reviewedAt || request.submittedAt,
-      );
-      const status = typeof request.status === 'string'
-        ? request.status.toLowerCase()
-        : '';
-
-      FIELD_KEYS.forEach((key) => {
-        const completed = Boolean(request?.completedFields?.[key]);
-        const requested = Boolean(
-          request?.requestedFields?.[key] ?? request?.completedFields?.[key],
-        );
-
-        if (!completed && !requested) {
-          return;
-        }
-
-        const current = acc[key];
-        if (!current || timestamp >= current.timestamp) {
-          acc[key] = {
-            completed,
-            requested,
-            status,
-            timestamp,
-          };
-        }
-      });
-
-      return acc;
-    }, {});
-  }, [user?.verificationRequests]);
-
-  const isRequestPending = requestStatus === 'pending' || requestStatus === 'partial';
-  const isRequestRejected = requestStatus === 'rejected';
-  const isRequestApproved = requestStatus === 'approved';
+  const isRequestPending = Boolean(summary?.hasPending);
+  const isRequestRejected = Boolean(summary?.hasRejected);
+  const isRequestApproved = Boolean(summary?.allApproved);
 
   const handleSubmit = async (originKey = null) => {
     setSubmitError(null);
@@ -182,12 +115,16 @@ export default function VerificationStatusBlock() {
     setSubmittingKey(originKey);
 
     try {
-      const availableFields = {
-        email: emailReady,
-        phone: phoneReady,
-        address: addressReady,
-        doc: docReady,
-      };
+      const availableFields = Object.fromEntries(
+        Object.entries(readinessMap).filter(([key, isReady]) => {
+          if (!isReady) {
+            return false;
+          }
+
+          const state = moduleStates?.[key]?.status || 'idle';
+          return state === 'idle' || state === 'rejected';
+        }),
+      );
 
       const requestedFieldKeys = (() => {
         if (
@@ -197,13 +134,11 @@ export default function VerificationStatusBlock() {
           return availableFields[originKey] ? { [originKey]: true } : {};
         }
 
-        return Object.fromEntries(
-          Object.entries(availableFields).filter(([, value]) => Boolean(value)),
-        );
+        return { ...availableFields };
       })();
 
       if (!Object.keys(requestedFieldKeys).length) {
-        setSubmitError('Выберите пункт, который нужно отправить на проверку.');
+        setSubmitError('Выберите пункт, который доступен для отправки на проверку.');
         return;
       }
 
@@ -226,40 +161,15 @@ export default function VerificationStatusBlock() {
     }
   };
 
-  const getStateForItem = (itemKey) => {
-    const snapshot = fieldSnapshots[itemKey];
-    const snapshotStatus = snapshot?.status || requestStatus;
-    const snapshotCompleted = Boolean(snapshot?.completed);
-    const snapshotRequested = Boolean(snapshot?.requested);
-
-    const fallbackCompleted = itemKey === 'email' ? Boolean(user?.emailVerified) : false;
-    const isCompleted = snapshot ? snapshotCompleted : fallbackCompleted;
-
-    if (isCompleted) {
-      return 'approved';
-    }
-
-    if (snapshotRequested) {
-      if (snapshotStatus === 'rejected') {
-        return 'rejected';
-      }
-      if (snapshotStatus === 'pending' || snapshotStatus === 'partial') {
-        return 'pending';
-      }
-    }
-
-    return 'idle';
-  };
-
   const statusMessage = (() => {
     if (isRequestPending) {
       return 'Заявка отправлена и ожидает проверки администратора.';
     }
     if (isRequestRejected) {
-      return 'Последняя заявка отклонена. Проверьте данные и отправьте её повторно.';
+      return 'Некоторые пункты отклонены. Обновите данные и отправьте их повторно.';
     }
     if (isRequestApproved) {
-      return 'Ваша заявка одобрена. Дополнительных действий не требуется.';
+      return 'Все модули подтверждены. Изменения станут доступны после сброса статусов администратором.';
     }
     return hasAnyReady
       ? 'После заполнения данных отправьте заявку на проверку под нужным пунктом.'
@@ -273,7 +183,7 @@ export default function VerificationStatusBlock() {
           <Card.Title className="mb-3">Статусы верификации</Card.Title>
           <Row className="text-center g-4">
             {items.map((item) => {
-              const state = getStateForItem(item.key);
+              const state = item.state;
               const iconLabel = `${item.label}: ${ICON_LABELS[state]}`;
               const iconComponent = ICON_COMPONENT[state](ICON_SIZE);
               const iconWrapper = (
@@ -302,6 +212,9 @@ export default function VerificationStatusBlock() {
                       ? null
                       : 'Укажите номер телефона в разделе «Персональные данные».';
                   case 'address':
+                    if (!hasAddressStrings && !hasAddressUpload) {
+                      return 'Заполните адрес проживания или загрузите подтверждающий документ.';
+                    }
                     if (!hasAddressStrings) {
                       return 'Заполните страну, город и адрес проживания.';
                     }
@@ -310,6 +223,9 @@ export default function VerificationStatusBlock() {
                     }
                     return null;
                   case 'doc':
+                    if (!hasDocStrings && !hasIdentityUpload) {
+                      return 'Заполните данные профиля или загрузите документ, подтверждающий личность.';
+                    }
                     if (!hasDocStrings) {
                       return 'Заполните ФИО, дату рождения и выберите пол.';
                     }
