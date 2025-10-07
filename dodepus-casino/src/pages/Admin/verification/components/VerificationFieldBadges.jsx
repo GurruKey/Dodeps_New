@@ -1,11 +1,11 @@
 import { Badge, Button } from 'react-bootstrap';
-import { Circle, CircleAlert, CircleHelp, CheckCircle2 } from 'lucide-react';
+import { Circle, CircleHelp, CheckCircle2, CircleX } from 'lucide-react';
 import { VERIFICATION_MODULES } from '../../../../shared/verification/index.js';
 
 const ICON_CONFIG = {
   approved: { Component: CheckCircle2, className: 'text-success' },
   in_review: { Component: CircleHelp, className: 'text-warning' },
-  rejected: { Component: CircleAlert, style: { color: '#fd7e14' } },
+  rejected: { Component: CircleX, className: 'text-danger' },
   waiting: { Component: Circle, className: 'text-secondary' },
 };
 
