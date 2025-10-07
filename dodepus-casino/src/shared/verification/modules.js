@@ -13,6 +13,7 @@ export const VERIFICATION_STATUS_LABELS = Object.freeze({
   approved: 'Подтверждено',
   rejected: 'Отклонено',
   idle: 'Не отправлено',
+  reset: 'Статусы сброшены',
 });
 
 const normalizeStatus = (value) => {
@@ -116,12 +117,15 @@ const collectRecordsFromRequest = (request) => {
     updatedAt,
     notes,
     source,
+    cleared,
   }) => {
     if (!MODULE_KEYS.includes(key)) {
       return;
     }
 
-    if (!requested && !completed) {
+    const isCleared = Boolean(cleared);
+
+    if (!requested && !completed && !isCleared) {
       return;
     }
 
@@ -130,6 +134,7 @@ const collectRecordsFromRequest = (request) => {
       status: normalizeStatus(status),
       requested: Boolean(requested || completed),
       completed: Boolean(completed),
+      cleared: isCleared,
       timestamp: Number.isFinite(timestamp) ? timestamp : 0,
       updatedAt: updatedAt || null,
       notes: typeof notes === 'string' ? notes : '',
@@ -142,6 +147,7 @@ const collectRecordsFromRequest = (request) => {
     request.requestedFields ?? request.completedFields,
   );
   const completedFields = normalizeBooleanMap(request.completedFields);
+  const clearedFields = normalizeBooleanMap(request.clearedFields);
 
   MODULE_KEYS.forEach((key) => {
     pushRecord({
@@ -149,6 +155,7 @@ const collectRecordsFromRequest = (request) => {
       status: baseStatus,
       requested: requestedFields[key],
       completed: completedFields[key],
+      cleared: clearedFields[key],
       timestamp: baseTimestamp,
       updatedAt:
         request.updatedAt || request.reviewedAt || request.submittedAt || null,
@@ -170,6 +177,7 @@ const collectRecordsFromRequest = (request) => {
         entry.requestedFields ?? entry.completedFields,
       );
       const entryCompleted = normalizeBooleanMap(entry.completedFields);
+      const entryCleared = normalizeBooleanMap(entry.clearedFields);
 
       MODULE_KEYS.forEach((key) => {
         pushRecord({
@@ -177,6 +185,7 @@ const collectRecordsFromRequest = (request) => {
           status: entryStatus,
           requested: entryRequested[key],
           completed: entryCompleted[key],
+          cleared: entryCleared[key],
           timestamp: entryTimestamp,
           updatedAt: entry.updatedAt || request.updatedAt || null,
           notes: entryNotes,
@@ -207,7 +216,9 @@ export const deriveModuleStatesFromRequests = (
       }
 
       let status = 'idle';
-      if (record.completed) {
+      if (record.cleared) {
+        status = 'idle';
+      } else if (record.completed) {
         status = 'approved';
       } else if (record.status === 'rejected') {
         status = 'rejected';
@@ -221,8 +232,8 @@ export const deriveModuleStatesFromRequests = (
 
       map[record.key] = {
         status,
-        requested: record.requested,
-        completed: record.completed,
+        requested: record.cleared ? false : record.requested,
+        completed: record.cleared ? false : record.completed,
         timestamp: record.timestamp,
         updatedAt: record.updatedAt,
         notes: record.notes,
@@ -334,12 +345,14 @@ export const buildVerificationTimeline = (requests) => {
         const entryTimestamp = parseTimestamp(entry.updatedAt);
         const timestamp = entryTimestamp || parseTimestamp(request.updatedAt) || submittedTimestamp;
         const modules = normalizeBooleanMap(
-          entry.completedFields ?? entry.requestedFields ?? {},
+          entry.status === 'reset'
+            ? entry.clearedFields
+            : entry.completedFields ?? entry.requestedFields ?? {},
         );
 
         events.push({
           id: entry.id || `${requestId}:history:${index}`,
-          type: 'history',
+          type: entry.status === 'reset' ? 'reset' : 'history',
           status: normalizeStatus(entry.status || request.status),
           modules,
           updatedAt: entry.updatedAt || request.updatedAt || submittedAt,
@@ -357,11 +370,14 @@ export const buildVerificationTimeline = (requests) => {
       if (status && timestamp) {
         events.push({
           id: `${requestId}:final`,
-          type: 'final',
+          type: status === 'reset' ? 'reset' : 'final',
           status,
-          modules: normalizeBooleanMap(
-            request.completedFields ?? request.requestedFields ?? {},
-          ),
+          modules:
+            status === 'reset'
+              ? normalizeBooleanMap(request.clearedFields)
+              : normalizeBooleanMap(
+                  request.completedFields ?? request.requestedFields ?? {},
+                ),
           updatedAt:
             request.reviewedAt || request.updatedAt || request.submittedAt || null,
           timestamp,

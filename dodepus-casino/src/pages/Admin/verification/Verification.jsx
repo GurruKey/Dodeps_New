@@ -3,6 +3,7 @@ import { Alert, Stack, Form } from 'react-bootstrap';
 import { useAuth } from '../../../app/AuthContext.jsx';
 import {
   updateVerificationRequestStatus,
+  resetVerificationRequestModules,
 } from '../../../../local-sim/admin/verification';
 import { useAdminVerificationRequests } from './hooks/useAdminVerificationRequests.js';
 import VerificationRequestsBlock from './blocks/VerificationRequestsBlock.jsx';
@@ -310,7 +311,13 @@ export default function Verification() {
         if (options.defaultMode) {
           return options.defaultMode;
         }
-        return request.status === 'pending' ? 'approve' : 'view';
+        if (request.status === 'pending') {
+          return 'approve';
+        }
+        if (request.status === 'approved') {
+          return 'view';
+        }
+        return 'view';
       })();
 
       setModalState({
@@ -353,6 +360,38 @@ export default function Verification() {
     [activeRequest, handleReject, createInitialModalState],
   );
 
+  const handleModalReset = useCallback(
+    async (payload) => {
+      if (!activeRequest) return;
+
+      setActionError(null);
+      setBusyId(activeRequest.id);
+
+      try {
+        await Promise.resolve(
+          resetVerificationRequestModules({
+            requestId: activeRequest.id,
+            modules: payload.modules,
+            notes: payload.notes,
+            reviewer,
+          }),
+        );
+        const maybePromise = ensureLoaded?.();
+        if (maybePromise && typeof maybePromise.catch === 'function') {
+          maybePromise.catch(() => {});
+        }
+        setModalState(createInitialModalState());
+      } catch (err) {
+        const normalizedError =
+          err instanceof Error ? err : new Error('Не удалось сбросить статусы модулей');
+        setActionError(normalizedError);
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [activeRequest, reviewer, ensureLoaded, createInitialModalState],
+  );
+
   const toggleSection = useCallback((section) => {
     setExpandedSection((current) => (current === section ? null : section));
   }, []);
@@ -391,6 +430,20 @@ export default function Verification() {
         defaultMode,
         moduleKey: module.key || null,
         moduleStatus,
+      });
+    },
+    [openRequestModal],
+  );
+
+  const handleOpenReset = useCallback(
+    (entry) => {
+      if (!entry) return;
+      const request = entry.primaryRequest || entry.latestRequest || entry.approvedRequest || null;
+      if (!request) {
+        return;
+      }
+      openRequestModal(request, {
+        defaultMode: 'reset',
       });
     },
     [openRequestModal],
@@ -458,6 +511,7 @@ export default function Verification() {
         onReload={reload}
         onOpen={handleOpenEntry}
         onOpenModule={handleOpenModule}
+        onReset={handleOpenReset}
         expanded={expandedSection === 'verified'}
         onToggle={() => toggleSection('verified')}
       />
@@ -468,6 +522,7 @@ export default function Verification() {
         onClose={closeRequestModal}
         onConfirm={handleModalConfirm}
         onReject={handleModalReject}
+        onReset={handleModalReset}
         busy={modalBusy}
         defaultMode={modalState.defaultMode}
         focusModule={modalState.moduleKey}

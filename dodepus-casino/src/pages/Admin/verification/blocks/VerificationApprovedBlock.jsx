@@ -9,6 +9,7 @@ export default function VerificationApprovedBlock({
   onReload,
   onOpen,
   onOpenModule,
+  onReset,
   expanded = false,
   onToggle,
 }) {
@@ -23,6 +24,12 @@ export default function VerificationApprovedBlock({
     event?.stopPropagation?.();
     if (!onOpenModule) return;
     onOpenModule(entry, module);
+  };
+
+  const handleReset = (entry, event) => {
+    event?.stopPropagation?.();
+    if (!onReset) return;
+    onReset(entry);
   };
 
   const sectionId = 'verification-approved';
@@ -112,11 +119,25 @@ export default function VerificationApprovedBlock({
                         <div className="text-muted small">{entry.reviewer.name}</div>
                       )}
                     </div>
-                    {onOpen && (
-                      <div className="text-muted small text-xl-end" style={{ minWidth: 160 }}>
-                        Нажмите, чтобы открыть заявку
-                      </div>
-                    )}
+                    <div
+                      className="d-flex flex-column align-items-stretch align-items-xl-end gap-2"
+                      style={{ minWidth: 180 }}
+                    >
+                      {onReset && (
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={(event) => handleReset(entry, event)}
+                        >
+                          Сбросить статусы
+                        </Button>
+                      )}
+                      {onOpen && (
+                        <div className="text-muted small text-xl-end">
+                          Нажмите, чтобы открыть заявку
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </ListGroup.Item>
               ))}
