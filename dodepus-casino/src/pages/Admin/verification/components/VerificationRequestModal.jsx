@@ -24,6 +24,47 @@ const normalizeFieldState = (fields = {}) => ({
   doc: Boolean(fields?.doc),
 });
 
+const normalizeGenderValue = (value) => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) {
+    return '';
+  }
+
+  if (['male', 'm', 'man', 'м', 'м.', 'муж', 'муж.', 'мужчина', 'мужской'].includes(normalized)) {
+    return 'male';
+  }
+
+  if (
+    ['female', 'f', 'woman', 'ж', 'ж.', 'жен', 'жен.', 'женщина', 'женский'].includes(
+      normalized,
+    )
+  ) {
+    return 'female';
+  }
+
+  if (
+    [
+      'unspecified',
+      'не указан',
+      'не указано',
+      'не выбрано',
+      'не выбран',
+      'не выбрана',
+      'unknown',
+      'другое',
+      'other',
+    ].includes(normalized)
+  ) {
+    return '';
+  }
+
+  return '';
+};
+
 const buildCompletedSelection = (request) => {
   if (!request) {
     return { ...EMPTY_FIELDS };
@@ -76,7 +117,7 @@ const buildProfileDraft = (request) => {
     firstName: source.firstName || '',
     lastName: source.lastName || '',
     dob: source.dob || '',
-    gender: source.gender || 'unspecified',
+    gender: normalizeGenderValue(source.gender),
   };
 };
 
@@ -98,10 +139,9 @@ const formatFileSize = (value) => {
 };
 
 const GENDER_OPTIONS = [
+  { value: '', label: 'Не выбран' },
   { value: 'male', label: 'Мужчина' },
   { value: 'female', label: 'Женщина' },
-  { value: 'unspecified', label: 'Не указан' },
-  { value: 'other', label: 'Другое' },
 ];
 
 const STATUS_VARIANT = Object.freeze({
@@ -209,7 +249,7 @@ export default function VerificationRequestModal({
     if (!canEditProfile) return;
     setProfileDraft((prev) => ({
       ...prev,
-      [key]: value,
+      [key]: key === 'gender' ? normalizeGenderValue(value) : value,
     }));
   };
 
@@ -372,7 +412,6 @@ export default function VerificationRequestModal({
                 {FIELD_KEYS.map((key) => {
                   const label = FIELD_LABELS[key];
                   const isRequested = requestedFields[key];
-                  const isCompleted = completedFields[key];
                   return (
                     <div key={key} className="border rounded p-3">
                       <div className="d-flex flex-column flex-md-row justify-content-between gap-3">
@@ -468,7 +507,7 @@ export default function VerificationRequestModal({
                           <Col xs={12} md={6}>
                             <Form.Label className="small text-muted">Пол</Form.Label>
                             <Form.Select
-                              value={profileDraft.gender || 'unspecified'}
+                              value={profileDraft.gender || ''}
                               onChange={(event) => handleProfileChange('gender', event.target.value)}
                               disabled={busy || !canEditProfile}
                             >

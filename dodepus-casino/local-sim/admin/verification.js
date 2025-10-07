@@ -96,6 +96,64 @@ const normalizeNotes = (value) => {
   return trimmed.length > 0 ? trimmed : '';
 };
 
+const GENDER_MALE_VALUES = Object.freeze([
+  'male',
+  'm',
+  'man',
+  'м',
+  'м.',
+  'муж',
+  'муж.',
+  'мужчина',
+  'мужской',
+]);
+
+const GENDER_FEMALE_VALUES = Object.freeze([
+  'female',
+  'f',
+  'woman',
+  'ж',
+  'ж.',
+  'жен',
+  'жен.',
+  'женщина',
+  'женский',
+]);
+
+const GENDER_CLEAR_VALUES = Object.freeze([
+  '',
+  'unspecified',
+  'не указан',
+  'не указано',
+  'не выбрано',
+  'не выбран',
+  'не выбрана',
+  'unknown',
+  'другое',
+  'other',
+]);
+
+const normalizeGenderValue = (value) => {
+  const normalized = normalizeString(value).toLowerCase();
+  if (!normalized) {
+    return '';
+  }
+
+  if (GENDER_MALE_VALUES.includes(normalized)) {
+    return 'male';
+  }
+
+  if (GENDER_FEMALE_VALUES.includes(normalized)) {
+    return 'female';
+  }
+
+  if (GENDER_CLEAR_VALUES.includes(normalized)) {
+    return '';
+  }
+
+  return '';
+};
+
 const normalizeProfilePatch = (patch = {}) => {
   if (!patch || typeof patch !== 'object') {
     return {};
@@ -129,24 +187,17 @@ const normalizeProfilePatch = (patch = {}) => {
   }
 
   if ('gender' in patch) {
-    const normalizedGender = normalizeString(patch.gender).toLowerCase();
-    if (['male', 'female', 'unspecified', 'other'].includes(normalizedGender)) {
+    const normalizedInput = normalizeString(patch.gender);
+    const normalizedGender = normalizeGenderValue(normalizedInput);
+
+    if (normalizedGender) {
       normalized.gender = normalizedGender;
-    } else if (normalizedGender === 'm' || normalizedGender === 'man') {
-      normalized.gender = 'male';
-    } else if (normalizedGender === 'f' || normalizedGender === 'woman') {
-      normalized.gender = 'female';
-    } else {
-      normalized.gender = normalizedGender || 'unspecified';
+    } else if (!normalizedInput || GENDER_CLEAR_VALUES.includes(normalizedInput.toLowerCase())) {
+      normalized.gender = '';
     }
   }
 
   return normalized;
-};
-
-const toNumber = (value, fallback = 0) => {
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : fallback;
 };
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -182,7 +233,7 @@ const buildProfileSnapshot = (client, extras) => {
     firstName: normalizeString(source?.firstName),
     lastName: normalizeString(source?.lastName),
     dob: normalizeString(source?.dob),
-    gender: normalizeString(source?.gender || source?.sex || ''),
+    gender: normalizeGenderValue(source?.gender ?? source?.sex ?? ''),
   };
 };
 
@@ -488,14 +539,8 @@ export const updateVerificationRequestStatus = ({
   const mergedCompleted = mergeFieldStates(normalizedCompleted, completedFields);
   const mergedRequested = mergeFieldStates(normalizedRequested, requestedFields);
 
-  let nextCompleted = mergedCompleted;
-  let nextRequested = mergedRequested;
-
-  if (normalizedStatus === 'approved' || normalizedStatus === 'partial') {
-    const autoCompleted = mergeFieldStates(mergedCompleted, mergedRequested);
-    nextCompleted = autoCompleted;
-    nextRequested = mergeFieldStates(mergedRequested, autoCompleted);
-  }
+  const nextCompleted = mergedCompleted;
+  const nextRequested = mergeFieldStates(mergedRequested, mergedCompleted);
 
   const completedTrueCount = Object.values(nextCompleted).filter(Boolean).length;
   const requestedTrueCount = Object.values(nextRequested).filter(Boolean).length;
@@ -512,9 +557,9 @@ export const updateVerificationRequestStatus = ({
   const finalStatus =
     normalizedStatus === 'rejected'
       ? 'rejected'
-        : hasOutstanding
-          ? 'partial'
-          : 'approved';
+      : hasOutstanding
+        ? 'partial'
+        : 'approved';
 
   const normalizedNotes = normalizeNotes(notes);
   const previousHistory = sanitizeHistoryEntries(previous.history, previous);
