@@ -220,6 +220,39 @@ export default function VerificationRequestModal({
   const [historyLimit, setHistoryLimit] = useState(3);
   const [highlightKey, setHighlightKey] = useState('');
 
+  const requestedFields = useMemo(() => normalizeFieldState(request?.requestedFields), [request]);
+  const completedFields = useMemo(() => normalizeFieldState(request?.completedFields), [request]);
+  const activeModuleKey = useMemo(() => {
+    if (focusModule && FIELD_KEYS.includes(focusModule)) {
+      return focusModule;
+    }
+    const requestedKey = FIELD_KEYS.find((key) => requestedFields[key]);
+    if (requestedKey) {
+      return requestedKey;
+    }
+    const completedKey = FIELD_KEYS.find((key) => completedFields[key]);
+    if (completedKey) {
+      return completedKey;
+    }
+    return FIELD_KEYS[0];
+  }, [focusModule, requestedFields, completedFields]);
+  const resetEligibleKeys = useMemo(() => {
+    if (!activeModuleKey) {
+      return [];
+    }
+    return completedFields[activeModuleKey] ? [activeModuleKey] : [];
+  }, [completedFields, activeModuleKey]);
+  const projectToActive = useCallback(
+    (selection) => {
+      const projected = { ...EMPTY_FIELDS };
+      if (activeModuleKey) {
+        projected[activeModuleKey] = Boolean(selection?.[activeModuleKey]);
+      }
+      return projected;
+    },
+    [activeModuleKey],
+  );
+
   const isResetMode = mode === 'reset';
   const isReadOnly = !isInReview && !isResetMode;
 
@@ -290,38 +323,6 @@ export default function VerificationRequestModal({
     return () => clearTimeout(timer);
   }, [show, activeModuleKey]);
 
-  const requestedFields = useMemo(() => normalizeFieldState(request?.requestedFields), [request]);
-  const completedFields = useMemo(() => normalizeFieldState(request?.completedFields), [request]);
-  const activeModuleKey = useMemo(() => {
-    if (focusModule && FIELD_KEYS.includes(focusModule)) {
-      return focusModule;
-    }
-    const requestedKey = FIELD_KEYS.find((key) => requestedFields[key]);
-    if (requestedKey) {
-      return requestedKey;
-    }
-    const completedKey = FIELD_KEYS.find((key) => completedFields[key]);
-    if (completedKey) {
-      return completedKey;
-    }
-    return FIELD_KEYS[0];
-  }, [focusModule, requestedFields, completedFields]);
-  const resetEligibleKeys = useMemo(() => {
-    if (!activeModuleKey) {
-      return [];
-    }
-    return completedFields[activeModuleKey] ? [activeModuleKey] : [];
-  }, [completedFields, activeModuleKey]);
-  const projectToActive = useCallback(
-    (selection) => {
-      const projected = { ...EMPTY_FIELDS };
-      if (activeModuleKey) {
-        projected[activeModuleKey] = Boolean(selection?.[activeModuleKey]);
-      }
-      return projected;
-    },
-    [activeModuleKey],
-  );
   const canReset = useMemo(
     () => typeof onReset === 'function' && resetEligibleKeys.length > 0,
     [onReset, resetEligibleKeys.length],
