@@ -76,7 +76,7 @@ export default function VerificationPartialBlock({
 
           {totalRequests === 0 ? (
             <Card.Body className="border-top text-secondary small">
-              {loading ? 'Загрузка…' : 'Нет заявок на частичную проверку.'}
+              {loading ? 'Загрузка…' : 'Нет запросов на частичную проверку.'}
             </Card.Body>
           ) : (
             <ListGroup variant="flush" className="border-top">
