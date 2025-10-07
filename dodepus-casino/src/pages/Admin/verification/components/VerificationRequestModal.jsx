@@ -222,6 +222,10 @@ export default function VerificationRequestModal({
 
   const requestedFields = useMemo(() => normalizeFieldState(request?.requestedFields), [request]);
   const completedFields = useMemo(() => normalizeFieldState(request?.completedFields), [request]);
+  const allowMultiReset = useMemo(
+    () => defaultMode === 'reset' && !focusModule,
+    [defaultMode, focusModule],
+  );
   const activeModuleKey = useMemo(() => {
     if (focusModule && FIELD_KEYS.includes(focusModule)) {
       return focusModule;
@@ -237,11 +241,15 @@ export default function VerificationRequestModal({
     return FIELD_KEYS[0];
   }, [focusModule, requestedFields, completedFields]);
   const resetEligibleKeys = useMemo(() => {
-    if (!activeModuleKey) {
-      return [];
+    const completedKeys = FIELD_KEYS.filter((key) => completedFields[key]);
+    if (allowMultiReset) {
+      return completedKeys;
     }
-    return completedFields[activeModuleKey] ? [activeModuleKey] : [];
-  }, [completedFields, activeModuleKey]);
+    if (activeModuleKey && completedFields[activeModuleKey]) {
+      return [activeModuleKey];
+    }
+    return [];
+  }, [allowMultiReset, completedFields, activeModuleKey]);
   const projectToActive = useCallback(
     (selection) => {
       const projected = { ...EMPTY_FIELDS };
@@ -280,7 +288,8 @@ export default function VerificationRequestModal({
 
     setResetSelection(
       buildResetSelection(request, {
-        focusKey: hasEligibleReset ? activeModuleKey : undefined,
+        focusKey:
+          hasEligibleReset && !allowMultiReset ? activeModuleKey : undefined,
       }),
     );
     setNotes(request?.notes || '');
@@ -294,6 +303,7 @@ export default function VerificationRequestModal({
     activeModuleKey,
     onReset,
     projectToActive,
+    allowMultiReset,
   ]);
 
   useEffect(() => {
@@ -394,11 +404,11 @@ export default function VerificationRequestModal({
   };
 
   const handleResetToggle = (key) => {
-    if (key !== activeModuleKey) {
+    if (!isResetMode || busy) {
       return;
     }
 
-    if (!isResetMode || busy || !completedFields[key]) {
+    if (!resetEligibleKeys.includes(key)) {
       return;
     }
 
@@ -431,9 +441,14 @@ export default function VerificationRequestModal({
       return;
     }
 
+    if (!trimmedNotes) {
+      setFormError('Добавьте комментарий перед подтверждением.');
+      return;
+    }
+
     onConfirm?.({
       completedFields: completedSelection,
-      notes,
+      notes: trimmedNotes,
       profilePatch: profileDraft,
     });
   };
@@ -460,9 +475,14 @@ export default function VerificationRequestModal({
       return;
     }
 
+    if (!trimmedNotes) {
+      setFormError('Добавьте комментарий перед отказом.');
+      return;
+    }
+
     onReject?.({
       requestedFields: rejectedSelection,
-      notes,
+      notes: trimmedNotes,
       profilePatch: profileDraft,
     });
   };
@@ -487,13 +507,21 @@ export default function VerificationRequestModal({
     }
     setMode('reset');
     setFormError('');
-    setResetSelection(buildResetSelection(request, { focusKey: activeModuleKey }));
+    setResetSelection(
+      buildResetSelection(request, {
+        focusKey: allowMultiReset ? undefined : activeModuleKey,
+      }),
+    );
   };
 
   const handleCancelReset = () => {
     setMode('view');
     setFormError('');
-    setResetSelection(buildResetSelection(request, { focusKey: activeModuleKey }));
+    setResetSelection(
+      buildResetSelection(request, {
+        focusKey: allowMultiReset ? undefined : activeModuleKey,
+      }),
+    );
   };
 
   const handleResetSubmit = () => {
@@ -783,7 +811,11 @@ export default function VerificationRequestModal({
 
                 {isResetMode ? (
                   <div className="mt-3">
-                    <h6 className="fw-semibold mb-2">Выберите модуль для сброса</h6>
+                    <h6 className="fw-semibold mb-2">
+                      {allowMultiReset
+                        ? 'Выберите модули для сброса'
+                        : 'Выберите модуль для сброса'}
+                    </h6>
                     {resetEligibleKeys.length === 0 ? (
                       <div className="text-muted small">
                         Нет подтверждённых модулей для сброса.
@@ -990,7 +1022,8 @@ export default function VerificationRequestModal({
                         busy ||
                         !request ||
                         mode !== 'approve' ||
-                        !hasCompletedSelection
+                        !hasCompletedSelection ||
+                        !trimmedNotes
                       }
                     >
                       Подтвердить
