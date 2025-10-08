@@ -9,5 +9,4 @@ export {
   formatModuleList,
   isModuleLocked,
   computeModuleLocks,
-} from './modules.js';
-export { useVerificationModules } from './useVerificationModules.js';
+} from '../../../../shared/verification/index.js';

@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, Form, Row, Col } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/AuthContext.jsx';
+import {
+  useVerificationModules,
+  computeModuleLocks,
+} from '../../../../../shared/verification/index.js';
 
 const countries = [
   'Украина','Казахстан','Россия','Беларусь',
@@ -12,6 +16,12 @@ const t = (v) => (v ?? '').trim();
 
 export default function AddressBlock() {
   const { user, updateProfile } = useAuth();
+  const verification = useVerificationModules(user);
+  const locks = useMemo(
+    () => computeModuleLocks(verification?.modules ?? {}),
+    [verification?.modules],
+  );
+  const addressLocked = locks.address;
 
   const [country, setCountry] = useState(user?.country ?? '');
   const [city, setCity]       = useState(user?.city ?? '');
@@ -23,9 +33,10 @@ export default function AddressBlock() {
   useEffect(() => setAddress(user?.address ?? ''), [user?.address]);
 
   const changed =
-    t(country) !== t(user?.country) ||
-    t(city)    !== t(user?.city)    ||
-    t(address) !== t(user?.address);
+    !addressLocked &&
+    (t(country) !== t(user?.country) ||
+      t(city) !== t(user?.city) ||
+      t(address) !== t(user?.address));
 
   // ⚡ Сообщаем кнопке о "грязном" состоянии блока
   useEffect(() => {
@@ -39,12 +50,12 @@ export default function AddressBlock() {
   // Глобальное сохранение по общей кнопке
   useEffect(() => {
     const onSave = () => {
-      if (!changed) return;
+      if (!changed || addressLocked) return;
       updateProfile({ country: t(country), city: t(city), address: t(address) });
     };
     window.addEventListener('personal:save', onSave);
     return () => window.removeEventListener('personal:save', onSave);
-  }, [changed, country, city, address, updateProfile]);
+  }, [changed, country, city, address, updateProfile, addressLocked]);
 
   return (
     <Card>
@@ -57,7 +68,11 @@ export default function AddressBlock() {
               <Form.Label>Страна</Form.Label>
               <Form.Select
                 value={country}
-                onChange={(e) => setCountry(e.target.value)}
+                onChange={(e) => {
+                  if (addressLocked) return;
+                  setCountry(e.target.value);
+                }}
+                disabled={addressLocked}
               >
                 <option value="">Выберите страну…</option>
                 {countries.map((c) => (
@@ -71,7 +86,11 @@ export default function AddressBlock() {
                 type="text"
                 placeholder="Например: Киев"
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={(e) => {
+                  if (addressLocked) return;
+                  setCity(e.target.value);
+                }}
+                disabled={addressLocked}
               />
             </Col>
             <Col md={12}>
@@ -80,11 +99,20 @@ export default function AddressBlock() {
                 type="text"
                 placeholder="Улица, дом, квартира"
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={(e) => {
+                  if (addressLocked) return;
+                  setAddress(e.target.value);
+                }}
+                disabled={addressLocked}
               />
             </Col>
           </Row>
         </Form>
+        {addressLocked ? (
+          <div className="text-secondary small mt-3">
+            Адрес можно изменить после отмены запроса или решения администратора.
+          </div>
+        ) : null}
       </Card.Body>
     </Card>
   );

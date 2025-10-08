@@ -1,6 +1,10 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Card, Form, Row, Col } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/AuthContext.jsx';
+import {
+  useVerificationModules,
+  computeModuleLocks,
+} from '../../../../../shared/verification/index.js';
 
 const monthNames = ['01','02','03','04','05','06','07','08','09','10','11','12'];
 
@@ -16,6 +20,12 @@ function daysInMonth(m, y) {
 
 export default function GenderDobBlock() {
   const { user, updateProfile } = useAuth();
+  const verification = useVerificationModules(user);
+  const locks = useMemo(
+    () => computeModuleLocks(verification?.modules ?? {}),
+    [verification?.modules],
+  );
+  const personalLocked = locks.address || locks.doc;
 
   const init = useMemo(() => parseDob(user?.dob), [user?.dob]);
   const normalizeGender = (g) => (g === 'male' || g === 'female' ? g : '');
@@ -45,7 +55,7 @@ export default function GenderDobBlock() {
   const newDob = d && m && y ? `${y}-${m}-${d}` : null;
   const currentDob = user?.dob ?? null;
   const currentGender = normalizeGender(user?.gender);
-  const changed = gender !== currentGender || newDob !== currentDob;
+  const changed = !personalLocked && (gender !== currentGender || newDob !== currentDob);
 
   useEffect(() => {
     const id = 'block:genderdob';
@@ -60,14 +70,14 @@ export default function GenderDobBlock() {
 
   useEffect(() => {
     const onSave = () => {
-      if (!changed) return;
+      if (!changed || personalLocked) return;
       const patch = { dob: newDob };
       if (gender === 'male' || gender === 'female') patch.gender = gender;
       updateProfile(patch);
     };
     window.addEventListener('personal:save', onSave);
     return () => window.removeEventListener('personal:save', onSave);
-  }, [changed, gender, newDob, updateProfile]);
+  }, [changed, gender, newDob, updateProfile, personalLocked]);
 
   return (
     <Card>
@@ -79,12 +89,28 @@ export default function GenderDobBlock() {
               <Form.Label className="d-block">Пол</Form.Label>
               <div className="d-flex gap-3">
                 <Form.Check
-                  type="radio" id="gender-male" name="gender" label="Мужчина"
-                  checked={gender === 'male'} onChange={() => setGender('male')}
+                  type="radio"
+                  id="gender-male"
+                  name="gender"
+                  label="Мужчина"
+                  checked={gender === 'male'}
+                  onChange={() => {
+                    if (personalLocked) return;
+                    setGender('male');
+                  }}
+                  disabled={personalLocked}
                 />
                 <Form.Check
-                  type="radio" id="gender-female" name="gender" label="Женщина"
-                  checked={gender === 'female'} onChange={() => setGender('female')}
+                  type="radio"
+                  id="gender-female"
+                  name="gender"
+                  label="Женщина"
+                  checked={gender === 'female'}
+                  onChange={() => {
+                    if (personalLocked) return;
+                    setGender('female');
+                  }}
+                  disabled={personalLocked}
                 />
               </div>
             </Col>
@@ -92,19 +118,40 @@ export default function GenderDobBlock() {
               <Form.Label>Дата рождения</Form.Label>
               <Row className="g-2">
                 <Col xs={4}>
-                  <Form.Select value={d} onChange={(e) => setD(e.target.value)}>
+                  <Form.Select
+                    value={d}
+                    onChange={(e) => {
+                      if (personalLocked) return;
+                      setD(e.target.value);
+                    }}
+                    disabled={personalLocked}
+                  >
                     <option value="">ДД</option>
                     {days.map((dd) => <option key={dd} value={dd}>{dd}</option>)}
                   </Form.Select>
                 </Col>
                 <Col xs={4}>
-                  <Form.Select value={m} onChange={(e) => setM(e.target.value)}>
+                  <Form.Select
+                    value={m}
+                    onChange={(e) => {
+                      if (personalLocked) return;
+                      setM(e.target.value);
+                    }}
+                    disabled={personalLocked}
+                  >
                     <option value="">MM</option>
                     {monthNames.map((mm) => <option key={mm} value={mm}>{mm}</option>)}
                   </Form.Select>
                 </Col>
                 <Col xs={4}>
-                  <Form.Select value={y} onChange={(e) => setY(e.target.value)}>
+                  <Form.Select
+                    value={y}
+                    onChange={(e) => {
+                      if (personalLocked) return;
+                      setY(e.target.value);
+                    }}
+                    disabled={personalLocked}
+                  >
                     <option value="">ГГГГ</option>
                     {years.map((yy) => <option key={yy} value={yy}>{yy}</option>)}
                   </Form.Select>
@@ -113,6 +160,11 @@ export default function GenderDobBlock() {
             </Col>
           </Row>
         </Form>
+        {personalLocked ? (
+          <div className="text-secondary small mt-3">
+            Изменение данных заблокировано до завершения проверки адреса или документов.
+          </div>
+        ) : null}
       </Card.Body>
     </Card>
   );

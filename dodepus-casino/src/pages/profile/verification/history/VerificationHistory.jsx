@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import { Card, Table } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/AuthContext.jsx';
+import { Card, Table, Badge } from 'react-bootstrap';
+import { useVerificationState } from '../state/useVerificationState.js';
 import {
   buildVerificationTimeline,
   formatModuleList,
   VERIFICATION_STATUS_LABELS,
-} from '../../../../../shared/verification/index.js';
+} from '../../../../shared/verification/index.js';
 
 const DOCUMENT_TYPE_LABELS = Object.freeze({
   internet_statement: 'Интернет-выписка',
@@ -57,17 +57,34 @@ const getStatusLabel = (event) => {
     return 'Запрос отправлен';
   }
 
+  if (event.type === 'cancelled' || event.status === 'cancelled') {
+    return 'Запрос отменён клиентом';
+  }
+
   if (event.type === 'reset' || event.status === 'reset') {
-    return 'Статусы сброшены';
+    return 'Статусы сброшены администратором';
   }
 
   const status = String(event.status || '').toLowerCase();
   return VERIFICATION_STATUS_LABELS[status] || 'Обновление';
 };
 
-export default function VerificationHistoryBlock() {
-  const ctx = useAuth?.() || {};
-  const user = ctx.user || ctx.auth || {};
+const getActorBadge = (event) => {
+  const actor = String(event.actor || event.source || '').toLowerCase();
+  if (!actor) {
+    return null;
+  }
+  if (actor === 'client') {
+    return <Badge bg="secondary">Клиент</Badge>;
+  }
+  if (actor === 'admin') {
+    return <Badge bg="dark">Администратор</Badge>;
+  }
+  return null;
+};
+
+export function VerificationHistory() {
+  const { user } = useVerificationState();
   const uploads = Array.isArray(user?.verificationUploads) ? user.verificationUploads : [];
   const timeline = useMemo(
     () => buildVerificationTimeline(user?.verificationRequests),
@@ -85,7 +102,7 @@ export default function VerificationHistoryBlock() {
             {timeline.length === 0 ? (
               <div className="text-secondary">История пока отсутствует.</div>
             ) : (
-              <Table responsive hover className="mb-0">
+              <Table responsive hover className="mb-0 align-middle">
                 <thead>
                   <tr>
                     <th style={{ width: 220 }}>Когда</th>
@@ -98,7 +115,12 @@ export default function VerificationHistoryBlock() {
                   {timeline.map((event) => (
                     <tr key={event.id}>
                       <td>{formatDateTime(event.updatedAt)}</td>
-                      <td>{getStatusLabel(event)}</td>
+                      <td>
+                        <div className="d-flex flex-column gap-1">
+                          <span>{getStatusLabel(event)}</span>
+                          {getActorBadge(event)}
+                        </div>
+                      </td>
                       <td>{formatModuleList(event.modules) || '—'}</td>
                       <td>{event.notes ? <span>{event.notes}</span> : <span className="text-secondary">—</span>}</td>
                     </tr>
@@ -113,7 +135,7 @@ export default function VerificationHistoryBlock() {
             {uploads.length === 0 ? (
               <div className="text-secondary">Пока нет загрузок.</div>
             ) : (
-              <Table responsive hover className="mb-0">
+              <Table responsive hover className="mb-0 align-middle">
                 <thead>
                   <tr>
                     <th style={{ width: 220 }}>Когда</th>
@@ -141,3 +163,5 @@ export default function VerificationHistoryBlock() {
     </Card>
   );
 }
+
+export default VerificationHistory;

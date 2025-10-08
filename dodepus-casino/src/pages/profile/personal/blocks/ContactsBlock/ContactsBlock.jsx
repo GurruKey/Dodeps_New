@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Card, Form, Row, Col, InputGroup, Dropdown, Alert } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/AuthContext.jsx';
+import {
+  useVerificationModules,
+  computeModuleLocks,
+} from '../../../../../shared/verification/index.js';
 
 const DIAL_CODES = ['+380', '+7', '+375', '+370', '+371', '+372', '+48', '+995', '+374'];
 
@@ -13,6 +17,11 @@ function splitPhone(full) {
 
 export default function ContactsBlock() {
   const { user, updateContacts } = useAuth();
+  const verification = useVerificationModules(user);
+  const moduleLocks = useMemo(
+    () => computeModuleLocks(verification?.modules ?? {}),
+    [verification?.modules],
+  );
 
   const phoneInitial = useMemo(() => splitPhone(user?.phone || ''), [user?.phone]);
   const [dial, setDial] = useState(phoneInitial.dial);
@@ -38,9 +47,10 @@ export default function ContactsBlock() {
     return digits ? `${origin.dial}${digits}` : '';
   }, [user?.phone]);
 
-  const emailLocked = true;
+  const emailLocked = moduleLocks.email;
+  const phoneLocked = moduleLocks.phone;
 
-  const phoneChanged = currentPhone !== originalPhone;
+  const phoneChanged = !phoneLocked && currentPhone !== originalPhone;
   const hasChanges = phoneChanged;
 
   useEffect(() => {
@@ -58,7 +68,7 @@ export default function ContactsBlock() {
 
   useEffect(() => {
     const onSave = async () => {
-      if (!hasChanges || typeof updateContacts !== 'function') return;
+      if (!hasChanges || phoneLocked || typeof updateContacts !== 'function') return;
 
       const payload = {};
       if (phoneChanged) payload.phone = currentPhone;
@@ -79,7 +89,7 @@ export default function ContactsBlock() {
 
     window.addEventListener('personal:save', onSave);
     return () => window.removeEventListener('personal:save', onSave);
-  }, [hasChanges, updateContacts, phoneChanged, currentPhone]);
+  }, [hasChanges, updateContacts, phoneChanged, currentPhone, phoneLocked]);
 
   const phoneError = error && /(телефон|номер)/i.test(error) ? error : null;
   const generalError = error && !phoneError ? error : null;
@@ -102,6 +112,7 @@ export default function ContactsBlock() {
                     variant="outline-secondary"
                     className="flex-shrink-0"
                     style={{ width: 96, ...controlHeight }}
+                    disabled={phoneLocked}
                   >
                     {dial}
                   </Dropdown.Toggle>
@@ -110,7 +121,7 @@ export default function ContactsBlock() {
                       <Dropdown.Item
                         key={code}
                         active={code === dial}
-                        onClick={() => setDial(code)}
+                        onClick={() => !phoneLocked && setDial(code)}
                       >
                         {code}
                       </Dropdown.Item>
@@ -124,13 +135,22 @@ export default function ContactsBlock() {
                   placeholder="Номер"
                   value={number}
                   maxLength={12}
-                  onChange={(e) => setNumber(e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) => {
+                    if (phoneLocked) return;
+                    setNumber(e.target.value.replace(/\D/g, ''));
+                  }}
                   autoComplete="tel"
                   className="flex-grow-1"
                   style={controlHeight}
                   isInvalid={Boolean(phoneError)}
+                  disabled={phoneLocked}
                 />
               </InputGroup>
+              {phoneLocked ? (
+                <Form.Text className="text-secondary d-block mt-1">
+                  Номер заблокирован, пока запрос на проверке или подтверждён.
+                </Form.Text>
+              ) : null}
               {phoneError && (
                 <Form.Text className="text-danger d-block mt-1">{phoneError}</Form.Text>
               )}
@@ -149,6 +169,11 @@ export default function ContactsBlock() {
                 autoComplete="email"
               />
             </InputGroup>
+            {emailLocked ? (
+              <Form.Text className="text-secondary d-block mt-1">
+                Почта закреплена за аккаунтом и недоступна для редактирования.
+              </Form.Text>
+            ) : null}
           </Col>
         </Row>
 
