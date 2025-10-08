@@ -7,6 +7,7 @@ import { PROMO_ARCHIVE_LOGS } from './promoArchive.js';
 import { ROLE_EDIT_LOGS } from './roleEdit.js';
 import { ROLES_LOGS } from './roles.js';
 import { STAFF_CHAT_LOGS } from './staffChat.js';
+import { VERIFICATION_LOGS } from './verification.js';
 import {
   TRANSACTIONS_LOG_STORAGE_KEY,
   TRANSACTIONS_STATIC_LOGS,
@@ -22,6 +23,7 @@ const ADMIN_LOG_SECTIONS = Object.freeze([
   { value: 'promocode-archive', label: 'Архив Promo' },
   { value: 'roles', label: 'Выдать роль' },
   { value: 'role-edit', label: 'Изменить роль' },
+  { value: 'verification', label: 'Верификация' },
   { value: 'transactions', label: 'Транзакции' },
   { value: 'moderators-chat', label: 'Модератор Чат' },
   { value: 'administrators-chat', label: 'Админ Чат' },
@@ -59,6 +61,7 @@ const STATIC_SECTION_LOGS = Object.freeze([
   ...PROMO_ARCHIVE_LOGS,
   ...ROLES_LOGS,
   ...ROLE_EDIT_LOGS,
+  ...VERIFICATION_LOGS,
   ...MODERATORS_CHAT_LOGS,
   ...ADMINISTRATORS_CHAT_LOGS,
   ...STAFF_CHAT_LOGS,

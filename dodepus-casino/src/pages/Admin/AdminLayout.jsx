@@ -8,6 +8,7 @@ import { availableRoles, rolePermissionMatrix } from './roles/data/roleConfigs.j
 const NAV_ITEMS = [
   { key: 'overview', to: 'overview', label: 'Обзор', permission: 'overview' },
   { key: 'clients', to: 'clients', label: 'Клиенты', permission: 'clients' },
+  { key: 'verification', to: 'verification', label: 'Верификация', permission: 'verification' },
   { key: 'transactions', to: 'transactions', label: 'Транзакции', permission: 'transactions' },
   { key: 'divider-1', type: 'divider' },
   { key: 'promocodes', to: 'promocodes', label: 'Promo', permission: 'promocodes' },

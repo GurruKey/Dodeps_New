@@ -33,6 +33,8 @@ import History from '../pages/profile/history';
 import Promos from '../pages/profile/promos';
 import Season from '../pages/profile/season';
 import GamesHistory from '../pages/profile/games-history';
+import Verification from '../pages/profile/verification';
+import AdminVerification from '../pages/Admin/verification';
 
 function RequireAuth({ children }) {
   const { isAuthed } = useAuth();
@@ -95,6 +97,7 @@ export default function AppRoutes() {
         <Route path="roles" element={<AdminRoles />} />
         <Route path="role-edit" element={<AdminRoleEdit />} />
         <Route path="transactions" element={<AdminTransactions />} />
+        <Route path="verification" element={<AdminVerification />} />
         <Route path="moderators-chat" element={<AdminModeratorsChat />} />
         <Route path="administrators-chat" element={<AdminAdministratorsChat />} />
         <Route path="staff-chat" element={<AdminStaffChat />} />
@@ -126,6 +129,7 @@ export default function AppRoutes() {
         <Route path="history" element={<History />} />
         <Route path="terminal" element={<Terminal />} />
         <Route path="personal" element={<Personal />} />
+        <Route path="verification" element={<Verification />} />
         <Route path="promos" element={<Promos />} />
         <Route path="season" element={<Season />} />
         <Route path="games-history" element={<GamesHistory />} />
