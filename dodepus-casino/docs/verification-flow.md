@@ -6,7 +6,7 @@
 
 | Шаг плана | Что требовалось | Реализация сейчас |
 | --- | --- | --- |
-| 1. Клиентская папка `profile/verification` | Подкаталоги `page`, `widgets`, `forms`, `state`, `actions`, `history`, `services`. | Структура выровнена: страница `page/VerificationPage.jsx`, статусы `widgets/ModuleStatusWidget.jsx`, формы `forms/DocumentUploadForm.jsx`, состояние `state/useVerificationState.js`, действия `actions/useVerificationActions.js`, история `history/VerificationHistory.jsx`, сервисы `services/verificationServices.js`. |
+| 1. Клиентская папка `profile/verification` | Подкаталоги `page`, `widgets`, `forms`, `state`, `actions`, `history`, `services`. | Структура выровнена: страница `page/VerificationPage.jsx`, статусы `widgets/ModuleStatusWidget.jsx`, формы `forms/EmailPhoneVerificationForm.jsx`, `forms/AddressVerificationForm.jsx`, `forms/DocumentsVerificationForm.jsx`, состояние `state/useVerificationState.js`, действия `actions/useVerificationActions.js`, история `history/VerificationHistory.jsx`, сервисы `services/verificationServices.js`. |
 | 2. Админка `admin/verification` | Аккордеоны, поиск, карточки, модалка, слой данных. | Страница `Verification.jsx` управляет поиском и группировкой, секции вынесены в `blocks`, модалка и бейджи в `components`, данные подгружает `hooks/useAdminVerificationRequests.js`. |
 | 3. `local-sim` | Таблицы, seed, логика, API. | Клиентские действия (`local-sim/auth/profileActions.js`) и админские (`local-sim/admin/verification.js`) поддерживают отправку, отмену, решения, сброс, историю и уведомления. |
 | 4. Навигация | Маршруты профиля и админки. | Маршруты `profile/personal`, `profile/verification`, `admin/verification` зарегистрированы и доступны через layout’ы. |
@@ -39,9 +39,13 @@
 
 ### 3.2 Страница и виджеты
 
-`page/VerificationPage.jsx` рендерит три блока: статусы, загрузку документов и историю. 【F:dodepus-casino/src/pages/profile/verification/page/VerificationPage.jsx†L1-L11】
+`page/VerificationPage.jsx` собирает статусы, две формы данных, блок загрузки документов и историю событий. 【F:dodepus-casino/src/pages/profile/verification/page/VerificationPage.jsx†L1-L24】
 
-### 3.3 Статусы и действия клиента
+### 3.3 Формы клиента
+
+`EmailPhoneVerificationForm` и `AddressVerificationForm` обновляют контакты и персональные данные напрямую из экрана верификации, повторяя блокировки модулей и добавляя подсказки. 【F:dodepus-casino/src/pages/profile/verification/forms/EmailPhoneVerificationForm.jsx†L1-L199】【F:dodepus-casino/src/pages/profile/verification/forms/AddressVerificationForm.jsx†L1-L259】
+
+### 3.4 Статусы и действия клиента
 
 `ModuleStatusWidget` показывает прогресс, подсказки, кнопки «Подтвердить» и «Отменить запрос». Кнопка отмены доступна для модулей в статусе ❓ и вызывает `cancelVerificationRequest`. После отмены выводится уведомление, статусы возвращаются в ◻️, поля разблокируются. 【F:dodepus-casino/src/pages/profile/verification/widgets/ModuleStatusWidget.jsx†L1-L260】
 
@@ -51,11 +55,11 @@
 - `address` — страна/город/адрес + ФИО/дата рождения/пол.
 - `doc` — выполнены требования адреса + загружен документ.
 
-### 3.4 Загрузка документов
+### 3.5 Загрузка документов
 
-`DocumentUploadForm` учитывает блокировки: если выбранная категория находится на проверке или подтверждена, формы и зона загрузки выключены и показывают подсказку. 【F:dodepus-casino/src/pages/profile/verification/forms/DocumentUploadForm.jsx†L1-L135】
+`DocumentsVerificationForm` учитывает блокировки: если выбранная категория находится на проверке или подтверждена, формы и зона загрузки выключены и показывают подсказку. 【F:dodepus-casino/src/pages/profile/verification/forms/DocumentUploadForm.jsx†L1-L202】
 
-### 3.5 История для клиента
+### 3.6 История для клиента
 
 `VerificationHistory` выводит таблицу событий и загрузок. Для отмен отображается статус «Запрос отменён клиентом», для административных действий — «Статусы сброшены администратором» и бейдж «Администратор». 【F:dodepus-casino/src/pages/profile/verification/history/VerificationHistory.jsx†L1-L103】
 
@@ -77,11 +81,15 @@
 
 ### 6.1 Отправка и отмена (клиент)
 
-`submitVerificationRequest` создаёт или дополняет открытую заявку. `cancelVerificationRequest` проверяет, что запрос ещё не обработан администратором, снимает выбранные модули, добавляет запись истории со статусом `cancelled` и возвращает заявку в `idle` (если всё снято) или `pending`. 【F:dodepus-casino/local-sim/auth/profileActions.js†L1-L266】【F:dodepus-casino/local-sim/auth/profileActions.js†L266-L392】
+`submitVerificationRequest` создаёт или дополняет открытую заявку. `cancelVerificationRequest` проверяет, что запрос ещё не обработан администратором, снимает выбранные модули, добавляет запись истории со статусом `cancelled` и возвращает заявку в `idle` (если всё снято) или `pending`. 【F:dodepus-casino/local-sim/auth/profileActions.js†L260-L456】
 
 ### 6.2 Действия администратора
 
-`updateVerificationRequestStatus` и `resetVerificationRequestModules` нормализуют статусы, обновляют историю, фиксируют администратора и уведомляют подписчиков `ADMIN_VERIFICATION_EVENT`. 【F:dodepus-casino/local-sim/admin/verification.js†L1-L360】【F:dodepus-casino/local-sim/admin/verification.js†L360-L640】
+`updateVerificationRequestStatus` и `resetVerificationRequestModules` нормализуют статусы, обновляют историю, фиксируют администратора и уведомляют подписчиков `ADMIN_VERIFICATION_EVENT`. 【F:dodepus-casino/local-sim/admin/verification.js†L432-L724】
+
+### 6.3 Общие таблицы и API
+
+Общий доступ к данным вынесен в `local-sim/tables/verification.js`, где описаны чтение и обновление снимка профиля. 【F:dodepus-casino/local-sim/tables/verification.js†L1-L52】 Логика нормализации статусов и полей собрана в `local-sim/logic/verificationHelpers.js`. 【F:dodepus-casino/local-sim/logic/verificationHelpers.js†L1-L100】 Предустановленные заявки для тестов описаны в `local-sim/seed/verificationSeed.js`. 【F:dodepus-casino/local-sim/seed/verificationSeed.js†L1-L102】 Клиентский и административный API собраны в `local-sim/api/verification.js`. 【F:dodepus-casino/local-sim/api/verification.js†L1-L8】
 
 ## 7. Поддерживаемые сценарии
 

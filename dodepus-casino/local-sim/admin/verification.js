@@ -1,106 +1,21 @@
 import { readAdminClients } from './clients';
-import { loadExtras, saveExtras } from '../auth/profileExtras';
 import { appendAdminLog } from './logs/index.js';
+import {
+  normalizeString,
+  normalizeStatus,
+  normalizeBooleanMap,
+  normalizeFieldsPatch,
+  mergeFieldStates,
+  normalizeNotes,
+} from '../logic/verificationHelpers.js';
+import {
+  readVerificationSnapshot,
+  updateVerificationSnapshot,
+} from '../tables/verification.js';
 
 export const ADMIN_VERIFICATION_EVENT = 'dodepus:admin-verification-change';
 
 const VALID_STATUSES = Object.freeze(['idle', 'pending', 'rejected', 'approved']);
-
-const normalizeString = (value, fallback = '') => {
-  if (typeof value !== 'string') return fallback;
-  const trimmed = value.trim();
-  return trimmed || fallback;
-};
-
-const normalizeStatus = (value) => {
-  const normalized = normalizeString(value).toLowerCase();
-  if (!normalized) return 'pending';
-  if (normalized === 'approved' || normalized === 'verified' || normalized === 'done') {
-    return 'approved';
-  }
-  if (normalized === 'rejected' || normalized === 'declined' || normalized === 'denied') {
-    return 'rejected';
-  }
-  if (['in_review', 'inreview', 'pending', 'processing'].includes(normalized)) {
-    return 'pending';
-  }
-  if (normalized === 'waiting' || normalized === 'idle' || normalized === 'new' || normalized === 'requested') {
-    return 'idle';
-  }
-  if (normalized === 'partial') {
-    return 'pending';
-  }
-  if (normalized === 'reset') {
-    return 'idle';
-  }
-  if (VALID_STATUSES.includes(normalized)) {
-    return normalized;
-  }
-  return 'pending';
-};
-
-const normalizeFields = (fields = {}) => ({
-  email: Boolean(fields?.email),
-  phone: Boolean(fields?.phone),
-  address: Boolean(fields?.address),
-  doc: Boolean(fields?.doc),
-});
-
-const normalizeFieldsPatch = (fields = {}) => {
-  if (!fields || typeof fields !== 'object') {
-    return {};
-  }
-
-  const patch = {};
-
-  if ('email' in fields) {
-    patch.email = Boolean(fields.email);
-  }
-
-  if ('phone' in fields) {
-    patch.phone = Boolean(fields.phone);
-  }
-
-  if ('address' in fields) {
-    patch.address = Boolean(fields.address);
-  }
-
-  if ('doc' in fields) {
-    patch.doc = Boolean(fields.doc);
-  }
-
-  if ('document' in fields) {
-    patch.doc = Boolean(fields.document);
-  }
-
-  return patch;
-};
-
-const mergeFieldStates = (current = {}, patch = {}) => {
-  const normalizedCurrent = normalizeFields(current);
-  const normalizedPatch = normalizeFieldsPatch(patch);
-  const keys = new Set([
-    ...Object.keys(normalizedCurrent),
-    ...Object.keys(normalizedPatch),
-  ]);
-
-  const result = {};
-  keys.forEach((key) => {
-    if (!key) return;
-    result[key] = normalizedPatch[key] ?? normalizedCurrent[key] ?? false;
-  });
-
-  return normalizeFields(result);
-};
-
-const normalizeNotes = (value) => {
-  if (typeof value !== 'string') {
-    return '';
-  }
-
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : '';
-};
 
 const GENDER_MALE_VALUES = Object.freeze([
   'male',
@@ -264,9 +179,9 @@ const createHistoryEntry = ({
     },
     notes: normalizeNotes(notes),
     updatedAt: timestamp,
-    completedFields: normalizeFields(completedFields),
-    requestedFields: normalizeFields(requestedFields ?? completedFields),
-    clearedFields: normalizeFields(clearedFields),
+    completedFields: normalizeBooleanMap(completedFields),
+    requestedFields: normalizeBooleanMap(requestedFields ?? completedFields),
+    clearedFields: normalizeBooleanMap(clearedFields),
   };
 };
 
@@ -282,10 +197,10 @@ const sanitizeHistoryEntries = (history, fallbackRequest) => {
       }
 
       const status = normalizeStatus(entry.status ?? fallbackRequest?.status);
-      const normalizedCompleted = normalizeFields(
+      const normalizedCompleted = normalizeBooleanMap(
         entry.completedFields ?? fallbackRequest?.completedFields,
       );
-      const normalizedRequested = normalizeFields(
+      const normalizedRequested = normalizeBooleanMap(
         entry.requestedFields ?? entry.completedFields ?? fallbackRequest?.requestedFields,
       );
 
@@ -304,7 +219,7 @@ const sanitizeHistoryEntries = (history, fallbackRequest) => {
         updatedAt: updatedAt || new Date().toISOString(),
         completedFields: normalizedCompleted,
         requestedFields: normalizedRequested,
-        clearedFields: normalizeFields(entry.clearedFields),
+        clearedFields: normalizeBooleanMap(entry.clearedFields),
       };
     })
     .filter(Boolean);
@@ -337,8 +252,8 @@ const buildRequestEntry = (client, request) => {
   const id = normalizeString(request.id);
   if (!id) return null;
 
-  const completedFields = normalizeFields(request.completedFields);
-  const requestedFields = normalizeFields(request.requestedFields ?? request.completedFields);
+  const completedFields = normalizeBooleanMap(request.completedFields);
+  const requestedFields = normalizeBooleanMap(request.requestedFields ?? request.completedFields);
   const requestedCount = Object.values(requestedFields).filter(Boolean).length;
   const calculatedCompleted = Object.values(completedFields).filter(Boolean).length;
   const baseTotal = Math.max(requestedCount, calculatedCompleted);
@@ -529,10 +444,9 @@ export const updateVerificationRequestStatus = ({
     throw new Error('Запрос верификации не найден');
   }
 
-  const extras = loadExtras(owner.id);
-  const requests = Array.isArray(extras.verificationRequests)
-    ? extras.verificationRequests.slice()
-    : [];
+  const snapshot = readVerificationSnapshot(owner.id);
+  const extras = snapshot.extras;
+  const requests = Array.isArray(snapshot.requests) ? snapshot.requests.slice() : [];
   const index = requests.findIndex((request) => request?.id === requestId);
   if (index < 0) {
     throw new Error('Не удалось обновить запрос верификации');
@@ -542,8 +456,8 @@ export const updateVerificationRequestStatus = ({
   const nowIso = new Date().toISOString();
 
   const previous = requests[index] || {};
-  const normalizedCompleted = normalizeFields(previous.completedFields);
-  const normalizedRequested = normalizeFields(previous.requestedFields ?? previous.completedFields);
+  const normalizedCompleted = normalizeBooleanMap(previous.completedFields);
+  const normalizedRequested = normalizeBooleanMap(previous.requestedFields ?? previous.completedFields);
 
   const mergedCompleted = mergeFieldStates(normalizedCompleted, completedFields);
   const mergedRequested = mergeFieldStates(normalizedRequested, requestedFields);
@@ -605,13 +519,13 @@ export const updateVerificationRequestStatus = ({
 
   const normalizedProfilePatch = normalizeProfilePatch(profilePatch);
 
-  const nextExtras = {
-    ...extras,
-    ...normalizedProfilePatch,
-    verificationRequests: nextRequests,
-  };
-
-  saveExtras(owner.id, nextExtras);
+  updateVerificationSnapshot(owner.id, () => ({
+    extras: {
+      ...extras,
+      ...normalizedProfilePatch,
+    },
+    requests: nextRequests,
+  }));
 
   try {
     notifyAdminVerificationRequestsChanged({
@@ -661,7 +575,8 @@ export const updateVerificationRequestStatus = ({
     ...owner,
     profile: {
       ...owner.profile,
-      ...nextExtras,
+      ...extras,
+      ...normalizedProfilePatch,
       verificationRequests: nextRequests,
     },
   };
@@ -670,7 +585,7 @@ export const updateVerificationRequestStatus = ({
 };
 
 const buildClearedSelection = (modules = {}) => {
-  const normalized = normalizeFields(modules);
+  const normalized = normalizeBooleanMap(modules);
   const result = {};
   Object.keys(normalized).forEach((key) => {
     if (!normalized[key]) {
@@ -678,7 +593,7 @@ const buildClearedSelection = (modules = {}) => {
     }
     result[key] = true;
   });
-  return normalizeFields(result);
+  return normalizeBooleanMap(result);
 };
 
 export const resetVerificationRequestModules = ({
@@ -699,10 +614,9 @@ export const resetVerificationRequestModules = ({
     throw new Error('Запрос верификации не найден');
   }
 
-  const extras = loadExtras(owner.id);
-  const requests = Array.isArray(extras?.verificationRequests)
-    ? extras.verificationRequests.slice()
-    : [];
+  const snapshot = readVerificationSnapshot(owner.id);
+  const extras = snapshot.extras;
+  const requests = Array.isArray(snapshot.requests) ? snapshot.requests.slice() : [];
 
   const index = requests.findIndex((entry) => entry?.id === requestId);
   if (index === -1) {
@@ -711,8 +625,8 @@ export const resetVerificationRequestModules = ({
 
   const previous = requests[index];
   const reviewerInfo = buildReviewerInfo(reviewer);
-  const normalizedCompleted = normalizeFields(previous.completedFields);
-  const normalizedRequested = normalizeFields(previous.requestedFields ?? previous.completedFields);
+  const normalizedCompleted = normalizeBooleanMap(previous.completedFields);
+  const normalizedRequested = normalizeBooleanMap(previous.requestedFields ?? previous.completedFields);
 
   clearedKeys.forEach((key) => {
     normalizedCompleted[key] = false;
@@ -764,12 +678,10 @@ export const resetVerificationRequestModules = ({
 
   requests[index] = nextRequest;
 
-  const nextExtras = {
-    ...extras,
-    verificationRequests: requests,
-  };
-
-  saveExtras(owner.id, nextExtras);
+  updateVerificationSnapshot(owner.id, () => ({
+    extras,
+    requests,
+  }));
 
   try {
     notifyAdminVerificationRequestsChanged({
@@ -803,7 +715,7 @@ export const resetVerificationRequestModules = ({
     ...owner,
     profile: {
       ...owner.profile,
-      ...nextExtras,
+      ...extras,
       verificationRequests: requests,
     },
   };
@@ -813,7 +725,7 @@ export const resetVerificationRequestModules = ({
 
 export const __internals = Object.freeze({
   normalizeStatus,
-  normalizeFields,
+  normalizeBooleanMap,
   parseTimestamp,
   buildRequestEntry,
   findRequestOwner,
