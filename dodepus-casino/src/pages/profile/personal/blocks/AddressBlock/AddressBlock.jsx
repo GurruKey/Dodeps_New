@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, Form, Row, Col } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/AuthContext.jsx';
-import { useVerificationModules } from '../../../../../shared/verification/index.js';
 
 const countries = [
   'Украина','Казахстан','Россия','Беларусь',
@@ -13,10 +12,6 @@ const t = (v) => (v ?? '').trim();
 
 export default function AddressBlock() {
   const { user, updateProfile } = useAuth();
-  const { modules: verificationModules = {} } = useVerificationModules(user);
-
-  const addressStatus = String(verificationModules?.address?.status || '').toLowerCase();
-  const addressLocked = addressStatus === 'pending' || addressStatus === 'approved';
 
   const [country, setCountry] = useState(user?.country ?? '');
   const [city, setCity]       = useState(user?.city ?? '');
@@ -63,7 +58,6 @@ export default function AddressBlock() {
               <Form.Select
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
-                disabled={addressLocked}
               >
                 <option value="">Выберите страну…</option>
                 {countries.map((c) => (
@@ -78,7 +72,6 @@ export default function AddressBlock() {
                 placeholder="Например: Киев"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                disabled={addressLocked}
               />
             </Col>
             <Col md={12}>
@@ -88,25 +81,9 @@ export default function AddressBlock() {
                 placeholder="Улица, дом, квартира"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                disabled={addressLocked}
               />
             </Col>
           </Row>
-          {addressStatus === 'pending' && (
-            <Form.Text className="text-muted d-block mt-2">
-              Данные отправлены на проверку. Изменить адрес можно после решения администратора.
-            </Form.Text>
-          )}
-          {addressStatus === 'approved' && (
-            <Form.Text className="text-muted d-block mt-2">
-              Адрес подтверждён и заблокирован для редактирования.
-            </Form.Text>
-          )}
-          {addressStatus === 'rejected' && (
-            <Form.Text className="text-warning d-block mt-2">
-              Адрес отклонён. Обновите данные и отправьте их повторно.
-            </Form.Text>
-          )}
         </Form>
       </Card.Body>
     </Card>

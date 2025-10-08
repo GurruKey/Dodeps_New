@@ -1,7 +1,6 @@
 import { Container, Row, Col, Nav, Badge } from 'react-bootstrap';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../../app/AuthContext.jsx';
-import { AlertTriangle } from 'lucide-react';
 
 export default function ProfileLayout() {
   const { user } = useAuth();
@@ -10,16 +9,6 @@ export default function ProfileLayout() {
 
   const fmt = (v) =>
     new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(v);
-
-  // простая эвристика: если чего-то важного нет — нужна верификация
-  const needsKycAttention =
-    !user?.emailVerified ||
-    !user?.firstName ||
-    !user?.lastName ||
-    !user?.dob ||
-    !user?.country ||
-    !user?.city ||
-    !user?.address;
 
   return (
     <Container>
@@ -53,18 +42,6 @@ export default function ProfileLayout() {
               {/* ПЕРСОНАЛЬНЫЕ ДАННЫЕ */}
               <Nav.Link as={NavLink} end to="personal">
                 Персональные данные
-              </Nav.Link>
-
-              {/* ВЕРИФИКАЦИЯ */}
-              <Nav.Link as={NavLink} to="verification">
-                {needsKycAttention ? (
-                  <span className="d-inline-flex align-items-center gap-1 text-warning">
-                    <AlertTriangle size={16} />
-                    <span>Верификация</span>
-                  </span>
-                ) : (
-                  'Верификация'
-                )}
               </Nav.Link>
 
               {/* разделитель */}

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Card, Form, Row, Col, InputGroup, Dropdown, Alert } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/AuthContext.jsx';
-import { useVerificationModules } from '../../../../../shared/verification/index.js';
 
 const DIAL_CODES = ['+380', '+7', '+375', '+370', '+371', '+372', '+48', '+995', '+374'];
 
@@ -14,7 +13,6 @@ function splitPhone(full) {
 
 export default function ContactsBlock() {
   const { user, updateContacts } = useAuth();
-  const { modules: verificationModules = {} } = useVerificationModules(user);
 
   const phoneInitial = useMemo(() => splitPhone(user?.phone || ''), [user?.phone]);
   const [dial, setDial] = useState(phoneInitial.dial);
@@ -40,11 +38,9 @@ export default function ContactsBlock() {
     return digits ? `${origin.dial}${digits}` : '';
   }, [user?.phone]);
 
-  const phoneStatus = String(verificationModules?.phone?.status || '').toLowerCase();
   const emailLocked = true;
-  const phoneLocked = phoneStatus === 'pending' || phoneStatus === 'approved';
 
-  const phoneChanged = !phoneLocked && currentPhone !== originalPhone;
+  const phoneChanged = currentPhone !== originalPhone;
   const hasChanges = phoneChanged;
 
   useEffect(() => {
@@ -58,7 +54,7 @@ export default function ContactsBlock() {
 
   useEffect(() => {
     setError(null);
-  }, [dial, number, phoneLocked]);
+  }, [dial, number]);
 
   useEffect(() => {
     const onSave = async () => {
@@ -90,20 +86,6 @@ export default function ContactsBlock() {
 
   const controlHeight = { minHeight: 'calc(1.5em + .75rem + 2px)' };
 
-  const phoneLockHint = (() => {
-    if (phoneStatus === 'approved') {
-      return 'Номер подтверждён и недоступен для изменения.';
-    }
-    if (phoneStatus === 'pending') {
-      return 'Изменения номера заблокированы на время проверки.';
-    }
-    return null;
-  })();
-
-  const phoneRejectedHint = phoneStatus === 'rejected'
-    ? 'Номер отклонён. Исправьте его и отправьте повторно на проверку.'
-    : null;
-
   return (
     <Card>
       <Card.Body>
@@ -120,7 +102,6 @@ export default function ContactsBlock() {
                     variant="outline-secondary"
                     className="flex-shrink-0"
                     style={{ width: 96, ...controlHeight }}
-                    disabled={phoneLocked}
                   >
                     {dial}
                   </Dropdown.Toggle>
@@ -130,7 +111,6 @@ export default function ContactsBlock() {
                         key={code}
                         active={code === dial}
                         onClick={() => setDial(code)}
-                        disabled={phoneLocked}
                       >
                         {code}
                       </Dropdown.Item>
@@ -148,18 +128,11 @@ export default function ContactsBlock() {
                   autoComplete="tel"
                   className="flex-grow-1"
                   style={controlHeight}
-                  disabled={phoneLocked}
                   isInvalid={Boolean(phoneError)}
                 />
               </InputGroup>
               {phoneError && (
                 <Form.Text className="text-danger d-block mt-1">{phoneError}</Form.Text>
-              )}
-              {phoneLockHint && (
-                <Form.Text className="text-muted d-block mt-1">{phoneLockHint}</Form.Text>
-              )}
-              {phoneRejectedHint && (
-                <Form.Text className="text-warning d-block mt-1">{phoneRejectedHint}</Form.Text>
               )}
             </Form>
           </Col>
