@@ -90,15 +90,15 @@ export const getAdminRole = (user) => {
 export const getStatusLabel = (status) => {
   switch (status) {
     case 'waiting':
-      return 'Не отправлено';
+    case 'idle':
+      return 'Нет запроса';
     case 'in_review':
+    case 'pending':
       return 'На проверке';
     case 'approved':
-      return 'Верифицировано';
+      return 'Подтверждено';
     case 'rejected':
       return 'Отказано';
-    case 'partial':
-      return 'Частично подтверждено';
     case 'reset':
       return 'Статусы сброшены';
     default:

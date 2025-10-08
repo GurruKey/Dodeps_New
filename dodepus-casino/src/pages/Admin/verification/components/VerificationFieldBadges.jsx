@@ -4,38 +4,38 @@ import { VERIFICATION_MODULES } from '../../../../shared/verification/index.js';
 
 const ICON_CONFIG = {
   approved: { Component: CheckCircle2, className: 'text-success' },
-  in_review: { Component: CircleHelp, className: 'text-warning' },
+  pending: { Component: CircleHelp, className: 'text-warning' },
   rejected: { Component: CircleX, className: 'text-danger' },
-  waiting: { Component: Circle, className: 'text-secondary' },
+  idle: { Component: Circle, className: 'text-secondary' },
 };
 
 const STATE_VARIANT = {
   approved: 'success',
-  in_review: 'warning',
+  pending: 'warning',
   rejected: 'danger',
-  waiting: 'secondary',
+  idle: 'secondary',
 };
 
 const STATE_BUTTON_VARIANT = {
   approved: 'success',
-  in_review: 'warning',
+  pending: 'warning',
   rejected: 'danger',
-  waiting: 'secondary',
+  idle: 'secondary',
 };
 
 export default function VerificationFieldBadges({ modules, onSelect }) {
   const items = Array.isArray(modules)
     ? modules
-    : VERIFICATION_MODULES.map((module) => ({ ...module, status: 'waiting' }));
+    : VERIFICATION_MODULES.map((module) => ({ ...module, status: 'idle' }));
 
   if (typeof onSelect === 'function') {
     return (
       <div className="d-flex flex-wrap gap-2">
         {items.map((item) => {
-          const state = item.status || 'waiting';
-          const config = ICON_CONFIG[state] || ICON_CONFIG.waiting;
+          const state = item.status || 'idle';
+          const config = ICON_CONFIG[state] || ICON_CONFIG.idle;
           const IconComponent = config.Component;
-          const disabled = state === 'waiting';
+          const disabled = state === 'idle';
 
           const handleClick = (event) => {
             event?.stopPropagation?.();
@@ -71,8 +71,8 @@ export default function VerificationFieldBadges({ modules, onSelect }) {
   return (
     <div className="d-flex flex-wrap gap-2">
       {items.map((item) => {
-        const state = item.status || 'waiting';
-        const config = ICON_CONFIG[state] || ICON_CONFIG.waiting;
+        const state = item.status || 'idle';
+        const config = ICON_CONFIG[state] || ICON_CONFIG.idle;
         const IconComponent = config.Component;
         return (
           <Badge

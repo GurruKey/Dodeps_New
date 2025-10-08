@@ -9,22 +9,22 @@ import {
 } from '../../../../../shared/verification/index.js';
 
 const ICON_LABELS = Object.freeze({
-  waiting: 'требуется подтверждение',
-  in_review: 'на проверке',
+  idle: 'требуется подтверждение',
+  pending: 'на проверке',
   rejected: 'отклонено',
   approved: 'подтверждено',
 });
 
 const ICON_BG_CLASS = Object.freeze({
-  waiting: 'bg-primary-subtle border-primary-subtle',
-  in_review: 'bg-warning-subtle border-warning-subtle',
+  idle: 'bg-secondary-subtle border-secondary-subtle',
+  pending: 'bg-warning-subtle border-warning-subtle',
   rejected: 'bg-danger-subtle border-danger-subtle',
   approved: 'bg-success-subtle border-success-subtle',
 });
 
 const ICON_COMPONENT = Object.freeze({
-  waiting: (size) => <Circle size={size} className="text-primary" />,
-  in_review: (size) => <CircleHelp size={size} className="text-warning" />,
+  idle: (size) => <Circle size={size} className="text-secondary" />,
+  pending: (size) => <CircleHelp size={size} className="text-warning" />,
   rejected: (size) => <CircleX size={size} className="text-danger" />,
   approved: (size) => <CheckCircle size={size} className="text-success" />,
 });
@@ -56,7 +56,6 @@ export default function VerificationStatusBlock() {
     return 'identity';
   };
 
-  const hasAddressUpload = uploads.some((upload) => normalizeUploadCategory(upload) === 'address');
   const hasIdentityUpload = uploads.some((upload) => normalizeUploadCategory(upload) === 'identity');
 
   const normalizeString = (value) => (typeof value === 'string' ? value.trim() : '');
@@ -66,14 +65,14 @@ export default function VerificationStatusBlock() {
   const hasAddressStrings = ['country', 'city', 'address'].every((key) =>
     normalizeString(user?.[key]).length >= 2,
   );
-  const addressReady = hasAddressStrings || hasAddressUpload;
+  const addressReady = hasAddressStrings && hasDocStrings;
   const genderValue = String(user?.gender || '').toLowerCase();
   const hasDocStrings =
     normalizeString(user?.firstName).length >= 2 &&
     normalizeString(user?.lastName).length >= 2 &&
     /^\d{4}-\d{2}-\d{2}$/.test(String(user?.dob || '')) &&
     (genderValue === 'male' || genderValue === 'female');
-  const docReady = hasDocStrings || hasIdentityUpload;
+  const docReady = hasDocStrings && hasIdentityUpload;
 
   const emailReady = hasEmailValue;
   const phoneReady = hasPhoneValue;
@@ -89,11 +88,11 @@ export default function VerificationStatusBlock() {
     key: module.key,
     label: module.label,
     isReady: readinessMap[module.key],
-    state: moduleStates?.[module.key]?.status || 'waiting',
+    state: moduleStates?.[module.key]?.status || 'idle',
   }));
 
   const hasAnyReady = items.some((item) => item.isReady);
-  const isRequestPending = Boolean(summary?.hasInReview);
+  const isRequestPending = Boolean(summary?.hasPending);
   const isRequestRejected = Boolean(summary?.hasRejected);
   const isRequestApproved = Boolean(summary?.allApproved);
 
@@ -121,8 +120,8 @@ export default function VerificationStatusBlock() {
             return false;
           }
 
-          const state = moduleStates?.[key]?.status || 'waiting';
-          return state === 'waiting' || state === 'rejected';
+          const state = moduleStates?.[key]?.status || 'idle';
+          return state === 'idle' || state === 'rejected';
         }),
       );
 
@@ -184,11 +183,12 @@ export default function VerificationStatusBlock() {
           <Row className="text-center g-4">
             {items.map((item) => {
               const state = item.state;
-              const iconLabel = `${item.label}: ${ICON_LABELS[state]}`;
-              const iconComponent = ICON_COMPONENT[state](ICON_SIZE);
+              const iconKey = ICON_COMPONENT[state] ? state : 'idle';
+              const iconLabel = `${item.label}: ${ICON_LABELS[iconKey] || ICON_LABELS.idle}`;
+              const iconComponent = ICON_COMPONENT[iconKey](ICON_SIZE);
               const iconWrapper = (
                 <span
-                  className={`d-inline-flex align-items-center justify-content-center rounded-circle border border-2 shadow-sm ${ICON_BG_CLASS[state]}`}
+                  className={`d-inline-flex align-items-center justify-content-center rounded-circle border border-2 shadow-sm ${ICON_BG_CLASS[iconKey] || ICON_BG_CLASS.idle}`}
                   style={{ width: 92, height: 92 }}
                 >
                   {iconComponent}
@@ -196,13 +196,13 @@ export default function VerificationStatusBlock() {
               );
 
               const canNavigateToPersonal =
-                !item.isReady && (state === 'waiting' || state === 'rejected');
-              const canSubmit = item.isReady && (state === 'waiting' || state === 'rejected');
-              const buttonVariant = state === 'rejected' ? 'warning' : 'primary';
+                !item.isReady && (iconKey === 'idle' || iconKey === 'rejected');
+              const canSubmit = item.isReady && (iconKey === 'idle' || iconKey === 'rejected');
+              const buttonVariant = iconKey === 'rejected' ? 'warning' : 'primary';
               const buttonLabel =
                 isSubmitting && submittingKey === item.key ? 'Отправка…' : 'Подтвердить';
               const showFillHint =
-                !item.isReady && (state === 'waiting' || state === 'rejected');
+                !item.isReady && (iconKey === 'idle' || iconKey === 'rejected');
               const hintMessage = (() => {
                 switch (item.key) {
                   case 'email':
@@ -214,20 +214,14 @@ export default function VerificationStatusBlock() {
                       ? null
                       : 'Укажите номер телефона в разделе «Персональные данные».';
                   case 'address':
-                    if (!hasAddressStrings && !hasAddressUpload) {
-                      return 'Заполните адрес проживания или загрузите подтверждающий документ.';
-                    }
                     if (!hasAddressStrings) {
                       return 'Заполните страну, город и адрес проживания.';
                     }
-                    if (!hasAddressUpload) {
-                      return 'Загрузите документ для подтверждения адреса.';
+                    if (!hasDocStrings) {
+                      return 'Заполните ФИО, дату рождения и выберите пол.';
                     }
                     return null;
                   case 'doc':
-                    if (!hasDocStrings && !hasIdentityUpload) {
-                      return 'Заполните данные профиля или загрузите документ, подтверждающий личность.';
-                    }
                     if (!hasDocStrings) {
                       return 'Заполните ФИО, дату рождения и выберите пол.';
                     }
@@ -261,11 +255,11 @@ export default function VerificationStatusBlock() {
                     </div>
                   )}
 
-                {state === 'in_review' ? (
+                {iconKey === 'pending' ? (
                     <div className="mt-2 small fw-semibold text-warning">Ожидание</div>
                   ) : null}
 
-                  {canSubmit ? (
+              {canSubmit ? (
                     <Button
                       type="button"
                       size="sm"
@@ -280,9 +274,9 @@ export default function VerificationStatusBlock() {
                     </Button>
                   ) : null}
 
-                  {state === 'approved'
+                  {iconKey === 'approved'
                     ? null
-                    : state === 'in_review'
+                    : iconKey === 'pending'
                       ? null
                       : showFillHint
                         ? (

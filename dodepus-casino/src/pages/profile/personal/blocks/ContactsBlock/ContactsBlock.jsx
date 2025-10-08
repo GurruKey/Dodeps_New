@@ -42,7 +42,7 @@ export default function ContactsBlock() {
 
   const phoneStatus = String(verificationModules?.phone?.status || '').toLowerCase();
   const emailLocked = true;
-  const phoneLocked = phoneStatus === 'in_review' || phoneStatus === 'approved';
+  const phoneLocked = phoneStatus === 'pending' || phoneStatus === 'approved';
 
   const phoneChanged = !phoneLocked && currentPhone !== originalPhone;
   const hasChanges = phoneChanged;
@@ -94,7 +94,7 @@ export default function ContactsBlock() {
     if (phoneStatus === 'approved') {
       return 'Номер подтверждён и недоступен для изменения.';
     }
-    if (phoneStatus === 'in_review') {
+    if (phoneStatus === 'pending') {
       return 'Изменения номера заблокированы на время проверки.';
     }
     return null;

@@ -259,7 +259,7 @@ export const createProfileActions = (uid) => {
           getRandomUuid() ||
           `vrf_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`,
         userId: uid,
-        status: 'in_review',
+        status: 'pending',
         submittedAt: nowIso,
         updatedAt: nowIso,
       };

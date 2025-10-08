@@ -79,14 +79,14 @@ const buildUserEntries = (rawRequests = []) => {
 
     const findByStatus = (status) => sorted.find((request) => request?.status === status) || null;
 
-    const inReviewRequest = findByStatus('in_review');
-    const partialRequest = findByStatus('partial');
+    const pendingRequest = findByStatus('pending');
     const rejectedRequest = findByStatus('rejected');
     const approvedRequest = findByStatus('approved');
+    const idleRequest = findByStatus('idle');
     const latestRequest = sorted[0] || null;
 
     const primaryRequest =
-      inReviewRequest || partialRequest || rejectedRequest || approvedRequest || latestRequest;
+      pendingRequest || rejectedRequest || approvedRequest || idleRequest || latestRequest;
 
     const baseRequest = primaryRequest || latestRequest || null;
     const normalizedUserId = baseRequest?.userId || userId || '';
@@ -108,14 +108,14 @@ const buildUserEntries = (rawRequests = []) => {
     const modules = VERIFICATION_MODULES.map((module) => ({
       key: module.key,
       label: module.label,
-      status: modulesMap[module.key]?.status || 'waiting',
+      status: modulesMap[module.key]?.status || 'idle',
     }));
 
     const attachmentsCount = Array.isArray(primaryRequest?.attachments)
       ? primaryRequest.attachments.length
       : 0;
 
-    const section = summary.hasInReview
+    const section = summary.hasPending
       ? 'requests'
       : summary.hasRejected
         ? 'rejected'
@@ -136,10 +136,10 @@ const buildUserEntries = (rawRequests = []) => {
       summary,
       attachmentsCount,
       primaryRequest,
-      inReviewRequest,
-      partialRequest,
+      pendingRequest,
       rejectedRequest,
       approvedRequest,
+      idleRequest,
       latestRequest,
       sortTimestamp,
       searchIndex,
@@ -347,7 +347,7 @@ export default function Verification() {
         if (options.defaultMode) {
           return options.defaultMode;
         }
-        if (request.status === 'in_review') {
+        if (request.status === 'pending') {
           return 'approve';
         }
         if (request.status === 'approved') {
@@ -436,12 +436,12 @@ export default function Verification() {
     (entry) => {
       if (!entry) return;
       const request =
-        entry.primaryRequest || entry.inReviewRequest || entry.latestRequest || null;
+        entry.primaryRequest || entry.pendingRequest || entry.latestRequest || null;
       if (!request) {
         return;
       }
       openRequestModal(request, {
-        defaultMode: request.status === 'in_review' ? 'approve' : 'view',
+        defaultMode: request.status === 'pending' ? 'approve' : 'view',
       });
     },
     [openRequestModal],
@@ -453,14 +453,14 @@ export default function Verification() {
         return;
       }
       const request =
-        entry.primaryRequest || entry.inReviewRequest || entry.latestRequest || null;
+        entry.primaryRequest || entry.pendingRequest || entry.latestRequest || null;
       if (!request) {
         return;
       }
 
-      const moduleStatus = module.status || 'waiting';
+      const moduleStatus = module.status || 'idle';
       const defaultMode =
-        request.status === 'in_review' && moduleStatus !== 'approved' ? 'approve' : 'view';
+        request.status === 'pending' && moduleStatus !== 'approved' ? 'approve' : 'view';
 
       openRequestModal(request, {
         defaultMode,

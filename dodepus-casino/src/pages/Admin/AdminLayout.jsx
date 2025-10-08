@@ -147,7 +147,7 @@ export default function AdminLayout({ clients, isLoading, error, onReload }) {
     }
 
     return verificationRequests.reduce(
-      (acc, request) => (request?.status === 'in_review' ? acc + 1 : acc),
+      (acc, request) => (request?.status === 'pending' ? acc + 1 : acc),
       0,
     );
   }, [verificationRequests]);
