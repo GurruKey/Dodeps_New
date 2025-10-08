@@ -15,7 +15,7 @@ import {
   loadAdminPanelVisibility,
   setAdminPanelVisibilityForRole,
 } from '../../../../../../local-sim/auth/admin/adminPanelVisibility';
-import { appendRolePermissionLog } from '../../../../../../local-sim/admin/modules/access/rolePermissionLogs.js';
+import { appendRolePermissionLog } from '../../../../../../../../local-sim/admin/features/access/rolePermissionLogs.js';
 
 const permissionKeys = Object.keys(roleMatrixLegend);
 

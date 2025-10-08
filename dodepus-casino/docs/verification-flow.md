@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | 1. Клиентская папка `profile/verification` | Подкаталоги `page`, `widgets`, `forms`, `state`, `actions`, `history`, `services`. | Структура выровнена: страница `page/VerificationPage.jsx`, статусы `widgets/ModuleStatusWidget.jsx`, формы `forms/EmailPhoneVerificationForm.jsx`, `forms/AddressVerificationForm.jsx`, `forms/DocumentsVerificationForm.jsx`, состояние `state/useVerificationState.js`, действия `actions/useVerificationActions.js`, история `history/VerificationHistory.jsx`, сервисы `services/verificationServices.js`. |
 | 2. Админка `admin/verification` | Аккордеоны, поиск, карточки, модалка, слой данных. | Страница `Verification.jsx` управляет поиском и группировкой, секции вынесены в `blocks`, модалка и бейджи в `components`, данные подгружает `hooks/useAdminVerificationRequests.js`. |
-| 3. `local-sim` | Таблицы, seed, логика, API. | Клиентские действия (`local-sim/auth/profileActions.js`) и админские (`local-sim/admin/modules/verification/index.js`) поддерживают отправку, отмену, решения, сброс, историю и уведомления. |
+| 3. `local-sim` | Таблицы, seed, логика, API. | Клиентские действия (`local-sim/auth/profileActions.js`) и админские (`local-sim/admin/features/verification/index.js`) поддерживают отправку, отмену, решения, сброс, историю и уведомления. |
 | 4. Навигация | Маршруты профиля и админки. | Маршруты `profile/personal`, `profile/verification`, `admin/verification` зарегистрированы и доступны через layout’ы. |
 | 5. Общие статусы | ◻️/❓/✅/❌, прогресс x/4, история. | Статусы нормализуются в `shared/verification/modules.js`, прогресс собирается через `summarizeModuleStates`, история отображается в клиентском и админском UI. |
 | 6–9. Клиентские блокировки, отмена, повторная отправка | Блокировать поля на ❓/✅, разрешать отмену и повторную отправку. | Поля персональных данных и адреса блокируются при `pending/approved`, кнопка «Отменить запрос» доступна для модулей в статусе ❓, повторная отправка доступна после `idle/❌`. |
@@ -73,9 +73,9 @@
 
 ## 5. Админский интерфейс
 
-`Verification.jsx` группирует карточки по статусам, управляет поиском, открывает модалку и вызывает `updateVerificationRequestStatus`/`resetVerificationRequestModules`. Карточки отображают прогресс, таймстемпы и счётчик вложений. 【F:dodepus-casino/src/pages/admin/sections/verification/Verification.jsx†L1-L236】
+`Verification.jsx` группирует карточки по статусам, управляет поиском, открывает модалку и вызывает `updateVerificationRequestStatus`/`resetVerificationRequestModules`. Карточки отображают прогресс, таймстемпы и счётчик вложений. 【F:dodepus-casino/src/pages/admin/features/verification/Verification.jsx†L1-L236】
 
-Модалка `VerificationRequestModal` поддерживает режимы «Подтвердить», «Отклонить», «Сбросить», «Просмотр», отображает историю и вложения, требует комментарий при отказе и сбросе. 【F:dodepus-casino/src/pages/admin/sections/verification/components/VerificationRequestModal.jsx†L1-L200】
+Модалка `VerificationRequestModal` поддерживает режимы «Подтвердить», «Отклонить», «Сбросить», «Просмотр», отображает историю и вложения, требует комментарий при отказе и сбросе. 【F:dodepus-casino/src/pages/admin/features/verification/components/VerificationRequestModal.jsx†L1-L200】
 
 ## 6. Локальный симулятор
 
@@ -85,7 +85,7 @@
 
 ### 6.2 Действия администратора
 
-`updateVerificationRequestStatus` и `resetVerificationRequestModules` нормализуют статусы, обновляют историю, фиксируют администратора и уведомляют подписчиков `ADMIN_VERIFICATION_EVENT`. 【F:dodepus-casino/local-sim/admin/modules/verification/index.js†L432-L724】
+`updateVerificationRequestStatus` и `resetVerificationRequestModules` нормализуют статусы, обновляют историю, фиксируют администратора и уведомляют подписчиков `ADMIN_VERIFICATION_EVENT`. 【F:dodepus-casino/local-sim/admin/features/verification/index.js†L432-L724】
 
 ### 6.3 Общие таблицы и API
 

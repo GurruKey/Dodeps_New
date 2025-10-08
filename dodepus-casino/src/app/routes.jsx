@@ -10,19 +10,16 @@ import {
   AdminClientsPage,
   AdminTransactionsPage,
   AdminVerificationPage,
-} from '../pages/admin/sections';
-import {
   AdminPromoListPage,
   AdminPromoCreatePage,
   AdminPromoArchivePage,
-} from '../pages/admin/promo';
-import { AdminRolesPage, AdminRoleEditPage } from '../pages/admin/access';
-import {
+  AdminRolesPage,
+  AdminRoleEditPage,
   AdminModeratorsChatPage,
   AdminAdministratorsChatPage,
   AdminStaffChatPage,
-} from '../pages/admin/communications';
-import { AdminLogPage } from '../pages/admin/monitoring';
+  AdminLogPage,
+} from '../pages/admin/features';
 import { ProviderDetailsPage, ProvidersListPage } from '../pages/catalog/providers';
 import CategoriesPage from '../pages/catalog/categories';
 import NotFound from '../pages/not-found';
@@ -39,7 +36,6 @@ import Promos from '../pages/profile/promos';
 import Season from '../pages/profile/season';
 import GamesHistory from '../pages/profile/games-history';
 import ProfileVerification from '../pages/profile/verification';
-import AdminVerification from '../pages/admin/sections/verification';
 
 function RequireAuth({ children }) {
   const { isAuthed } = useAuth();

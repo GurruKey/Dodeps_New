@@ -22,7 +22,7 @@ import {
   deriveModuleStatesFromRequests,
   summarizeModuleStates,
   VERIFICATION_MODULES,
-} from '../../../shared/verification/index.js';
+} from '../../../../shared/verification/index.js';
 
 const parseTimestamp = (value) => {
   if (!value) return 0;

@@ -1,6 +1,6 @@
 import { Badge, Button } from 'react-bootstrap';
 import { Circle, CircleHelp, CheckCircle2, CircleX } from 'lucide-react';
-import { VERIFICATION_MODULES } from '../../../../shared/verification/index.js';
+import { VERIFICATION_MODULES } from '../../../../../shared/verification/index.js';
 
 const ICON_CONFIG = {
   approved: { Component: CheckCircle2, className: 'text-success' },

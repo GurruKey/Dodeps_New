@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   listAdminTransactions,
   subscribeToAdminTransactions,
-} from '../../../../../local-sim/admin/modules/transactions/index.js';
+} from '../../../../../../local-sim/admin/features/transactions/index.js';
 
 const STORAGE_KEY_PREFIX = 'dodepus_profile_v1:';
 

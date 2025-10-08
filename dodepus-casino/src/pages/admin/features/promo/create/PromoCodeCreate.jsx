@@ -8,8 +8,8 @@ import {
   Row,
   Stack,
 } from 'react-bootstrap';
-import { createAdminPromocode } from '../../../../local-sim/admin/modules/promo/index.js';
-import { promoTypeDefinitions } from '../../../../local-sim/admin/modules/promo/definitions/index.js';
+import { createAdminPromocode } from '../../../../../../local-sim/admin/features/promo/index.js';
+import { promoTypeDefinitions } from '../../../../../../local-sim/admin/features/promo/definitions/index.js';
 import PromoTypesReference from './blocks/PromoTypesReference.jsx';
 
 const STATUS_OPTIONS = [

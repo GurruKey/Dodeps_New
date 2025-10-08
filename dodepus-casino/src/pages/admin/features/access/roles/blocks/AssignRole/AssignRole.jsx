@@ -11,7 +11,7 @@ import {
   Stack,
 } from 'react-bootstrap';
 import { availableRoles } from '../../data/roleConfigs.js';
-import { assignUserRole } from '../../../../../features/auth/api.js';
+import { assignUserRole } from '../../../../../../../features/auth/api.js';
 
 const idPlaceholderExamples = ['ID-10192', 'ID-20204', 'ID-30881'];
 
