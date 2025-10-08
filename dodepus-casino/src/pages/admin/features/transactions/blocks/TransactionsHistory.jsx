@@ -8,7 +8,7 @@ import { METHOD_LABELS, STATUS_VARIANTS, TYPE_VARIANTS } from '../constants.js';
 import { formatMethod, normalizeMethodValue } from '../utils.js';
 import { useAdminTransactions } from '../hooks/useAdminTransactions.js';
 import { useAuth } from '../../../../../app/AuthContext.jsx';
-import { appendAdminLog } from '../../../../../local-sim/admin/logs/index.js';
+import { appendAdminLog } from '../../../../../../local-sim/admin/logs/index.js';
 
 const TRANSACTIONS_VIEW_CONTEXT = 'transactions-view';
 

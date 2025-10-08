@@ -1,19 +1,19 @@
-import { ADMINISTRATORS_CHAT_LOGS } from '../modules/communications/administratorsChatLogs.js';
-import { CLIENTS_LOGS } from '../modules/clients/logs.js';
-import { MODERATORS_CHAT_LOGS } from '../modules/communications/moderatorsChatLogs.js';
-import { PROMOCODE_CREATE_LOGS } from '../modules/promo/createLogs.js';
-import { PROMOCODES_LOGS } from '../modules/promo/listLogs.js';
-import { PROMO_ARCHIVE_LOGS } from '../modules/promo/archiveLogs.js';
-import { ROLE_EDIT_LOGS } from '../modules/access/roleEditLogs.js';
-import { ROLES_LOGS } from '../modules/access/rolesLogs.js';
-import { STAFF_CHAT_LOGS } from '../modules/communications/staffChatLogs.js';
-import { VERIFICATION_LOGS } from '../modules/verification/logs.js';
+import { ADMINISTRATORS_CHAT_LOGS } from '../features/communications/administratorsChatLogs.js';
+import { CLIENTS_LOGS } from '../features/clients/logs.js';
+import { MODERATORS_CHAT_LOGS } from '../features/communications/moderatorsChatLogs.js';
+import { PROMOCODE_CREATE_LOGS } from '../features/promo/createLogs.js';
+import { PROMOCODES_LOGS } from '../features/promo/listLogs.js';
+import { PROMO_ARCHIVE_LOGS } from '../features/promo/archiveLogs.js';
+import { ROLE_EDIT_LOGS } from '../features/access/roleEditLogs.js';
+import { ROLES_LOGS } from '../features/access/rolesLogs.js';
+import { STAFF_CHAT_LOGS } from '../features/communications/staffChatLogs.js';
+import { VERIFICATION_LOGS } from '../features/verification/logs.js';
 import {
   TRANSACTIONS_LOG_STORAGE_KEY,
   TRANSACTIONS_STATIC_LOGS,
   appendTransactionLog,
   readTransactionLogs,
-} from '../modules/transactions/logs.js';
+} from '../features/transactions/logs.js';
 
 const ADMIN_LOG_SECTIONS = Object.freeze([
   { value: 'overview', label: 'Обзор' },

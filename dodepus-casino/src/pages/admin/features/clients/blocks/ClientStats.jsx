@@ -1,5 +1,5 @@
 import { Placeholder, Row, Col } from 'react-bootstrap';
-import { useTheme } from '../../../../app/ThemeContext.jsx';
+import { useTheme } from '../../../../../app/ThemeContext.jsx';
 
 function formatCurrency(value) {
   return new Intl.NumberFormat('ru-RU', {

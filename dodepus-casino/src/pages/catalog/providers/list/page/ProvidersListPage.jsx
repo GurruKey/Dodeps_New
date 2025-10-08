@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Row, Col, Card, Badge, Button, Alert } from 'react-bootstrap';
-import { games } from '../../../../../../data/games.js';
-import GameCover from '../../../../../../shared/ui/GameCover.jsx';
+import { games } from '../../../../../data/games.js';
+import GameCover from '../../../../../shared/ui/GameCover.jsx';
 
 export default function ProviderPage() {
   const { provider } = useParams(); // slug провайдера
