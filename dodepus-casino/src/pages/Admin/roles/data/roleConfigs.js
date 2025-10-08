@@ -285,14 +285,14 @@ export const verificationQueue = [
     userId: 'ID-10991',
     documentType: 'Паспорт',
     submittedAt: '12.03.2024 11:25',
-    status: 'waiting',
+    status: 'idle',
   },
   {
     id: 'VRF-3006',
     userId: 'ID-10054',
     documentType: 'Водительское удостоверение',
     submittedAt: '12.03.2024 10:11',
-    status: 'inReview',
+    status: 'pending',
   },
   {
     id: 'VRF-3005',

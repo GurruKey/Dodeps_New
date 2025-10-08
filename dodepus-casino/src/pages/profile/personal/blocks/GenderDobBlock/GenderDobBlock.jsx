@@ -20,7 +20,7 @@ export default function GenderDobBlock() {
   const { modules: verificationModules = {} } = useVerificationModules(user);
 
   const docStatus = String(verificationModules?.doc?.status || '').toLowerCase();
-  const docLocked = docStatus === 'in_review' || docStatus === 'approved';
+  const docLocked = docStatus === 'pending' || docStatus === 'approved';
 
   const init = useMemo(() => parseDob(user?.dob), [user?.dob]);
   const normalizeGender = (g) => (g === 'male' || g === 'female' ? g : '');
@@ -119,7 +119,7 @@ export default function GenderDobBlock() {
               </Row>
             </Col>
           </Row>
-          {docStatus === 'in_review' && (
+          {docStatus === 'pending' && (
             <Form.Text className="text-muted d-block mt-2">
               Данные отправлены на проверку. Изменить дату рождения и пол можно после решения администратора.
             </Form.Text>

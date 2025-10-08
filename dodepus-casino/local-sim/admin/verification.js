@@ -4,7 +4,7 @@ import { appendAdminLog } from './logs/index.js';
 
 export const ADMIN_VERIFICATION_EVENT = 'dodepus:admin-verification-change';
 
-const VALID_STATUSES = Object.freeze(['waiting', 'in_review', 'partial', 'rejected', 'approved']);
+const VALID_STATUSES = Object.freeze(['idle', 'pending', 'rejected', 'approved']);
 
 const normalizeString = (value, fallback = '') => {
   if (typeof value !== 'string') return fallback;
@@ -14,26 +14,29 @@ const normalizeString = (value, fallback = '') => {
 
 const normalizeStatus = (value) => {
   const normalized = normalizeString(value).toLowerCase();
-  if (!normalized) return 'in_review';
+  if (!normalized) return 'pending';
   if (normalized === 'approved' || normalized === 'verified' || normalized === 'done') {
     return 'approved';
   }
   if (normalized === 'rejected' || normalized === 'declined' || normalized === 'denied') {
     return 'rejected';
   }
-  if (normalized === 'partial') {
-    return 'partial';
-  }
   if (['in_review', 'inreview', 'pending', 'processing'].includes(normalized)) {
-    return 'in_review';
+    return 'pending';
   }
-  if (normalized === 'waiting' || normalized === 'new' || normalized === 'requested') {
-    return 'waiting';
+  if (normalized === 'waiting' || normalized === 'idle' || normalized === 'new' || normalized === 'requested') {
+    return 'idle';
+  }
+  if (normalized === 'partial') {
+    return 'pending';
+  }
+  if (normalized === 'reset') {
+    return 'idle';
   }
   if (VALID_STATUSES.includes(normalized)) {
     return normalized;
   }
-  return 'in_review';
+  return 'pending';
 };
 
 const normalizeFields = (fields = {}) => ({
@@ -564,7 +567,7 @@ export const updateVerificationRequestStatus = ({
     normalizedStatus === 'rejected'
       ? 'rejected'
       : hasOutstanding
-        ? 'partial'
+        ? 'pending'
         : 'approved';
 
   const normalizedNotes = normalizeNotes(notes);
@@ -622,7 +625,8 @@ export const updateVerificationRequestStatus = ({
   }
 
   try {
-    const contextStatus = finalStatus === 'approved' ? 'approved' : finalStatus === 'rejected' ? 'rejected' : 'partial';
+    const contextStatus =
+      finalStatus === 'approved' ? 'approved' : finalStatus === 'rejected' ? 'rejected' : 'pending';
     const actionLabel = (() => {
       switch (contextStatus) {
         case 'approved':
@@ -744,7 +748,7 @@ export const resetVerificationRequestModules = ({
 
   const nextRequest = {
     ...previous,
-    status: completedTrueCount > 0 ? 'partial' : 'partial',
+    status: completedTrueCount > 0 ? 'approved' : 'idle',
     reviewerId: reviewerInfo.id,
     reviewerName: reviewerInfo.name,
     reviewerRole: reviewerInfo.role,

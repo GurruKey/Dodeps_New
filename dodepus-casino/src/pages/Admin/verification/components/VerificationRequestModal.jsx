@@ -158,19 +158,17 @@ const GENDER_OPTIONS = [
 ];
 
 const STATUS_VARIANT = Object.freeze({
-  in_review: 'warning',
-  partial: 'info',
+  pending: 'warning',
   rejected: 'danger',
   approved: 'success',
-  waiting: 'secondary',
+  idle: 'secondary',
 });
 
 const MODULE_STATUS_LABELS = Object.freeze({
-  in_review: 'На проверке',
-  partial: 'Частично подтверждено',
-  rejected: 'Отклонено',
+  idle: 'Нет запроса',
+  pending: 'На проверке',
   approved: 'Подтверждено',
-  waiting: 'Не отправлено',
+  rejected: 'Отказано',
 });
 
 export default function VerificationRequestModal({
@@ -186,13 +184,13 @@ export default function VerificationRequestModal({
   focusStatus = null,
 }) {
   const status = request?.status;
-  const isInReview = status === 'in_review';
+  const isPending = status === 'pending';
 
   const normalizedDefaultMode = useMemo(() => {
     if (defaultMode === 'reset') {
       return 'reset';
     }
-    if (!isInReview) {
+    if (!isPending) {
       return 'view';
     }
     if (defaultMode === 'reject') {
@@ -202,7 +200,7 @@ export default function VerificationRequestModal({
       return 'view';
     }
     return 'approve';
-  }, [isInReview, defaultMode]);
+  }, [isPending, defaultMode]);
 
   const [mode, setMode] = useState(normalizedDefaultMode);
   const [completedSelection, setCompletedSelection] = useState(() =>
@@ -262,7 +260,7 @@ export default function VerificationRequestModal({
   );
 
   const isResetMode = mode === 'reset';
-  const isReadOnly = !isInReview && !isResetMode;
+  const isReadOnly = !isPending && !isResetMode;
 
   useEffect(() => {
     const completedSnapshot = normalizeFieldState(request?.completedFields);
@@ -272,7 +270,7 @@ export default function VerificationRequestModal({
       if (defaultMode === 'reset' && hasEligibleReset && typeof onReset === 'function') {
         return 'reset';
       }
-      if (request?.status === 'in_review') {
+      if (request?.status === 'pending') {
         return normalizedDefaultMode;
       }
       return 'view';
@@ -343,7 +341,7 @@ export default function VerificationRequestModal({
   );
   const trimmedNotes = notes.trim();
 
-  const canEditProfile = isInReview && (mode === 'approve' || mode === 'reject');
+  const canEditProfile = isPending && (mode === 'approve' || mode === 'reject');
   const activeSelection = mode === 'reject' ? rejectedSelection : completedSelection;
   const hasCompletedSelection = useMemo(
     () => Object.values(completedSelection).some(Boolean),
@@ -359,7 +357,7 @@ export default function VerificationRequestModal({
       return 'Выберите подтверждённый модуль, который необходимо вернуть в статус «Не отправлено».';
     }
 
-    if (isInReview) {
+    if (isPending) {
       if (mode === 'view') {
         return 'Просмотр модульной проверки. Нажмите «Начать проверку», чтобы изменить статус.';
       }
@@ -367,16 +365,16 @@ export default function VerificationRequestModal({
     }
 
     switch (status) {
-      case 'partial':
-        return 'Запрос находится в статусе частичной проверки и ожидает новых данных от пользователя. Редактирование недоступно.';
       case 'approved':
         return 'Запрос уже подтверждён. Редактирование и изменение решения недоступны.';
       case 'rejected':
         return 'Запрос отклонён. Изменение данных доступно только после новой отправки от пользователя.';
+      case 'idle':
+        return 'Редактирование доступно только для новых запросов на верификацию.';
       default:
         return 'Редактирование доступно только для новых запросов на верификацию.';
     }
-  }, [isInReview, isResetMode, mode, status]);
+  }, [isPending, isResetMode, mode, status]);
 
   const handleToggleField = (key) => {
     if (key !== activeModuleKey) {
@@ -428,7 +426,7 @@ export default function VerificationRequestModal({
   };
 
   const handleConfirm = () => {
-    if (!request || !isInReview) return;
+    if (!request || !isPending) return;
 
     if (mode === 'reject') {
       setMode('approve');
@@ -454,7 +452,7 @@ export default function VerificationRequestModal({
   };
 
   const enterRejectMode = () => {
-    if (!isInReview) {
+    if (!isPending) {
       return;
     }
     setMode('reject');
@@ -463,7 +461,7 @@ export default function VerificationRequestModal({
   };
 
   const handleReject = () => {
-    if (!request || !isInReview) return;
+    if (!request || !isPending) return;
 
     if (mode !== 'reject') {
       enterRejectMode();
@@ -488,13 +486,13 @@ export default function VerificationRequestModal({
   };
 
   const handleCancelReject = () => {
-    setMode(isInReview ? 'approve' : 'view');
+    setMode(isPending ? 'approve' : 'view');
     setRejectedSelection(projectToActive(buildRejectedSelection(request)));
     setFormError('');
   };
 
   const enterApproveMode = () => {
-    if (!isInReview) {
+    if (!isPending) {
       return;
     }
     setMode('approve');
@@ -579,9 +577,9 @@ export default function VerificationRequestModal({
       return 'rejected';
     }
     if (requestedFields[activeModuleKey]) {
-      return 'in_review';
+      return 'pending';
     }
-    return 'waiting';
+    return 'idle';
   }, [
     activeModuleKey,
     focusStatus,
@@ -627,7 +625,7 @@ export default function VerificationRequestModal({
               {activeModuleStatus
                 ? ` · ${
                     MODULE_STATUS_LABELS[activeModuleStatus] ||
-                    MODULE_STATUS_LABELS.in_review
+                    MODULE_STATUS_LABELS.pending
                   }`
                 : ''}
             </span>
@@ -843,7 +841,7 @@ export default function VerificationRequestModal({
               </Stack>
             </section>
 
-            {attachments.length > 0 && isInReview ? (
+            {attachments.length > 0 && isPending ? (
               <section>
                 <h5 className="mb-3">Документы пользователя</h5>
                 <ListGroup>
@@ -903,7 +901,7 @@ export default function VerificationRequestModal({
                 </ListGroup>
               </section>
             ) : null}
-            {!isInReview && attachments.length > 0 ? (
+            {!isPending && attachments.length > 0 ? (
               <Alert variant="secondary" className="mb-0">
                 Документы доступны для просмотра только в новых запросах на верификацию.
               </Alert>
@@ -987,7 +985,7 @@ export default function VerificationRequestModal({
             </>
           ) : (
             <>
-              {mode === 'reject' && isInReview ? (
+              {mode === 'reject' && isPending ? (
                 <Button
                   variant="link"
                   className="text-decoration-none"
@@ -997,7 +995,7 @@ export default function VerificationRequestModal({
                   Отменить отказ
                 </Button>
               ) : null}
-              {isInReview ? (
+              {isPending ? (
                 <>
                   <Button
                     variant="outline-danger"

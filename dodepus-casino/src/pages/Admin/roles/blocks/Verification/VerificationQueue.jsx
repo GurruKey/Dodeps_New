@@ -2,8 +2,8 @@ import { Badge, Card, ListGroup } from 'react-bootstrap';
 import { verificationQueue } from '../../data/roleConfigs.js';
 
 const statusLabels = {
-  waiting: { label: 'Ожидает', variant: 'secondary' },
-  inReview: { label: 'Проверяется', variant: 'warning' },
+  idle: { label: 'Ожидает', variant: 'secondary' },
+  pending: { label: 'Проверяется', variant: 'warning' },
   approved: { label: 'Подтверждено', variant: 'success' },
 };
 
