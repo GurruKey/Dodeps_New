@@ -47,15 +47,6 @@ export function createUserProfileActions({ user, setUser }) {
 
   const addTransaction = (txn) => syncExtras((actions) => actions.addTransaction(txn));
 
-  const addVerificationUpload = (payload) =>
-    syncExtras((actions) => actions.addVerificationUpload(payload));
-
-  const submitVerificationRequest = (statusMap) =>
-    syncExtras((actions) => actions.submitVerificationRequest(statusMap));
-
-  const setEmailVerified = (flag = true) =>
-    syncExtras((actions) => actions.setEmailVerified(flag));
-
   return {
     balance: user?.balance ?? 0,
     casinoBalance: user?.casinoBalance ?? 0,
@@ -67,8 +58,5 @@ export function createUserProfileActions({ user, setUser }) {
     updateProfile,
     updateContacts,
     addTransaction,
-    addVerificationUpload,
-    submitVerificationRequest,
-    setEmailVerified,
   };
 }

@@ -1,17 +1,14 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Container, Row, Col, Nav, Card } from 'react-bootstrap';
 import { NavLink, Outlet } from 'react-router-dom';
 
 import { useAuth } from '../../app/AuthContext.jsx';
 import { availableRoles, rolePermissionMatrix } from './roles/data/roleConfigs.js';
-import { useAdminVerificationRequests } from './verification/hooks/useAdminVerificationRequests.js';
-import { getInReviewVerificationTextClass } from './verification/utils.js';
 
 const NAV_ITEMS = [
   { key: 'overview', to: 'overview', label: 'Обзор', permission: 'overview' },
   { key: 'clients', to: 'clients', label: 'Клиенты', permission: 'clients' },
   { key: 'transactions', to: 'transactions', label: 'Транзакции', permission: 'transactions' },
-  { key: 'verification', to: 'verification', label: 'Верификация', permission: 'verification' },
   { key: 'divider-1', type: 'divider' },
   { key: 'promocodes', to: 'promocodes', label: 'Promo', permission: 'promocodes' },
   {
@@ -136,25 +133,6 @@ const resolvePermissionsForUser = (user) => {
 
 export default function AdminLayout({ clients, isLoading, error, onReload }) {
   const { user } = useAuth();
-  const {
-    requests: verificationRequests,
-    ensureLoaded: ensureVerificationRequestsLoaded,
-  } = useAdminVerificationRequests();
-
-  const inReviewVerificationCount = useMemo(() => {
-    if (!Array.isArray(verificationRequests)) {
-      return 0;
-    }
-
-    return verificationRequests.reduce(
-      (acc, request) => (request?.status === 'pending' ? acc + 1 : acc),
-      0,
-    );
-  }, [verificationRequests]);
-
-  const inReviewVerificationClassName =
-    getInReviewVerificationTextClass(inReviewVerificationCount);
-
   const permissions = useMemo(() => resolvePermissionsForUser(user), [user]);
 
   const visibleNavItems = useMemo(() => {
@@ -206,22 +184,6 @@ export default function AdminLayout({ clients, isLoading, error, onReload }) {
     return NAV_ITEMS.filter((item) => item.key === 'overview');
   }, [permissions, user?.isAdmin]);
 
-  const hasVerificationAccess = useMemo(
-    () => visibleNavItems.some((item) => item.key === 'verification'),
-    [visibleNavItems],
-  );
-
-  useEffect(() => {
-    if (!hasVerificationAccess) {
-      return;
-    }
-
-    const maybePromise = ensureVerificationRequestsLoaded?.();
-    if (maybePromise && typeof maybePromise.catch === 'function') {
-      maybePromise.catch(() => {});
-    }
-  }, [ensureVerificationRequestsLoaded, hasVerificationAccess]);
-
   return (
     <Container className="mb-4">
       <h2 className="mb-3">Админ-панель</h2>
@@ -237,11 +199,6 @@ export default function AdminLayout({ clients, isLoading, error, onReload }) {
                     <Nav.Link key={item.key} as={NavLink} to={item.to} end>
                       <span className="d-flex align-items-center justify-content-between w-100">
                         <span>{item.label}</span>
-                        {item.key === 'verification' && (
-                          <span className={`fw-semibold small ${inReviewVerificationClassName}`}>
-                            {inReviewVerificationCount}
-                          </span>
-                        )}
                       </span>
                     </Nav.Link>
                   ),

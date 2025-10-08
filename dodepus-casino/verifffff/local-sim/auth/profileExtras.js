@@ -72,11 +72,14 @@ export const pickExtras = (u = {}) => ({
   country: u.country ?? '',
   city: u.city ?? '',
   address: u.address ?? '',
+  emailVerified: Boolean(u.emailVerified ?? false),
   mfaEnabled: Boolean(u.mfaEnabled ?? false),
   balance: Number.isFinite(Number(u.balance)) ? Number(u.balance) : 0,
   currency: u.currency ?? 'USD',
   casinoBalance: Number.isFinite(Number(u.casinoBalance)) ? Number(u.casinoBalance) : 0,
   transactions: Array.isArray(u.transactions) ? u.transactions : [],
+  verificationUploads: Array.isArray(u.verificationUploads) ? u.verificationUploads : [],
+  verificationRequests: Array.isArray(u.verificationRequests) ? u.verificationRequests : [],
 });
 
 export const loadExtras = (uid) => {
