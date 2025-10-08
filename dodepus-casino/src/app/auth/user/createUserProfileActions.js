@@ -53,6 +53,9 @@ export function createUserProfileActions({ user, setUser }) {
   const submitVerificationRequest = (statusMap) =>
     syncExtras((actions) => actions.submitVerificationRequest(statusMap));
 
+  const cancelVerificationRequest = (payload) =>
+    syncExtras((actions) => actions.cancelVerificationRequest(payload));
+
   const setEmailVerified = (flag = true) =>
     syncExtras((actions) => actions.setEmailVerified(flag));
 
@@ -69,6 +72,7 @@ export function createUserProfileActions({ user, setUser }) {
     addTransaction,
     addVerificationUpload,
     submitVerificationRequest,
+    cancelVerificationRequest,
     setEmailVerified,
   };
 }

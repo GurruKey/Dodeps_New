@@ -1,4 +1,4 @@
-const MODULE_KEYS = Object.freeze(['email', 'phone', 'address', 'doc']);
+export const MODULE_KEYS = Object.freeze(['email', 'phone', 'address', 'doc']);
 
 export const VERIFICATION_MODULES = Object.freeze([
   { key: 'email', label: 'Почта' },
@@ -14,7 +14,7 @@ export const VERIFICATION_STATUS_LABELS = Object.freeze({
   rejected: 'Отказано',
 });
 
-const normalizeStatus = (value) => {
+export const normalizeStatus = (value) => {
   if (typeof value !== 'string') {
     return 'idle';
   }
@@ -36,7 +36,7 @@ const normalizeStatus = (value) => {
     return 'pending';
   }
 
-  if (normalized === 'reset') {
+  if (normalized === 'reset' || normalized === 'cancelled' || normalized === 'canceled') {
     return 'idle';
   }
 
@@ -310,6 +310,19 @@ export const summarizeModuleStates = (moduleMap) => {
   return summary;
 };
 
+export const isModuleLocked = (moduleState) => {
+  const status = moduleState?.status;
+  return status === 'pending' || status === 'approved';
+};
+
+export const computeModuleLocks = (moduleMap) => {
+  const map = ensureModuleMap(moduleMap);
+  return MODULE_KEYS.reduce((locks, key) => {
+    locks[key] = isModuleLocked(map[key]);
+    return locks;
+  }, {});
+};
+
 export const buildVerificationTimeline = (requests) => {
   const entries = Array.isArray(requests) ? requests : [];
   const events = [];
@@ -335,6 +348,7 @@ export const buildVerificationTimeline = (requests) => {
         updatedAt: submittedAt,
         timestamp: submittedTimestamp,
         notes: '',
+        actor: 'client',
       });
     }
 
@@ -352,14 +366,33 @@ export const buildVerificationTimeline = (requests) => {
             : entry.completedFields ?? entry.requestedFields ?? {},
         );
 
+        const normalizedStatus = normalizeStatus(entry.status || request.status);
+        const type =
+          entry.status === 'reset'
+            ? 'reset'
+            : normalizedStatus === 'cancelled'
+              ? 'cancelled'
+              : 'history';
+
+        const actor = (() => {
+          if (entry.actor) {
+            return entry.actor;
+          }
+          if (entry.reviewer && (entry.reviewer.id || entry.reviewer.name)) {
+            return 'admin';
+          }
+          return undefined;
+        })();
+
         events.push({
           id: entry.id || `${requestId}:history:${index}`,
-          type: entry.status === 'reset' ? 'reset' : 'history',
-          status: normalizeStatus(entry.status || request.status),
+          type,
+          status: normalizedStatus,
           modules,
           updatedAt: entry.updatedAt || request.updatedAt || submittedAt,
           timestamp,
           notes: typeof entry.notes === 'string' ? entry.notes : '',
+          actor,
         });
       });
     } else {

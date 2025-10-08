@@ -230,6 +230,57 @@ export const createProfileActions = (uid) => {
     return {};
   };
 
+  const normalizeCancellationCandidates = (input = {}) => {
+    if (typeof input === 'string') {
+      const key = input.trim().toLowerCase();
+      if (!key) {
+        return {};
+      }
+      return { [key]: true };
+    }
+
+    if (Array.isArray(input)) {
+      return input.reduce((acc, value) => {
+        if (typeof value === 'string') {
+          const key = value.trim().toLowerCase();
+          if (key) {
+            acc[key] = true;
+          }
+        }
+        return acc;
+      }, {});
+    }
+
+    if (input && typeof input === 'object') {
+      if (input.modules && typeof input.modules === 'object') {
+        return normalizeCancellationCandidates(input.modules);
+      }
+      if (input.fields && typeof input.fields === 'object') {
+        return normalizeCancellationCandidates(input.fields);
+      }
+      if (typeof input.field === 'string') {
+        return normalizeCancellationCandidates(input.field);
+      }
+
+      return {
+        email: Boolean(input.email),
+        phone: Boolean(input.phone),
+        address: Boolean(input.address),
+        doc: Boolean(input.doc || input.document),
+      };
+    }
+
+    return {};
+  };
+
+  const normalizeNotes = (value) => {
+    if (typeof value !== 'string') {
+      return '';
+    }
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : '';
+  };
+
   const submitVerificationRequest = (statusMap = {}) => {
     let createdRequest = null;
 
@@ -336,6 +387,105 @@ export const createProfileActions = (uid) => {
     return nextExtras;
   };
 
+  const cancelVerificationRequest = (input = {}) => {
+    const nextExtras = persistExtras(uid, (current) => {
+      const requests = Array.isArray(current.verificationRequests)
+        ? current.verificationRequests.slice()
+        : [];
+
+      const index = requests.findIndex((request) => request && request.status === 'pending');
+
+      if (index === -1) {
+        throw new Error('Нет активного запроса для отмены.');
+      }
+
+      const target = requests[index];
+      const history = Array.isArray(target.history) ? target.history.slice() : [];
+
+      if (history.length > 0) {
+        throw new Error('Запрос уже обрабатывается администратором.');
+      }
+
+      const requested = normalizeRequestedCandidates(target.requestedFields);
+      const completed = normalizeRequestedCandidates(target.completedFields);
+      const selection = normalizeCancellationCandidates(input);
+
+      const cancelSelection = { email: false, phone: false, address: false, doc: false };
+      const selectionKeys = Object.keys(selection);
+      let hasCancelled = false;
+
+      Object.keys(cancelSelection).forEach((key) => {
+        const shouldCancel = selection[key] ?? selectionKeys.length === 0;
+        if (shouldCancel && requested[key] && !completed[key]) {
+          cancelSelection[key] = true;
+          hasCancelled = true;
+        }
+      });
+
+      if (!hasCancelled) {
+        throw new Error('Нет модулей для отмены.');
+      }
+
+      const nextRequested = { ...requested };
+      Object.keys(cancelSelection).forEach((key) => {
+        if (cancelSelection[key]) {
+          nextRequested[key] = false;
+        }
+      });
+
+      const stillRequested = Object.values(nextRequested).some(Boolean);
+      const nowIso = new Date().toISOString();
+      const clearedMap = {
+        email: Boolean(cancelSelection.email),
+        phone: Boolean(cancelSelection.phone),
+        address: Boolean(cancelSelection.address),
+        doc: Boolean(cancelSelection.doc),
+      };
+
+      const completedFieldsNormalized = normalizeRequestedCandidates(target.completedFields);
+      const nextHistoryEntry = {
+        id: `vrh_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+        requestId: target.id,
+        status: 'cancelled',
+        actor: 'client',
+        notes: normalizeNotes(input.notes),
+        updatedAt: nowIso,
+        requestedFields: nextRequested,
+        completedFields: completedFieldsNormalized,
+        clearedFields: clearedMap,
+      };
+
+      const nextHistory = [nextHistoryEntry, ...history];
+
+      const completedCount = Object.values(completedFieldsNormalized).filter(Boolean).length;
+
+      const nextRequest = {
+        ...target,
+        status: stillRequested ? 'pending' : 'idle',
+        requestedFields: nextRequested,
+        updatedAt: nowIso,
+        history: nextHistory,
+        notes: normalizeNotes(input.notes) || target.notes || '',
+        completedCount,
+        clearedFields: {
+          email: Boolean(target?.clearedFields?.email) || clearedMap.email,
+          phone: Boolean(target?.clearedFields?.phone) || clearedMap.phone,
+          address: Boolean(target?.clearedFields?.address) || clearedMap.address,
+          doc: Boolean(target?.clearedFields?.doc) || clearedMap.doc,
+        },
+      };
+
+      requests[index] = nextRequest;
+
+      return {
+        ...current,
+        verificationRequests: requests,
+      };
+    });
+
+    return nextExtras;
+  };
+
   const setEmailVerified = (flag = true) =>
     patchExtras({
       emailVerified: Boolean(flag),
@@ -353,6 +503,7 @@ export const createProfileActions = (uid) => {
     addTransaction,
     addVerificationUpload,
     submitVerificationRequest,
+    cancelVerificationRequest,
     setEmailVerified,
   };
 };

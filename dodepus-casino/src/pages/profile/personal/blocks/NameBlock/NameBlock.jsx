@@ -1,9 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, Form, Row, Col } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/AuthContext.jsx';
+import {
+  useVerificationModules,
+  computeModuleLocks,
+} from '../../../../../shared/verification/index.js';
 
 export default function NameBlock() {
   const { user, updateProfile } = useAuth();
+  const verification = useVerificationModules(user);
+  const locks = useMemo(
+    () => computeModuleLocks(verification?.modules ?? {}),
+    [verification?.modules],
+  );
+  const nameLocked = locks.address || locks.doc;
 
   const [firstName, setFirstName] = useState(user?.firstName ?? '');
   const [lastName, setLastName] = useState(user?.lastName ?? '');
@@ -12,8 +22,8 @@ export default function NameBlock() {
   useEffect(() => setLastName(user?.lastName ?? ''), [user?.lastName]);
 
   const changed =
-    firstName !== (user?.firstName ?? '') ||
-    lastName !== (user?.lastName ?? '');
+    !nameLocked &&
+    (firstName !== (user?.firstName ?? '') || lastName !== (user?.lastName ?? ''));
 
   useEffect(() => {
     const id = 'block:name';
@@ -28,7 +38,7 @@ export default function NameBlock() {
 
   useEffect(() => {
     const onSave = () => {
-      if (!changed) return;
+      if (!changed || nameLocked) return;
       updateProfile({
         firstName: (firstName || '').trim(),
         lastName: (lastName || '').trim(),
@@ -36,7 +46,7 @@ export default function NameBlock() {
     };
     window.addEventListener('personal:save', onSave);
     return () => window.removeEventListener('personal:save', onSave);
-  }, [changed, firstName, lastName, updateProfile]);
+  }, [changed, firstName, lastName, updateProfile, nameLocked]);
 
   return (
     <Card>
@@ -50,7 +60,11 @@ export default function NameBlock() {
                 type="text"
                 placeholder="Иван"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                onChange={(e) => {
+                  if (nameLocked) return;
+                  setFirstName(e.target.value);
+                }}
+                disabled={nameLocked}
               />
             </Col>
             <Col md={6}>
@@ -59,11 +73,20 @@ export default function NameBlock() {
                 type="text"
                 placeholder="Иванов"
                 value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                onChange={(e) => {
+                  if (nameLocked) return;
+                  setLastName(e.target.value);
+                }}
+                disabled={nameLocked}
               />
             </Col>
           </Row>
         </Form>
+        {nameLocked ? (
+          <div className="text-secondary small mt-3">
+            Поля блокируются, пока запрос по адресу или документам находится на проверке.
+          </div>
+        ) : null}
       </Card.Body>
     </Card>
   );

@@ -1,24 +1,18 @@
+import { useMemo, useRef, useState } from 'react';
 import { Card, Form, Alert } from 'react-bootstrap';
-import { Upload } from 'lucide-react';
-import { useRef, useState, useMemo } from 'react';
-import { useAuth } from '../../../../../app/AuthContext.jsx';
+import { Upload, Lock } from 'lucide-react';
+import { useVerificationState } from '../state/useVerificationState.js';
+import { useVerificationActions } from '../actions/useVerificationActions.js';
 
-export default function VerificationUploadBlock() {
-  const ctx = useAuth?.() || {};
-  const addVerificationUpload = ctx.addVerificationUpload;
+export function DocumentUploadForm() {
   const fileRef = useRef(null);
+  const { locks } = useVerificationState();
+  const { addVerificationUpload } = useVerificationActions();
+
   const [category, setCategory] = useState('identity');
   const [documentType, setDocumentType] = useState('');
   const [error, setError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-
-  const readFileAsDataUrl = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error('Не удалось прочитать выбранный файл.'));
-      reader.readAsDataURL(file);
-    });
 
   const categoryOptions = useMemo(
     () => [
@@ -49,7 +43,26 @@ export default function VerificationUploadBlock() {
   const documentOptions = category === 'address' ? addressDocumentOptions : identityDocumentOptions;
   const selectedDocument = documentOptions.find((option) => option.value === documentType) || null;
 
-  const onPick = () => fileRef.current?.click();
+  const isCategoryLocked = category === 'address' ? locks.address : locks.doc;
+  const lockMessage = category === 'address'
+    ? 'Отправленный адрес проверяется. Дождитесь решения или отмените запрос, чтобы загрузить новый документ.'
+    : 'Запрос по документам обрабатывается. После отмены или решения администратора загрузка станет доступна снова.';
+
+  const readFileAsDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('Не удалось прочитать выбранный файл.'));
+      reader.readAsDataURL(file);
+    });
+
+  const onPick = () => {
+    if (isCategoryLocked) {
+      return;
+    }
+    fileRef.current?.click();
+  };
+
   const onCategoryChange = (event) => {
     setCategory(event.target.value);
     setDocumentType('');
@@ -64,6 +77,7 @@ export default function VerificationUploadBlock() {
   const onChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     if (!documentType) {
       setError('Выберите вид документа перед загрузкой файла.');
       e.target.value = '';
@@ -107,7 +121,7 @@ export default function VerificationUploadBlock() {
         <div className="d-grid gap-3">
           <Form.Group>
             <Form.Label className="fw-medium">Что подтверждаем?</Form.Label>
-            <Form.Select value={category} onChange={onCategoryChange}>
+            <Form.Select value={category} onChange={onCategoryChange} disabled={isCategoryLocked}>
               {categoryOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -122,6 +136,7 @@ export default function VerificationUploadBlock() {
               value={documentType}
               onChange={onDocumentTypeChange}
               aria-label="Выберите документ для подтверждения"
+              disabled={isCategoryLocked}
             >
               <option value="" disabled hidden>
                 Выберите из списка
@@ -134,28 +149,32 @@ export default function VerificationUploadBlock() {
             </Form.Select>
             {category === 'address' ? (
               <Form.Text className="text-secondary">
-                Подтвердить адрес можно интернет-выпиской или банковской выпиской с
-                заретушированными данными карт.
+                Подтвердить адрес можно интернет-выпиской или банковской выпиской с заретушированными данными карт.
               </Form.Text>
             ) : (
               <Form.Text className="text-secondary">
-                Подойдут ID-карта, заграничный или внутренний паспорт, вид на
-                жительство.
+                Подойдут ID-карта, заграничный или внутренний паспорт, вид на жительство.
               </Form.Text>
             )}
           </Form.Group>
         </div>
 
         <div
-          role="button"
+          role={isCategoryLocked ? 'note' : 'button'}
           onClick={onPick}
-          className="w-100 d-flex align-items-center justify-content-center rounded-3 p-5 text-center border border-2 border-secondary-subtle"
-          style={{ borderStyle: 'dashed' }}
+          className={`w-100 d-flex align-items-center justify-content-center rounded-3 p-5 text-center border border-2 border-secondary-subtle ${
+            isCategoryLocked ? 'bg-body-tertiary' : ''
+          }`}
+          style={{ borderStyle: 'dashed', cursor: isCategoryLocked ? 'not-allowed' : 'pointer' }}
         >
-          <div>
-            <Upload className="mb-2" />
-            <div className="fw-medium">Нажмите, чтобы выбрать документ</div>
-            <div className="text-secondary small">Поддержка: PDF, JPG, PNG, WEBP</div>
+          <div className="d-flex flex-column align-items-center gap-2">
+            {isCategoryLocked ? <Lock className="text-secondary" /> : <Upload className="text-secondary" />}
+            <div className="fw-medium">
+              {isCategoryLocked ? 'Загрузка временно недоступна' : 'Нажмите, чтобы выбрать документ'}
+            </div>
+            <div className="text-secondary small">
+              {isCategoryLocked ? lockMessage : 'Поддержка: PDF, JPG, PNG, WEBP'}
+            </div>
           </div>
         </div>
 
@@ -171,9 +190,11 @@ export default function VerificationUploadBlock() {
           accept=".pdf,.jpg,.jpeg,.png,.webp"
           className="d-none"
           onChange={onChange}
-          disabled={isUploading}
+          disabled={isUploading || isCategoryLocked}
         />
       </Card.Body>
     </Card>
   );
 }
+
+export default DocumentUploadForm;
