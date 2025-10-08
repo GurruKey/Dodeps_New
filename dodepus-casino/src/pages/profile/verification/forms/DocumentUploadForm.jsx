@@ -4,7 +4,7 @@ import { Upload, Lock } from 'lucide-react';
 import { useVerificationState } from '../state/useVerificationState.js';
 import { useVerificationActions } from '../actions/useVerificationActions.js';
 
-export function DocumentUploadForm() {
+export function DocumentsVerificationForm() {
   const fileRef = useRef(null);
   const { locks } = useVerificationState();
   const { addVerificationUpload } = useVerificationActions();
@@ -197,4 +197,6 @@ export function DocumentUploadForm() {
   );
 }
 
-export default DocumentUploadForm;
+export const DocumentUploadForm = DocumentsVerificationForm;
+
+export default DocumentsVerificationForm;

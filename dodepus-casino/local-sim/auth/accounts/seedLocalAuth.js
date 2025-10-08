@@ -1,5 +1,6 @@
 import { PROFILE_KEY } from '../constants';
 import { pickExtras } from '../profileExtras';
+import { applyVerificationSeed } from '../../seed/verificationSeed.js';
 import { PRESET_ACCOUNTS } from './seedAccounts';
 
 const ADMIN_ROLES = new Set(['admin', 'owner']);
@@ -112,12 +113,14 @@ const toExtras = (account) => {
     account.email_confirmed_at ?? account.confirmed_at ?? account.extras?.emailVerified ?? false
   );
 
-  return pickExtras({
+  const extras = pickExtras({
     email: account.email,
     emailVerified,
     ...account.extras,
     user_metadata: undefined,
   });
+
+  return applyVerificationSeed(extras, account.id);
 };
 
 export const buildSeedUserRecords = () => PRESET_ACCOUNTS.map(toStoredUser);

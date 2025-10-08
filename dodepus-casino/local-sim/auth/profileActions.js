@@ -1,5 +1,7 @@
 import { loadExtras, saveExtras, pickExtras } from './profileExtras';
 import { notifyAdminTransactionsChanged } from '../admin/transactions';
+import { updateVerificationSnapshot } from '../tables/verification.js';
+import { normalizeNotes, normalizeBooleanMap } from '../logic/verificationHelpers.js';
 
 const toNumber = (value, fallback = 0) => {
   const numeric = Number(value);
@@ -111,8 +113,10 @@ export const createProfileActions = (uid) => {
   };
 
   const addVerificationUpload = (input) =>
-    persistExtras(uid, (current) => {
-      if (!input) return current;
+    updateVerificationSnapshot(uid, ({ uploads, extras }) => {
+      if (!input) {
+        return { extras, uploads };
+      }
 
       const payload = (() => {
         if (input && typeof input === 'object' && 'file' in input) {
@@ -128,7 +132,9 @@ export const createProfileActions = (uid) => {
       })();
 
       const file = payload.file;
-      if (!file) return current;
+      if (!file) {
+        return { extras, uploads };
+      }
 
       const normalizedCategory = (() => {
         const category = typeof payload.category === 'string' ? payload.category.toLowerCase() : '';
@@ -181,8 +187,8 @@ export const createProfileActions = (uid) => {
       };
 
       return {
-        ...current,
-        verificationUploads: [entry, ...(current.verificationUploads || [])],
+        extras,
+        uploads: [entry, ...uploads],
       };
     });
 
@@ -273,32 +279,15 @@ export const createProfileActions = (uid) => {
     return {};
   };
 
-  const normalizeNotes = (value) => {
-    if (typeof value !== 'string') {
-      return '';
-    }
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : '';
-  };
-
   const submitVerificationRequest = (statusMap = {}) => {
-    let createdRequest = null;
-
-    const nextExtras = persistExtras(uid, (current) => {
+    const nextExtras = updateVerificationSnapshot(uid, ({ requests, extras }) => {
       const requestedCandidates = normalizeRequestedCandidates(statusMap);
-
-      const requestedKeys = Object.keys(requestedCandidates).filter((key) =>
-        ['email', 'phone', 'address', 'doc'].includes(key),
-      );
+      const normalizedRequested = normalizeBooleanMap(requestedCandidates);
+      const requestedKeys = Object.keys(normalizedRequested).filter((key) => normalizedRequested[key]);
 
       if (requestedKeys.length === 0) {
-        return current;
+        return { extras, requests };
       }
-
-      const normalizedRequested = requestedKeys.reduce((acc, key) => {
-        acc[key] = Boolean(requestedCandidates[key]);
-        return acc;
-      }, {});
 
       const totalFields = requestedKeys.length || 4;
       const nowIso = new Date().toISOString();
@@ -314,26 +303,16 @@ export const createProfileActions = (uid) => {
         updatedAt: nowIso,
       };
 
-      const requests = Array.isArray(current.verificationRequests)
-        ? current.verificationRequests.slice()
-        : [];
-
-      const openIndex = requests.findIndex(
+      const queue = Array.isArray(requests) ? requests.slice() : [];
+      const openIndex = queue.findIndex(
         (request) => request && request.status !== 'approved' && request.status !== 'rejected',
       );
 
-      const normalizeFields = (fields = {}) => ({
-        email: Boolean(fields.email),
-        phone: Boolean(fields.phone),
-        address: Boolean(fields.address),
-        doc: Boolean(fields.doc),
-      });
-
       if (openIndex >= 0) {
-        const existing = requests[openIndex] || {};
-        const previousCompleted = normalizeFields(existing.completedFields);
-        const previousRequested = normalizeFields(existing.requestedFields ?? existing.completedFields);
-        const filteredRequested = normalizeFields({
+        const existing = queue[openIndex] || {};
+        const previousCompleted = normalizeBooleanMap(existing.completedFields);
+        const previousRequested = normalizeBooleanMap(existing.requestedFields ?? existing.completedFields);
+        const filteredRequested = normalizeBooleanMap({
           email:
             (normalizedRequested.email || previousRequested.email) && !previousCompleted.email,
           phone:
@@ -357,49 +336,37 @@ export const createProfileActions = (uid) => {
           history: Array.isArray(existing.history) ? existing.history.slice() : [],
         };
 
-        createdRequest = updatedRequest;
-        const remaining = requests.filter((_, index) => index !== openIndex);
-        return {
-          ...current,
-          verificationRequests: [updatedRequest, ...remaining],
-        };
+        const remaining = queue.filter((_, index) => index !== openIndex);
+        return { extras, requests: [updatedRequest, ...remaining] };
       }
 
-      const completedFields = normalizeFields();
-      const filteredRequested = normalizeFields(normalizedRequested);
-      const completedCount = 0;
+      const completedFields = normalizeBooleanMap();
+      const filteredRequested = normalizeBooleanMap(normalizedRequested);
       const nextRequest = {
         ...baseRequest,
         completedFields,
         requestedFields: filteredRequested,
-        completedCount,
+        completedCount: 0,
         totalFields,
         history: [],
       };
 
-      createdRequest = nextRequest;
-      return {
-        ...current,
-        verificationRequests: [nextRequest, ...requests],
-      };
+      return { extras, requests: [nextRequest, ...queue] };
     });
 
     return nextExtras;
   };
 
   const cancelVerificationRequest = (input = {}) => {
-    const nextExtras = persistExtras(uid, (current) => {
-      const requests = Array.isArray(current.verificationRequests)
-        ? current.verificationRequests.slice()
-        : [];
-
-      const index = requests.findIndex((request) => request && request.status === 'pending');
+    const nextExtras = updateVerificationSnapshot(uid, ({ requests, extras }) => {
+      const queue = Array.isArray(requests) ? requests.slice() : [];
+      const index = queue.findIndex((request) => request && request.status === 'pending');
 
       if (index === -1) {
         throw new Error('Нет активного запроса для отмены.');
       }
 
-      const target = requests[index];
+      const target = queue[index];
       const history = Array.isArray(target.history) ? target.history.slice() : [];
 
       if (history.length > 0) {
@@ -443,6 +410,12 @@ export const createProfileActions = (uid) => {
       };
 
       const completedFieldsNormalized = normalizeRequestedCandidates(target.completedFields);
+      Object.keys(cancelSelection).forEach((key) => {
+        if (cancelSelection[key]) {
+          completedFieldsNormalized[key] = false;
+        }
+      });
+
       const nextHistoryEntry = {
         id: `vrh_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
         requestId: target.id,
@@ -456,7 +429,6 @@ export const createProfileActions = (uid) => {
       };
 
       const nextHistory = [nextHistoryEntry, ...history];
-
       const completedCount = Object.values(completedFieldsNormalized).filter(Boolean).length;
 
       const nextRequest = {
@@ -475,12 +447,9 @@ export const createProfileActions = (uid) => {
         },
       };
 
-      requests[index] = nextRequest;
+      queue[index] = nextRequest;
 
-      return {
-        ...current,
-        verificationRequests: requests,
-      };
+      return { extras, requests: queue };
     });
 
     return nextExtras;
