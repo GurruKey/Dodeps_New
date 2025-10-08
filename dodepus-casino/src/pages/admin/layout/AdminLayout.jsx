@@ -3,7 +3,7 @@ import { Container, Row, Col, Nav, Card } from 'react-bootstrap';
 import { NavLink, Outlet } from 'react-router-dom';
 
 import { useAuth } from '../../../app/AuthContext.jsx';
-import { availableRoles, rolePermissionMatrix } from '../access/roles/data/roleConfigs.js';
+import { availableRoles, rolePermissionMatrix } from '../features/access/roles/data/roleConfigs.js';
 
 const NAV_ITEMS = [
   { key: 'overview', to: 'overview', label: 'Обзор', permission: 'overview' },

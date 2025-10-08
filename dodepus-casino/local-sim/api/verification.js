@@ -3,7 +3,7 @@ export {
   subscribeToAdminVerificationRequests,
   updateVerificationRequestStatus,
   resetVerificationRequestModules,
-} from '../admin/verification.js';
+} from '../admin/features/verification/index.js';
 
 export {
   createProfileActions as createClientVerificationActions,

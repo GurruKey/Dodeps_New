@@ -1,5 +1,5 @@
 import { readAdminClients } from '../clients/index.js';
-import { appendAdminLog } from './logs.js';
+import { appendAdminLog } from '../../logs/index.js';
 import {
   normalizeString,
   normalizeStatus,

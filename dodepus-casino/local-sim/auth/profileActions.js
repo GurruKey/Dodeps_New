@@ -1,5 +1,5 @@
 import { loadExtras, saveExtras, pickExtras } from './profileExtras';
-import { notifyAdminTransactionsChanged } from '../admin/transactions';
+import { notifyAdminTransactionsChanged } from '../admin/features/transactions/index.js';
 import { updateVerificationSnapshot } from '../tables/verification.js';
 import { normalizeNotes, normalizeBooleanMap } from '../logic/verificationHelpers.js';
 

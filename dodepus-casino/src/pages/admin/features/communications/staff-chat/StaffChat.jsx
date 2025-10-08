@@ -1,5 +1,5 @@
-import ChatPanel from '../../shared/ChatPanel.jsx';
-import { staffChatThreads } from '../roles/data/roleConfigs.js';
+import ChatPanel from '../../../shared/ChatPanel.jsx';
+import { staffChatThreads } from '../../access/roles/data/roleConfigs.js';
 
 export default function StaffChat() {
   const activeThread = staffChatThreads[0];

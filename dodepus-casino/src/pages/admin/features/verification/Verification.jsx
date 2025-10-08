@@ -5,7 +5,7 @@ import { useAuth } from '../../../../app/AuthContext.jsx';
 import {
   updateVerificationRequestStatus,
   resetVerificationRequestModules,
-} from '../../../../local-sim/api/verification.js';
+} from '../../../../../local-sim/api/verification.js';
 import { useAdminVerificationRequests } from './hooks/useAdminVerificationRequests.js';
 import VerificationRequestsBlock from './blocks/VerificationRequestsBlock.jsx';
 import VerificationPartialBlock from './blocks/VerificationPartialBlock.jsx';

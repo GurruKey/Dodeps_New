@@ -7,7 +7,7 @@ import {
 import {
   ADMIN_PANEL_VISIBILITY_EVENT,
   loadAdminPanelVisibility,
-} from '../../../../../local-sim/auth/admin/adminPanelVisibility';
+} from '../../../../../../../local-sim/auth/admin/adminPanelVisibility.js';
 
 export default function RolesMatrix() {
   const permissionKeys = Object.keys(roleMatrixLegend);

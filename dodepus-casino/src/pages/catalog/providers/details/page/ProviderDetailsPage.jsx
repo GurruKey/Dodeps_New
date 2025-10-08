@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Row, Col, Card, Badge, Button, Alert } from 'react-bootstrap';
-import { games } from '../../../../../../data/games.js';
+import { games } from '../../../../../data/games.js';
 
 function GameThumb() {
   return (
