@@ -1,29 +1,31 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext.jsx';
 
-import Home from '../pages/Home.jsx';
-import Lobby from '../pages/Lobby.jsx';
-import Game from '../pages/Game.jsx';
-import Admin from '../pages/Admin.jsx';
-import AdminOverview from '../pages/Admin/overview/index.js';
-import AdminClients from '../pages/Admin/clients/index.js';
-import AdminPromoCodes from '../pages/Admin/promocodes/index.js';
-import AdminPromoCodeCreate from '../pages/Admin/PromoCodeCreate/index.js';
-import AdminPromoArchive from '../pages/Admin/PromoArchive/index.js';
-import AdminRoles from '../pages/Admin/roles/index.js';
-import AdminRoleEdit from '../pages/Admin/RoleEdit/index.js';
-import AdminTransactions from '../pages/Admin/transactions/index.js';
-import AdminModeratorsChat from '../pages/Admin/ModeratorsChat/index.js';
-import AdminAdministratorsChat from '../pages/Admin/AdministratorsChat/index.js';
-import AdminStaffChat from '../pages/Admin/StaffChat/index.js';
-import AdminLogAdmin from '../pages/Admin/LogAdmin/index.js';
-import ProviderPage from '../pages/Provider.jsx';
-import ProvidersPage from '../pages/Providers.jsx';
-import CategoriesPage from '../pages/Categories.jsx';
-import NotFound from '../pages/NotFound.jsx';
+import Home from '../pages/home';
+import Lobby from '../pages/lobby';
+import Game from '../pages/game';
+import Admin from '../pages/admin';
+import {
+  AdminOverviewPage,
+  AdminClientsPage,
+  AdminTransactionsPage,
+  AdminVerificationPage,
+  AdminPromoListPage,
+  AdminPromoCreatePage,
+  AdminPromoArchivePage,
+  AdminRolesPage,
+  AdminRoleEditPage,
+  AdminModeratorsChatPage,
+  AdminAdministratorsChatPage,
+  AdminStaffChatPage,
+  AdminLogPage,
+} from '../pages/admin/features';
+import { ProviderDetailsPage, ProvidersListPage } from '../pages/catalog/providers';
+import CategoriesPage from '../pages/catalog/categories';
+import NotFound from '../pages/not-found';
 
-import Login from '../pages/auth/Login.jsx';
-import Register from '../pages/auth/Register.jsx';
+import Login from '../pages/auth/login';
+import Register from '../pages/auth/register';
 
 import ProfileLayout from '../pages/profile/layout';
 import Personal from '../pages/profile/personal';
@@ -33,8 +35,7 @@ import History from '../pages/profile/history';
 import Promos from '../pages/profile/promos';
 import Season from '../pages/profile/season';
 import GamesHistory from '../pages/profile/games-history';
-import Verification from '../pages/profile/verification';
-import AdminVerification from '../pages/Admin/verification';
+import ProfileVerification from '../pages/profile/verification';
 
 function RequireAuth({ children }) {
   const { isAuthed } = useAuth();
@@ -72,8 +73,8 @@ export default function AppRoutes() {
 
       {/* Категории и провайдеры */}
       <Route path="/categories" element={<CategoriesPage />} />
-      <Route path="/providers" element={<ProvidersPage />} />
-      <Route path="/providers/:provider" element={<ProviderPage />} />
+      <Route path="/providers" element={<ProvidersListPage />} />
+      <Route path="/providers/:provider" element={<ProviderDetailsPage />} />
 
       {/* Auth */}
       <Route path="/login" element={<Login />} />
@@ -89,19 +90,19 @@ export default function AppRoutes() {
         }
       >
         <Route index element={<Navigate to="overview" replace />} />
-        <Route path="overview" element={<AdminOverview />} />
-        <Route path="clients" element={<AdminClients />} />
-        <Route path="promocodes" element={<AdminPromoCodes />} />
-        <Route path="promocode-create" element={<AdminPromoCodeCreate />} />
-        <Route path="promocode-archive" element={<AdminPromoArchive />} />
-        <Route path="roles" element={<AdminRoles />} />
-        <Route path="role-edit" element={<AdminRoleEdit />} />
-        <Route path="transactions" element={<AdminTransactions />} />
-        <Route path="verification" element={<AdminVerification />} />
-        <Route path="moderators-chat" element={<AdminModeratorsChat />} />
-        <Route path="administrators-chat" element={<AdminAdministratorsChat />} />
-        <Route path="staff-chat" element={<AdminStaffChat />} />
-        <Route path="log-admin" element={<AdminLogAdmin />} />
+        <Route path="overview" element={<AdminOverviewPage />} />
+        <Route path="clients" element={<AdminClientsPage />} />
+        <Route path="promocodes" element={<AdminPromoListPage />} />
+        <Route path="promocode-create" element={<AdminPromoCreatePage />} />
+        <Route path="promocode-archive" element={<AdminPromoArchivePage />} />
+        <Route path="roles" element={<AdminRolesPage />} />
+        <Route path="role-edit" element={<AdminRoleEditPage />} />
+        <Route path="transactions" element={<AdminTransactionsPage />} />
+        <Route path="verification" element={<AdminVerificationPage />} />
+        <Route path="moderators-chat" element={<AdminModeratorsChatPage />} />
+        <Route path="administrators-chat" element={<AdminAdministratorsChatPage />} />
+        <Route path="staff-chat" element={<AdminStaffChatPage />} />
+        <Route path="log-admin" element={<AdminLogPage />} />
       </Route>
 
       {/* Только для авторизованных */}
@@ -129,7 +130,7 @@ export default function AppRoutes() {
         <Route path="history" element={<History />} />
         <Route path="terminal" element={<Terminal />} />
         <Route path="personal" element={<Personal />} />
-        <Route path="verification" element={<Verification />} />
+        <Route path="verification" element={<ProfileVerification />} />
         <Route path="promos" element={<Promos />} />
         <Route path="season" element={<Season />} />
         <Route path="games-history" element={<GamesHistory />} />
