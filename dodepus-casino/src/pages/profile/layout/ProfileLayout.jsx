@@ -1,11 +1,34 @@
 import { Container, Row, Col, Nav, Badge } from 'react-bootstrap';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../../app/AuthContext.jsx';
+import { useVerificationModules } from '../../../shared/verification/index.js';
 
 export default function ProfileLayout() {
   const { user } = useAuth();
   const currency = user?.currency || 'USD';
   const balance = user?.balance ?? 0;
+  const { summary: verificationSummary = {} } = useVerificationModules(user);
+
+  const verificationApproved = Number.isFinite(verificationSummary?.approved)
+    ? verificationSummary.approved
+    : 0;
+  const verificationTotal = Number.isFinite(verificationSummary?.total)
+    ? verificationSummary.total
+    : 4;
+  const verificationBadgeVariant = verificationSummary?.hasRejected
+    ? 'danger'
+    : verificationSummary?.hasPending
+      ? 'warning'
+      : verificationSummary?.allApproved
+        ? 'success'
+        : 'secondary';
+  const verificationLabelClass = verificationSummary?.hasRejected
+    ? 'text-danger fw-semibold'
+    : verificationSummary?.hasPending
+      ? 'text-warning fw-semibold'
+      : verificationSummary?.allApproved
+        ? 'text-success'
+        : '';
 
   const fmt = (v) =>
     new Intl.NumberFormat('ru-RU', { style: 'currency', currency }).format(v);
@@ -42,6 +65,19 @@ export default function ProfileLayout() {
               {/* ПЕРСОНАЛЬНЫЕ ДАННЫЕ */}
               <Nav.Link as={NavLink} end to="personal">
                 Персональные данные
+              </Nav.Link>
+
+              <Nav.Link
+                as={NavLink}
+                to="verification"
+                className="d-flex justify-content-between align-items-center"
+              >
+                <span className={verificationLabelClass.trim() || undefined}>
+                  Верификация
+                </span>
+                <Badge bg={verificationBadgeVariant}>
+                  {verificationApproved} / {verificationTotal}
+                </Badge>
               </Nav.Link>
 
               {/* разделитель */}
