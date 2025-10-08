@@ -1,6 +1,5 @@
 import { loadExtras, saveExtras, pickExtras } from './profileExtras';
 import { notifyAdminTransactionsChanged } from '../admin/transactions';
-import { notifyAdminVerificationRequestsChanged } from '../admin/verification';
 
 const toNumber = (value, fallback = 0) => {
   const numeric = Number(value);
@@ -333,19 +332,6 @@ export const createProfileActions = (uid) => {
         verificationRequests: [nextRequest, ...requests],
       };
     });
-
-    if (createdRequest) {
-      try {
-        notifyAdminVerificationRequestsChanged({
-          type: 'created',
-          userId: uid,
-          requestId: createdRequest.id,
-          status: createdRequest.status,
-        });
-      } catch (error) {
-        console.warn('Failed to broadcast admin verification request change', error);
-      }
-    }
 
     return nextExtras;
   };
