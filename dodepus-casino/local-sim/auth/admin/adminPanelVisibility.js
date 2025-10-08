@@ -1,4 +1,4 @@
-import { availableRoles } from '../../../src/pages/Admin/roles/data/roleConfigs.js';
+import { availableRoles } from '../../../src/pages/admin/access/roles/data/roleConfigs.js';
 
 const STORAGE_KEY = 'dodepus_admin_panel_visibility_v1';
 export const ADMIN_PANEL_VISIBILITY_EVENT = 'dodepus:admin-panel-visibility-change';
