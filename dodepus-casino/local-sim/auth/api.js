@@ -7,7 +7,7 @@ import {
 } from './accounts/seedLocalAuth';
 import { composeUser } from './composeUser';
 import { loadExtras, saveExtras } from './profileExtras';
-import { availableRoles } from '../../src/pages/admin/access/roles/data/roleConfigs.js';
+import { availableRoles } from '../../src/pages/admin/features/access/roles/data/roleConfigs.js';
 
 const USERS_KEY = 'dodepus_local_users_v1';
 const SESSION_KEY = 'dodepus_local_session_v1';
