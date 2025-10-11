@@ -107,7 +107,7 @@ export function VerificationHistory() {
                   <tr>
                     <th style={{ width: 220 }}>Когда</th>
                     <th style={{ width: 220 }}>Статус</th>
-                    <th style={{ width: 220 }}>Модули</th>
+                    <th style={{ width: 220 }}>Верификация</th>
                     <th>Комментарий</th>
                   </tr>
                 </thead>

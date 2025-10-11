@@ -5,6 +5,7 @@ import {
   normalizeNotes,
   normalizeBooleanMap,
   normalizeStatus,
+  normalizeString,
 } from '../logic/verificationHelpers.js';
 
 const toNumber = (value, fallback = 0) => {
@@ -294,105 +295,232 @@ export const createProfileActions = (uid) => {
         return { extras, requests };
       }
 
-      const totalFields = requestedKeys.length || 4;
       const nowIso = new Date().toISOString();
+      const sourceQueue = Array.isArray(requests) ? requests.slice() : [];
 
-      const baseRequest = {
-        id:
-          statusMap.id ||
-          getRandomUuid() ||
-          `vrf_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`,
-        userId: uid,
-        status: 'pending',
-        submittedAt: nowIso,
-        updatedAt: nowIso,
-      };
-
-      const queue = Array.isArray(requests) ? requests.slice() : [];
-      const openIndex = queue.findIndex((request) => {
-        if (!request) {
-          return false;
+      const buildModuleHistory = (history, requestId, moduleKey) => {
+        if (!Array.isArray(history)) {
+          return [];
         }
 
-        const status = normalizeStatus(request.status);
-        return status === 'pending';
-      });
+        return history
+          .map((entry) => {
+            if (!entry || typeof entry !== 'object') {
+              return null;
+            }
 
-      if (openIndex >= 0) {
-        const existing = queue[openIndex] || {};
-        const previousCompleted = normalizeBooleanMap(existing.completedFields);
-        const previousRequested = normalizeBooleanMap(existing.requestedFields ?? existing.completedFields);
-        const filteredRequested = normalizeBooleanMap({
-          email:
-            (normalizedRequested.email || previousRequested.email) && !previousCompleted.email,
-          phone:
-            (normalizedRequested.phone || previousRequested.phone) && !previousCompleted.phone,
-          address:
-            (normalizedRequested.address || previousRequested.address) && !previousCompleted.address,
-          doc: (normalizedRequested.doc || previousRequested.doc) && !previousCompleted.doc,
+            const entryRequested = normalizeBooleanMap(
+              entry.requestedFields ?? entry.completedFields,
+            );
+            const entryCompleted = normalizeBooleanMap(entry.completedFields);
+            const entryCleared = normalizeBooleanMap(entry.clearedFields);
+
+            if (
+              !entryRequested[moduleKey] &&
+              !entryCompleted[moduleKey] &&
+              !entryCleared[moduleKey]
+            ) {
+              return null;
+            }
+
+            return {
+              ...entry,
+              requestId,
+              requestedFields: normalizeBooleanMap({ [moduleKey]: entryRequested[moduleKey] }),
+              completedFields: normalizeBooleanMap({ [moduleKey]: entryCompleted[moduleKey] }),
+              clearedFields: normalizeBooleanMap({ [moduleKey]: entryCleared[moduleKey] }),
+            };
+          })
+          .filter(Boolean);
+      };
+
+      const deriveRequestId = (request, moduleKey, index) => {
+        const baseId = normalizeString(request?.id) || normalizeString(request?.requestId);
+        if (baseId) {
+          return index === 0 ? baseId : `${baseId}:${moduleKey}`;
+        }
+
+        const timestamp =
+          Date.parse(request?.submittedAt || request?.updatedAt || '') || Date.now();
+        const seed = `${request?.userId || uid}_${timestamp.toString(36)}`;
+        return index === 0 ? seed : `${seed}:${moduleKey}`;
+      };
+
+      const splitRequestsByModule = (queue) => {
+        const normalizedQueue = [];
+
+        queue.forEach((request) => {
+          if (!request || typeof request !== 'object') {
+            return;
+          }
+
+          const requestedFields = normalizeBooleanMap(
+            request.requestedFields ?? request.completedFields,
+          );
+          const completedFields = normalizeBooleanMap(request.completedFields);
+          const clearedFields = normalizeBooleanMap(request.clearedFields);
+
+          const involvedModules = ['email', 'phone', 'address', 'doc'].filter(
+            (key) => requestedFields[key] || completedFields[key] || clearedFields[key],
+          );
+
+          if (involvedModules.length === 0) {
+            normalizedQueue.push({
+              ...request,
+              requestedFields: normalizeBooleanMap(),
+              completedFields: normalizeBooleanMap(),
+              clearedFields: normalizeBooleanMap(),
+              totalFields: 0,
+              completedCount: 0,
+              moduleKey: '',
+              history: [],
+            });
+            return;
+          }
+
+          involvedModules.forEach((moduleKey, index) => {
+            const requestId = deriveRequestId(request, moduleKey, index);
+            const moduleRequested = normalizeBooleanMap({
+              [moduleKey]: requestedFields[moduleKey],
+            });
+            const moduleCompleted = normalizeBooleanMap({
+              [moduleKey]: completedFields[moduleKey],
+            });
+            const moduleCleared = normalizeBooleanMap({
+              [moduleKey]: clearedFields[moduleKey],
+            });
+
+            normalizedQueue.push({
+              ...request,
+              id: requestId,
+              requestedFields: moduleRequested,
+              completedFields: moduleCompleted,
+              clearedFields: moduleCleared,
+              totalFields: 1,
+              completedCount: moduleCompleted[moduleKey] ? 1 : 0,
+              moduleKey,
+              history: buildModuleHistory(request.history, requestId, moduleKey),
+            });
+          });
         });
-        const completedCount = Object.values(previousCompleted).filter(Boolean).length;
-        const previousHistory = Array.isArray(existing.history) ? existing.history.slice() : [];
+
+        return normalizedQueue;
+      };
+
+      const queue = splitRequestsByModule(sourceQueue);
+
+      const findPendingIndex = (moduleKey) =>
+        queue.findIndex((request) => {
+          if (!request) {
+            return false;
+          }
+
+          const status = normalizeStatus(request.status);
+          if (status !== 'pending') {
+            return false;
+          }
+
+          if (request.moduleKey === moduleKey) {
+            return true;
+          }
+
+          const requested = normalizeBooleanMap(request.requestedFields ?? request.completedFields);
+          return Boolean(requested[moduleKey]);
+        });
+
+      requestedKeys.forEach((moduleKey) => {
+        const requestedFields = normalizeBooleanMap({ [moduleKey]: true });
+        const emptyMap = normalizeBooleanMap();
+        const pendingIndex = findPendingIndex(moduleKey);
+
+        if (pendingIndex >= 0) {
+          const existing = queue[pendingIndex] || {};
+          const previousCompleted = normalizeBooleanMap(existing.completedFields);
+          const previousCleared = normalizeBooleanMap(existing.clearedFields);
+          const history = Array.isArray(existing.history) ? existing.history.slice() : [];
+          const historyEntry = {
+            id: `vrh_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+            requestId: existing.id || '',
+            status: 'pending',
+            actor: 'client',
+            notes: clientNote,
+            updatedAt: nowIso,
+            requestedFields,
+            completedFields: normalizeBooleanMap({
+              [moduleKey]: previousCompleted[moduleKey],
+            }),
+            clearedFields: emptyMap,
+          };
+
+          const completedCount = previousCompleted[moduleKey] ? 1 : 0;
+          const nextRequest = {
+            ...existing,
+            status: 'pending',
+            submittedAt: existing.submittedAt || nowIso,
+            updatedAt: nowIso,
+            requestedFields,
+            completedFields: normalizeBooleanMap({
+              [moduleKey]: previousCompleted[moduleKey],
+            }),
+            clearedFields: normalizeBooleanMap({
+              [moduleKey]: previousCleared[moduleKey],
+            }),
+            totalFields: 1,
+            completedCount,
+            reviewerId: '',
+            reviewerName: '',
+            reviewerRole: '',
+            notes: clientNote || existing.notes || '',
+            moduleKey,
+            history: [historyEntry, ...history],
+          };
+
+          queue.splice(pendingIndex, 1);
+          queue.unshift(nextRequest);
+          return;
+        }
+
+        const requestId =
+          (statusMap.id ? `${statusMap.id}-${moduleKey}` : null) ||
+          getRandomUuid() ||
+          `vrf_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
+
+        const completedFields = normalizeBooleanMap();
         const historyEntry = {
           id: `vrh_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
-          requestId: existing.id || baseRequest.id,
+          requestId,
           status: 'pending',
           actor: 'client',
           notes: clientNote,
           updatedAt: nowIso,
-          requestedFields: filteredRequested,
-          completedFields: previousCompleted,
-          clearedFields: normalizeBooleanMap(),
+          requestedFields,
+          completedFields,
+          clearedFields: emptyMap,
         };
-        const updatedRequest = {
-          ...existing,
-          ...baseRequest,
-          id: existing.id || baseRequest.id,
-          completedFields: previousCompleted,
-          requestedFields: filteredRequested,
-          completedCount,
-          totalFields: existing.totalFields || totalFields,
+
+        const nextRequest = {
+          id: requestId,
+          userId: uid,
+          status: 'pending',
+          submittedAt: nowIso,
+          updatedAt: nowIso,
+          requestedFields,
+          completedFields,
+          clearedFields: emptyMap,
+          completedCount: 0,
+          totalFields: 1,
           reviewerId: '',
           reviewerName: '',
           reviewerRole: '',
-          history: [historyEntry, ...previousHistory],
-          notes: clientNote || existing.notes || '',
+          notes: clientNote || '',
+          moduleKey,
+          history: [historyEntry],
         };
 
-        const remaining = queue.filter((_, index) => index !== openIndex);
-        return { extras, requests: [updatedRequest, ...remaining] };
-      }
+        queue.unshift(nextRequest);
+      });
 
-      const completedFields = normalizeBooleanMap();
-      const filteredRequested = normalizeBooleanMap(normalizedRequested);
-      const nextRequest = {
-        ...baseRequest,
-        completedFields,
-        requestedFields: filteredRequested,
-        completedCount: 0,
-        totalFields,
-        history: [],
-        notes: clientNote || '',
-      };
-
-      const historyEntry = {
-        id: `vrh_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
-        requestId: nextRequest.id,
-        status: 'pending',
-        actor: 'client',
-        notes: clientNote,
-        updatedAt: nowIso,
-        requestedFields: filteredRequested,
-        completedFields,
-        clearedFields: normalizeBooleanMap(),
-      };
-
-      const requestWithHistory = {
-        ...nextRequest,
-        history: [historyEntry],
-      };
-
-      return { extras, requests: [requestWithHistory, ...queue] };
+      return { extras, requests: queue };
     });
 
     return nextExtras;
