@@ -3,15 +3,11 @@ import { Card, Row, Col, Button, Toast, ToastContainer, Alert, Modal } from 'rea
 import { Circle, CheckCircle, CircleHelp, CircleX, RotateCcw } from 'lucide-react';
 import { useVerificationState } from '../state/useVerificationState.js';
 import { useVerificationActions } from '../actions/useVerificationActions.js';
-import { VERIFICATION_MODULES } from '../../../../shared/verification/index.js';
 import {
-  EmailVerificationForm,
-  PhoneVerificationForm,
-  PersonalDataVerificationForm,
-  AddressVerificationForm,
-  IdentityDocumentUploadForm,
-  AddressDocumentUploadForm,
-} from '../forms/index.js';
+  PROFILE_VERIFICATION_MODULES,
+  PROFILE_VERIFICATION_MODULE_MAP,
+  createModuleContext,
+} from '../modules/index.js';
 
 const ICON_LABELS = Object.freeze({
   idle: 'требуется подтверждение',
@@ -36,9 +32,7 @@ const ICON_COMPONENT = Object.freeze({
 
 const ICON_SIZE = 56;
 
-const normalizeString = (value) => (typeof value === 'string' ? value.trim() : '');
-
-const MODULE_LABELS = VERIFICATION_MODULES.reduce((acc, module) => {
+const MODULE_LABELS = PROFILE_VERIFICATION_MODULES.reduce((acc, module) => {
   acc[module.key] = module.label;
   return acc;
 }, {});
@@ -63,116 +57,32 @@ export function ModuleStatusWidget() {
     [user?.verificationUploads],
   );
 
-  const hasIdentityUpload = useMemo(
-    () =>
-      uploads.some((upload) => {
-        const raw =
-          upload?.verificationCategory ||
-          upload?.verificationKind ||
-          upload?.category ||
-          upload?.kind;
-        return String(raw).toLowerCase() === 'identity';
-      }),
-    [uploads],
+  const moduleContext = useMemo(
+    () => createModuleContext(user, uploads),
+    [user, uploads],
   );
 
-  const hasAddressUpload = useMemo(
-    () =>
-      uploads.some((upload) => {
-        const raw =
-          upload?.verificationCategory ||
-          upload?.verificationKind ||
-          upload?.category ||
-          upload?.kind;
-        return String(raw).toLowerCase() === 'address';
-      }),
-    [uploads],
-  );
-
-  const phoneDigits = user?.phone ? String(user.phone).replace(/\D/g, '') : '';
-  const genderValue = String(user?.gender || '').toLowerCase();
-
-  const hasEmailValue = normalizeString(user?.email).length >= 3;
-  const hasPhoneValue = phoneDigits.length >= 10;
-  const hasPersonalData =
-    normalizeString(user?.firstName).length >= 2 &&
-    normalizeString(user?.lastName).length >= 2 &&
-    /^\d{4}-\d{2}-\d{2}$/.test(String(user?.dob || '')) &&
-    (genderValue === 'male' || genderValue === 'female');
-  const hasAddressFields = ['country', 'city', 'address'].every((key) =>
-    normalizeString(user?.[key]).length >= 2,
-  );
-
-  const readinessMap = useMemo(
-    () => ({
-      email: hasEmailValue,
-      phone: hasPhoneValue,
-      address: hasAddressFields && hasPersonalData && hasAddressUpload,
-      doc: hasPersonalData && hasIdentityUpload,
-    }),
-    [
-      hasEmailValue,
-      hasPhoneValue,
-      hasAddressFields,
-      hasPersonalData,
-      hasAddressUpload,
-      hasIdentityUpload,
-    ],
-  );
+  const readinessMap = useMemo(() => {
+    const readiness = {};
+    PROFILE_VERIFICATION_MODULES.forEach((module) => {
+      readiness[module.key] = module.checkIsReady
+        ? Boolean(module.checkIsReady(moduleContext))
+        : false;
+    });
+    return readiness;
+  }, [moduleContext]);
 
   const items = useMemo(
     () =>
-      VERIFICATION_MODULES.map((module) => ({
+      PROFILE_VERIFICATION_MODULES.map((module) => ({
         key: module.key,
         label: module.label,
-        isReady: readinessMap[module.key],
+        isReady: Boolean(readinessMap[module.key]),
         state: modules?.[module.key]?.status || 'idle',
+        definition: module,
       })),
     [modules, readinessMap],
   );
-  const computeHintMessage = (moduleKey, iconKey) => {
-    if (iconKey === 'pending' || iconKey === 'approved') {
-      return 'Поля временно заблокированы до завершения проверки.';
-    }
-
-    switch (moduleKey) {
-      case 'email':
-        return readinessMap.email
-          ? null
-          : 'Добавьте почту в разделе «Персональные данные».';
-      case 'phone':
-        return readinessMap.phone
-          ? null
-          : 'Добавьте телефон в разделе «Персональные данные».';
-      case 'address':
-        if (readinessMap.address) {
-          return null;
-        }
-        if (!hasAddressFields) {
-          return 'Заполните страну, город и адрес проживания.';
-        }
-        if (!hasPersonalData) {
-          return 'Заполните ФИО, дату рождения и выберите пол.';
-        }
-        if (!hasAddressUpload) {
-          return 'Загрузите документ, подтверждающий адрес.';
-        }
-        return null;
-      case 'doc':
-        if (readinessMap.doc) {
-          return null;
-        }
-        if (!hasPersonalData) {
-          return 'Заполните ФИО, дату рождения и выберите пол.';
-        }
-        if (!hasIdentityUpload) {
-          return 'Загрузите документ, подтверждающий личность.';
-        }
-        return null;
-      default:
-        return null;
-    }
-  };
 
   const handleOpenModule = (moduleKey, hintMessage = '') => {
     setActiveModuleKey(moduleKey);
@@ -186,49 +96,16 @@ export function ModuleStatusWidget() {
     setModalHint('');
   };
 
-  const getModalConfig = (moduleKey) => {
-    switch (moduleKey) {
-      case 'email':
-        return {
-          title: 'Почта',
-          description: 'Укажите актуальный e-mail, чтобы получать уведомления и подтверждать вход.',
-          content: <EmailVerificationForm layout="plain" autoFocus />,
-        };
-      case 'phone':
-        return {
-          title: 'Телефон',
-          description: 'Добавьте рабочий номер телефона для подтверждения личности и уведомлений.',
-          content: <PhoneVerificationForm layout="plain" autoFocus />,
-        };
-      case 'address':
-        return {
-          title: 'Адрес проживания',
-          description:
-            'Заполните страну, город и адрес проживания и приложите подтверждающий документ.',
-          content: (
-            <div className="d-grid gap-4">
-              <AddressVerificationForm layout="plain" />
-              <AddressDocumentUploadForm layout="plain" />
-            </div>
-          ),
-        };
-      case 'doc':
-        return {
-          title: 'Документы и персональные данные',
-          description: 'Заполните персональные данные и загрузите документы, подтверждающие личность.',
-          content: (
-            <div className="d-grid gap-4">
-              <PersonalDataVerificationForm layout="plain" />
-              <IdentityDocumentUploadForm layout="plain" />
-            </div>
-          ),
-        };
-      default:
-        return null;
-    }
-  };
-
-  const modalConfig = activeModuleKey ? getModalConfig(activeModuleKey) : null;
+  const modalDefinition = activeModuleKey
+    ? PROFILE_VERIFICATION_MODULE_MAP[activeModuleKey]
+    : null;
+  const modalConfig = modalDefinition?.getModalConfig
+    ? modalDefinition.getModalConfig({
+        context: moduleContext,
+        readiness: moduleContext.readiness,
+        requirements: moduleContext.requirements,
+      })
+    : null;
   const modalTitle = modalConfig?.title || (activeModuleKey ? MODULE_LABELS[activeModuleKey] : '');
   const modalDescription = modalConfig?.description || '';
   const modalContent = modalConfig?.content || null;
@@ -257,16 +134,17 @@ export function ModuleStatusWidget() {
     setSubmittingKey(originKey);
 
     try {
-      const availableFields = Object.fromEntries(
-        Object.entries(readinessMap).filter(([key, isReady]) => {
-          if (!isReady) {
-            return false;
-          }
+      const availableFields = {};
+      PROFILE_VERIFICATION_MODULES.forEach(({ key }) => {
+        if (!readinessMap[key]) {
+          return;
+        }
 
-          const state = modules?.[key]?.status || 'idle';
-          return state === 'idle' || state === 'rejected';
-        }),
-      );
+        const state = modules?.[key]?.status || 'idle';
+        if (state === 'idle' || state === 'rejected') {
+          availableFields[key] = true;
+        }
+      });
 
       const requestedFieldKeys = (() => {
         if (
@@ -382,7 +260,16 @@ export function ModuleStatusWidget() {
               const cancelVariant = 'outline-secondary';
               const cancelLabel = isCancelingCurrent ? 'Отмена…' : 'Отменить запрос';
 
-              const hintMessage = computeHintMessage(item.key, iconKey);
+              const moduleState = modules?.[item.key] || {};
+              const hintMessage = item.definition?.getHint
+                ? item.definition.getHint({
+                    status: iconKey,
+                    moduleState,
+                    readiness: moduleContext.readiness,
+                    requirements: moduleContext.requirements,
+                    context: moduleContext,
+                  })
+                : null;
 
               return (
                 <Col key={item.key} xs={6} md={3} className="d-flex flex-column align-items-center">

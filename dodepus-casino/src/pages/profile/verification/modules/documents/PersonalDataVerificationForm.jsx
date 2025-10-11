@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Card, Form, Row, Col, Button, Alert } from 'react-bootstrap';
-import { useAuth } from '../../../../app/AuthContext.jsx';
-import { useVerificationState } from '../state/useVerificationState.js';
+import { useAuth } from '../../../../../app/AuthContext.jsx';
+import { useVerificationState } from '../../state/useVerificationState.js';
 
 const GENDER_OPTIONS = [
   { value: '', label: 'Выберите пол' },

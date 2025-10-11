@@ -6,7 +6,7 @@
 
 | Шаг плана | Что требовалось | Реализация сейчас |
 | --- | --- | --- |
-| 1. Клиентская папка `profile/verification` | Подкаталоги `page`, `widgets`, `forms`, `state`, `actions`, `history`, `services`. | Структура выровнена: страница `page/VerificationPage.jsx`, статусы `widgets/ModuleStatusWidget.jsx`, формы `forms/ContactVerificationForms.jsx`, `forms/AddressVerificationForm.jsx`, `forms/DocumentUploadForms.jsx`, состояние `state/useVerificationState.js`, действия `actions/useVerificationActions.js`, история `history/VerificationHistory.jsx`, сервисы `services/verificationServices.js`. |
+| 1. Клиентская папка `profile/verification` | Подкаталоги `page`, `widgets`, `modules`, `state`, `actions`, `history`, `services`. | Структура выровнена: страница `page/VerificationPage.jsx`, статусы `widgets/ModuleStatusWidget.jsx`, модули клиента разложены по `modules/email`, `modules/phone`, `modules/address`, `modules/documents`, состояние `state/useVerificationState.js`, действия `actions/useVerificationActions.js`, история `history/VerificationHistory.jsx`, сервисы `services/verificationServices.js`. |
 | 2. Админка `admin/verification` | Аккордеоны, поиск, карточки, модалка, слой данных. | Страница `Verification.jsx` управляет поиском и группировкой, секции вынесены в `blocks`, модалка и бейджи в `components`, данные подгружает `hooks/useAdminVerificationRequests.js`. |
 | 3. `local-sim` | Таблицы, seed, логика, API. | Клиентские действия (`local-sim/auth/profileActions.js`) и админские (`local-sim/admin/features/verification/index.js`) поддерживают отправку, отмену, решения, сброс, историю и уведомления. |
 | 4. Навигация | Маршруты профиля и админки. | Маршруты `profile/personal`, `profile/verification`, `admin/verification` зарегистрированы и доступны через layout’ы. |
@@ -41,9 +41,9 @@
 
 `page/VerificationPage.jsx` собирает статусы, две формы данных, блок загрузки документов и историю событий. 【F:dodepus-casino/src/pages/profile/verification/page/VerificationPage.jsx†L1-L24】
 
-### 3.3 Формы клиента
+### 3.3 Клиентские модули и формы
 
-`EmailVerificationForm`, `PhoneVerificationForm` и `AddressVerificationForm` обновляют контакты и персональные данные напрямую из экрана верификации, повторяя блокировки модулей и добавляя подсказки. 【F:dodepus-casino/src/pages/profile/verification/forms/ContactVerificationForms.jsx†L1-L168】【F:dodepus-casino/src/pages/profile/verification/forms/AddressVerificationForm.jsx†L1-L259】
+`modules/email`, `modules/phone`, `modules/address` и `modules/documents` содержат формы и конфигурации для каждого блока. Почта и телефон обновляют контакты, адрес — профиль и вложения, документы — персональные данные и загрузку удостоверений. 【F:dodepus-casino/src/pages/profile/verification/modules/email/EmailVerificationForm.jsx†L1-L103】【F:dodepus-casino/src/pages/profile/verification/modules/phone/PhoneVerificationForm.jsx†L1-L127】【F:dodepus-casino/src/pages/profile/verification/modules/address/AddressVerificationForm.jsx†L1-L136】【F:dodepus-casino/src/pages/profile/verification/modules/documents/PersonalDataVerificationForm.jsx†L1-L143】
 
 ### 3.4 Статусы и действия клиента
 
@@ -57,7 +57,7 @@
 
 ### 3.5 Загрузка документов
 
-`IdentityDocumentUploadForm` и `AddressDocumentUploadForm` учитывают блокировки: если соответствующая категория находится на проверке или подтверждена, формы и зона загрузки выключены и показывают подсказку. 【F:dodepus-casino/src/pages/profile/verification/forms/DocumentUploadForms.jsx†L1-L147】
+`IdentityDocumentUploadForm` и `AddressDocumentUploadForm` учитывают блокировки: если соответствующая категория находится на проверке или подтверждена, формы и зона загрузки выключены и показывают подсказку. 【F:dodepus-casino/src/pages/profile/verification/modules/documents/IdentityDocumentUploadForm.jsx†L1-L18】【F:dodepus-casino/src/pages/profile/verification/modules/address/AddressDocumentUploadForm.jsx†L1-L18】【F:dodepus-casino/src/pages/profile/verification/modules/shared/DocumentUploader.jsx†L1-L109】
 
 ### 3.6 История для клиента
 
