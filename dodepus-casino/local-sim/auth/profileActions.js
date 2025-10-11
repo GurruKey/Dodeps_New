@@ -284,6 +284,7 @@ export const createProfileActions = (uid) => {
   };
 
   const submitVerificationRequest = (statusMap = {}) => {
+    const clientNote = normalizeNotes(statusMap.notes);
     const nextExtras = updateVerificationSnapshot(uid, ({ requests, extras }) => {
       const requestedCandidates = normalizeRequestedCandidates(statusMap);
       const normalizedRequested = normalizeBooleanMap(requestedCandidates);
@@ -331,6 +332,18 @@ export const createProfileActions = (uid) => {
           doc: (normalizedRequested.doc || previousRequested.doc) && !previousCompleted.doc,
         });
         const completedCount = Object.values(previousCompleted).filter(Boolean).length;
+        const previousHistory = Array.isArray(existing.history) ? existing.history.slice() : [];
+        const historyEntry = {
+          id: `vrh_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+          requestId: existing.id || baseRequest.id,
+          status: 'pending',
+          actor: 'client',
+          notes: clientNote,
+          updatedAt: nowIso,
+          requestedFields: filteredRequested,
+          completedFields: previousCompleted,
+          clearedFields: normalizeBooleanMap(),
+        };
         const updatedRequest = {
           ...existing,
           ...baseRequest,
@@ -342,7 +355,8 @@ export const createProfileActions = (uid) => {
           reviewerId: '',
           reviewerName: '',
           reviewerRole: '',
-          history: Array.isArray(existing.history) ? existing.history.slice() : [],
+          history: [historyEntry, ...previousHistory],
+          notes: clientNote || existing.notes || '',
         };
 
         const remaining = queue.filter((_, index) => index !== openIndex);
@@ -358,9 +372,27 @@ export const createProfileActions = (uid) => {
         completedCount: 0,
         totalFields,
         history: [],
+        notes: clientNote || '',
       };
 
-      return { extras, requests: [nextRequest, ...queue] };
+      const historyEntry = {
+        id: `vrh_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+        requestId: nextRequest.id,
+        status: 'pending',
+        actor: 'client',
+        notes: clientNote,
+        updatedAt: nowIso,
+        requestedFields: filteredRequested,
+        completedFields,
+        clearedFields: normalizeBooleanMap(),
+      };
+
+      const requestWithHistory = {
+        ...nextRequest,
+        history: [historyEntry],
+      };
+
+      return { extras, requests: [requestWithHistory, ...queue] };
     });
 
     return nextExtras;

@@ -1,37 +1,8 @@
 import { useMemo, useRef, useState } from 'react';
 import { Card, Form, Alert } from 'react-bootstrap';
 import { Upload, Lock } from 'lucide-react';
-import { useVerificationState } from '../state/useVerificationState.js';
-import { useVerificationActions } from '../actions/useVerificationActions.js';
-
-const CATEGORY_CONFIG = {
-  identity: {
-    heading: 'Документы личности',
-    lockKey: 'doc',
-    lockMessage:
-      'Запрос по документам обрабатывается. После отмены или решения администратора загрузка станет доступна снова.',
-    helperText:
-      'Подойдут ID-карта, заграничный или внутренний паспорт, вид на жительство.',
-    options: [
-      { value: 'id_card', label: 'ID-карта' },
-      { value: 'foreign_passport', label: 'Заграничный паспорт' },
-      { value: 'internal_passport', label: 'Внутренний паспорт' },
-      { value: 'residence_permit', label: 'Вид на жительство' },
-    ],
-  },
-  address: {
-    heading: 'Документы для адреса',
-    lockKey: 'address',
-    lockMessage:
-      'Отправленный адрес проверяется. Дождитесь решения или отмените запрос, чтобы загрузить новый документ.',
-    helperText:
-      'Подтвердить адрес можно интернет-выпиской или банковской выпиской с заретушированными данными карт.',
-    options: [
-      { value: 'internet_statement', label: 'Интернет-выписка' },
-      { value: 'bank_statement', label: 'Банковская выписка' },
-    ],
-  },
-};
+import { useVerificationState } from '../../state/useVerificationState.js';
+import { useVerificationActions } from '../../actions/useVerificationActions.js';
 
 const readFileAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
@@ -41,8 +12,15 @@ const readFileAsDataUrl = (file) =>
     reader.readAsDataURL(file);
   });
 
-function DocumentUploader({ layout = 'card', category }) {
-  const config = CATEGORY_CONFIG[category];
+export function DocumentUploader({ layout = 'card', config }) {
+  const settings = config || {};
+  const category = settings.category || 'identity';
+  const heading = settings.heading || 'Документ';
+  const lockKey = settings.lockKey || 'doc';
+  const lockMessage =
+    settings.lockMessage || 'Запрос обрабатывается. Загрузка станет доступна после решения администратора.';
+  const helperText = settings.helperText || '';
+
   const fileRef = useRef(null);
   const { locks } = useVerificationState();
   const { addVerificationUpload } = useVerificationActions();
@@ -51,9 +29,11 @@ function DocumentUploader({ layout = 'card', category }) {
   const [error, setError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
-  const isLocked = Boolean(locks?.[config.lockKey]);
-
-  const documentOptions = useMemo(() => config.options, [config.options]);
+  const isLocked = Boolean(locks?.[lockKey]);
+  const documentOptions = useMemo(
+    () => (Array.isArray(settings.options) ? settings.options : []),
+    [settings.options],
+  );
 
   const onPick = () => {
     if (isLocked) {
@@ -124,7 +104,7 @@ function DocumentUploader({ layout = 'card', category }) {
               </option>
             ))}
           </Form.Select>
-          <Form.Text className="text-secondary">{config.helperText}</Form.Text>
+          {helperText ? <Form.Text className="text-secondary">{helperText}</Form.Text> : null}
         </Form.Group>
       </div>
 
@@ -142,7 +122,7 @@ function DocumentUploader({ layout = 'card', category }) {
             {isLocked ? 'Загрузка временно недоступна' : 'Нажмите, чтобы выбрать документ'}
           </div>
           <div className="text-secondary small">
-            {isLocked ? config.lockMessage : 'Поддержка: PDF, JPG, PNG, WEBP'}
+            {isLocked ? lockMessage : 'Поддержка: PDF, JPG, PNG, WEBP'}
           </div>
         </div>
       </div>
@@ -167,7 +147,7 @@ function DocumentUploader({ layout = 'card', category }) {
   if (layout === 'plain') {
     return (
       <div className="d-grid gap-3">
-        <div className="fw-semibold fs-5">{config.heading}</div>
+        <div className="fw-semibold fs-5">{heading}</div>
         {formContent}
       </div>
     );
@@ -176,19 +156,11 @@ function DocumentUploader({ layout = 'card', category }) {
   return (
     <Card>
       <Card.Body>
-        <Card.Title className="mb-3">{config.heading}</Card.Title>
+        <Card.Title className="mb-3">{heading}</Card.Title>
         {formContent}
       </Card.Body>
     </Card>
   );
 }
 
-export function IdentityDocumentUploadForm(props) {
-  return <DocumentUploader category="identity" {...props} />;
-}
-
-export function AddressDocumentUploadForm(props) {
-  return <DocumentUploader category="address" {...props} />;
-}
-
-export default IdentityDocumentUploadForm;
+export default DocumentUploader;
