@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Stack, Form } from 'react-bootstrap';
+import { Alert, Button, Stack, Form } from 'react-bootstrap';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../../app/AuthContext.jsx';
 import {
@@ -12,6 +12,7 @@ import VerificationPartialBlock from './blocks/VerificationPartialBlock.jsx';
 import VerificationRejectedBlock from './blocks/VerificationRejectedBlock.jsx';
 import VerificationApprovedBlock from './blocks/VerificationApprovedBlock.jsx';
 import VerificationRequestModal from './components/VerificationRequestModal.jsx';
+import VerificationIdleAccountsModal from './components/VerificationIdleAccountsModal.jsx';
 import {
   getAdminDisplayName,
   getAdminId,
@@ -23,6 +24,7 @@ import {
   summarizeModuleStates,
   VERIFICATION_MODULES,
 } from '../../../../shared/verification/index.js';
+import { useAdminVerificationIdleAccounts } from './hooks/useAdminVerificationIdleAccounts.js';
 
 const parseTimestamp = (value) => {
   if (!value) return 0;
@@ -155,6 +157,13 @@ const buildUserEntries = (rawRequests = []) => {
 
 export default function Verification() {
   const { requests, loading, error, reload, ensureLoaded } = useAdminVerificationRequests();
+  const {
+    accounts: idleAccounts,
+    loading: idleAccountsLoading,
+    error: idleAccountsError,
+    ensureLoaded: ensureIdleAccountsLoaded,
+    reload: reloadIdleAccounts,
+  } = useAdminVerificationIdleAccounts();
   const { user } = useAuth();
   const [actionError, setActionError] = useState(null);
   const [busyId, setBusyId] = useState(null);
@@ -170,6 +179,7 @@ export default function Verification() {
   );
   const [modalState, setModalState] = useState(() => createInitialModalState());
   const [expandedSection, setExpandedSection] = useState(null);
+  const [idleModalShown, setIdleModalShown] = useState(false);
 
   useEffect(() => {
     const maybePromise = ensureLoaded?.();
@@ -494,6 +504,25 @@ export default function Verification() {
 
   const displayError = actionError || error;
 
+  const openIdleAccountsModal = useCallback(() => {
+    setIdleModalShown(true);
+    const maybePromise = ensureIdleAccountsLoaded?.();
+    if (maybePromise && typeof maybePromise.catch === 'function') {
+      maybePromise.catch(() => {});
+    }
+  }, [ensureIdleAccountsLoaded]);
+
+  const closeIdleAccountsModal = useCallback(() => {
+    setIdleModalShown(false);
+  }, []);
+
+  const handleReloadIdleAccounts = useCallback(() => {
+    const maybePromise = reloadIdleAccounts?.();
+    if (maybePromise && typeof maybePromise.catch === 'function') {
+      maybePromise.catch(() => {});
+    }
+  }, [reloadIdleAccounts]);
+
   return (
     <Stack gap={3}>
       {displayError && (
@@ -502,14 +531,24 @@ export default function Verification() {
         </Alert>
       )}
 
-      <Form className="mb-0" onSubmit={(event) => event.preventDefault()}>
-        <Form.Control
-          type="search"
-          placeholder="Поиск по ID, имени, фамилии, e-mail, телефону или никнейму"
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-        />
-      </Form>
+      <div className="d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2">
+        <Form className="mb-0 flex-grow-1" onSubmit={(event) => event.preventDefault()}>
+          <Form.Control
+            type="search"
+            placeholder="Поиск по ID, имени, фамилии, e-mail, телефону или никнейму"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+          />
+        </Form>
+        <Button
+          type="button"
+          variant="outline-secondary"
+          className="flex-shrink-0"
+          onClick={openIdleAccountsModal}
+        >
+          Аккаунты без заявок
+        </Button>
+      </div>
 
       <VerificationRequestsBlock
         requests={grouped.requests}
@@ -563,6 +602,15 @@ export default function Verification() {
         defaultMode={modalState.defaultMode}
         focusModule={modalState.moduleKey}
         focusStatus={modalState.moduleStatus}
+      />
+
+      <VerificationIdleAccountsModal
+        show={idleModalShown}
+        onClose={closeIdleAccountsModal}
+        accounts={idleAccounts}
+        loading={idleAccountsLoading}
+        error={idleAccountsError}
+        onReload={handleReloadIdleAccounts}
       />
     </Stack>
   );
