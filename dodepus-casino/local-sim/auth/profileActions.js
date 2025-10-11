@@ -410,7 +410,25 @@ export const createProfileActions = (uid) => {
       const target = queue[index];
       const history = Array.isArray(target.history) ? target.history.slice() : [];
 
-      if (history.length > 0) {
+      const hasAdminActivity = history.some((entry) => {
+        if (!entry || typeof entry !== 'object') {
+          return false;
+        }
+
+        if (entry.actor && entry.actor !== 'client') {
+          return true;
+        }
+
+        const reviewer = entry.reviewer;
+        if (reviewer && (reviewer.id || reviewer.name || reviewer.role)) {
+          return true;
+        }
+
+        const status = normalizeStatus(entry.status || target.status);
+        return status === 'approved' || status === 'rejected' || status === 'partial' || status === 'reset';
+      });
+
+      if (hasAdminActivity) {
         throw new Error('Запрос уже обрабатывается администратором.');
       }
 
