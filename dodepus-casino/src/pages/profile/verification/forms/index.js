@@ -1,4 +1,7 @@
-export { EmailPhoneVerificationForm } from './EmailPhoneVerificationForm.jsx';
+export { EmailVerificationForm, PhoneVerificationForm } from './ContactVerificationForms.jsx';
 export { PersonalDataVerificationForm } from './PersonalDataVerificationForm.jsx';
 export { AddressVerificationForm } from './AddressVerificationForm.jsx';
-export { DocumentsVerificationForm, DocumentUploadForm } from './DocumentUploadForm.jsx';
+export {
+  IdentityDocumentUploadForm,
+  AddressDocumentUploadForm,
+} from './DocumentUploadForms.jsx';
