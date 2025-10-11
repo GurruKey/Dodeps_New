@@ -82,7 +82,7 @@ export default function VerificationPartialBlock({
             <ListGroup variant="flush" className="border-top">
               {requests.map((entry) => (
                 <ListGroup.Item
-                  key={entry.primaryRequest?.id || entry.userId}
+                  key={entry.primaryRequest?.id || entry.requestId || entry.userId}
                   className="py-3"
                   action={Boolean(onOpen)}
                   onClick={() => handleOpen(entry)}
@@ -91,6 +91,9 @@ export default function VerificationPartialBlock({
                   <div className="d-flex flex-column flex-xl-row gap-3 align-items-xl-start justify-content-between">
                     <div className="flex-grow-1">
                       <div className="fw-semibold">{entry.userId}</div>
+                      {entry.primaryRequest?.id && (
+                        <div className="text-muted small">Запрос: {entry.primaryRequest.id}</div>
+                      )}
                       <div className="mt-3">
                         <VerificationFieldBadges
                           modules={entry.modules}
