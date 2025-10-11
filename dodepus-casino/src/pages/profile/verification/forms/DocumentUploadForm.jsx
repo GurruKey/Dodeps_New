@@ -4,7 +4,7 @@ import { Upload, Lock } from 'lucide-react';
 import { useVerificationState } from '../state/useVerificationState.js';
 import { useVerificationActions } from '../actions/useVerificationActions.js';
 
-export function DocumentsVerificationForm() {
+export function DocumentsVerificationForm({ layout = 'card' }) {
   const fileRef = useRef(null);
   const { locks } = useVerificationState();
   const { addVerificationUpload } = useVerificationActions();
@@ -113,90 +113,102 @@ export function DocumentsVerificationForm() {
     }
   };
 
+  const formContent = (
+    <>
+      <div className="d-grid gap-3">
+        <Form.Group>
+          <Form.Label className="fw-medium">Что подтверждаем?</Form.Label>
+          <Form.Select value={category} onChange={onCategoryChange} disabled={isCategoryLocked}>
+            {categoryOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Form.Select>
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Label className="fw-medium">Вид документа</Form.Label>
+          <Form.Select
+            value={documentType}
+            onChange={onDocumentTypeChange}
+            aria-label="Выберите документ для подтверждения"
+            disabled={isCategoryLocked}
+          >
+            <option value="" disabled hidden>
+              Выберите из списка
+            </option>
+            {documentOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Form.Select>
+          {category === 'address' ? (
+            <Form.Text className="text-secondary">
+              Подтвердить адрес можно интернет-выпиской или банковской выпиской с заретушированными данными карт.
+            </Form.Text>
+          ) : (
+            <Form.Text className="text-secondary">
+              Подойдут ID-карта, заграничный или внутренний паспорт, вид на жительство.
+            </Form.Text>
+          )}
+        </Form.Group>
+      </div>
+
+      <div
+        role={isCategoryLocked ? 'note' : 'button'}
+        onClick={onPick}
+        className={`w-100 d-flex align-items-center justify-content-center rounded-3 p-5 text-center border border-2 border-secondary-subtle ${
+          isCategoryLocked ? 'bg-body-tertiary' : ''
+        }`}
+        style={{ borderStyle: 'dashed', cursor: isCategoryLocked ? 'not-allowed' : 'pointer' }}
+      >
+        <div className="d-flex flex-column align-items-center gap-2">
+          {isCategoryLocked ? <Lock className="text-secondary" /> : <Upload className="text-secondary" />}
+          <div className="fw-medium">
+            {isCategoryLocked ? 'Загрузка временно недоступна' : 'Нажмите, чтобы выбрать документ'}
+          </div>
+          <div className="text-secondary small">
+            {isCategoryLocked ? lockMessage : 'Поддержка: PDF, JPG, PNG, WEBP'}
+          </div>
+        </div>
+      </div>
+
+      {error && (
+        <Alert variant="danger" className="mt-3 mb-0">
+          {error}
+        </Alert>
+      )}
+
+      <Form.Control
+        ref={fileRef}
+        type="file"
+        accept=".pdf,.jpg,.jpeg,.png,.webp"
+        className="d-none"
+        onChange={onChange}
+        disabled={isUploading || isCategoryLocked}
+      />
+    </>
+  );
+
+  if (layout === 'plain') {
+    return (
+      <div className="d-grid gap-3">
+        <div className="fw-semibold fs-5">Загрузка документов</div>
+        {formContent}
+      </div>
+    );
+  }
+
   return (
     <Card>
       <Card.Body>
         <Card.Title className="mb-3">Загрузка документов</Card.Title>
-
-        <div className="d-grid gap-3">
-          <Form.Group>
-            <Form.Label className="fw-medium">Что подтверждаем?</Form.Label>
-            <Form.Select value={category} onChange={onCategoryChange} disabled={isCategoryLocked}>
-              {categoryOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-
-          <Form.Group>
-            <Form.Label className="fw-medium">Вид документа</Form.Label>
-            <Form.Select
-              value={documentType}
-              onChange={onDocumentTypeChange}
-              aria-label="Выберите документ для подтверждения"
-              disabled={isCategoryLocked}
-            >
-              <option value="" disabled hidden>
-                Выберите из списка
-              </option>
-              {documentOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Form.Select>
-            {category === 'address' ? (
-              <Form.Text className="text-secondary">
-                Подтвердить адрес можно интернет-выпиской или банковской выпиской с заретушированными данными карт.
-              </Form.Text>
-            ) : (
-              <Form.Text className="text-secondary">
-                Подойдут ID-карта, заграничный или внутренний паспорт, вид на жительство.
-              </Form.Text>
-            )}
-          </Form.Group>
-        </div>
-
-        <div
-          role={isCategoryLocked ? 'note' : 'button'}
-          onClick={onPick}
-          className={`w-100 d-flex align-items-center justify-content-center rounded-3 p-5 text-center border border-2 border-secondary-subtle ${
-            isCategoryLocked ? 'bg-body-tertiary' : ''
-          }`}
-          style={{ borderStyle: 'dashed', cursor: isCategoryLocked ? 'not-allowed' : 'pointer' }}
-        >
-          <div className="d-flex flex-column align-items-center gap-2">
-            {isCategoryLocked ? <Lock className="text-secondary" /> : <Upload className="text-secondary" />}
-            <div className="fw-medium">
-              {isCategoryLocked ? 'Загрузка временно недоступна' : 'Нажмите, чтобы выбрать документ'}
-            </div>
-            <div className="text-secondary small">
-              {isCategoryLocked ? lockMessage : 'Поддержка: PDF, JPG, PNG, WEBP'}
-            </div>
-          </div>
-        </div>
-
-        {error && (
-          <Alert variant="danger" className="mt-3 mb-0">
-            {error}
-          </Alert>
-        )}
-
-        <Form.Control
-          ref={fileRef}
-          type="file"
-          accept=".pdf,.jpg,.jpeg,.png,.webp"
-          className="d-none"
-          onChange={onChange}
-          disabled={isUploading || isCategoryLocked}
-        />
+        {formContent}
       </Card.Body>
     </Card>
   );
 }
 
 export const DocumentUploadForm = DocumentsVerificationForm;
-
-export default DocumentsVerificationForm;
