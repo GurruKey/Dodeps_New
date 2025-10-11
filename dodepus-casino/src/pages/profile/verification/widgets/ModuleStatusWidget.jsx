@@ -5,10 +5,12 @@ import { useVerificationState } from '../state/useVerificationState.js';
 import { useVerificationActions } from '../actions/useVerificationActions.js';
 import { VERIFICATION_MODULES } from '../../../../shared/verification/index.js';
 import {
-  EmailPhoneVerificationForm,
+  EmailVerificationForm,
+  PhoneVerificationForm,
   PersonalDataVerificationForm,
   AddressVerificationForm,
-  DocumentsVerificationForm,
+  IdentityDocumentUploadForm,
+  AddressDocumentUploadForm,
 } from '../forms/index.js';
 
 const ICON_LABELS = Object.freeze({
@@ -74,28 +76,49 @@ export function ModuleStatusWidget() {
     [uploads],
   );
 
+  const hasAddressUpload = useMemo(
+    () =>
+      uploads.some((upload) => {
+        const raw =
+          upload?.verificationCategory ||
+          upload?.verificationKind ||
+          upload?.category ||
+          upload?.kind;
+        return String(raw).toLowerCase() === 'address';
+      }),
+    [uploads],
+  );
+
   const phoneDigits = user?.phone ? String(user.phone).replace(/\D/g, '') : '';
   const genderValue = String(user?.gender || '').toLowerCase();
 
-  const readinessMap = useMemo(() => {
-    const hasEmailValue = normalizeString(user?.email).length >= 3;
-    const hasPhoneValue = phoneDigits.length >= 10;
-    const hasDocStrings =
-      normalizeString(user?.firstName).length >= 2 &&
-      normalizeString(user?.lastName).length >= 2 &&
-      /^\d{4}-\d{2}-\d{2}$/.test(String(user?.dob || '')) &&
-      (genderValue === 'male' || genderValue === 'female');
-    const hasAddressStrings = ['country', 'city', 'address'].every((key) =>
-      normalizeString(user?.[key]).length >= 2,
-    );
+  const hasEmailValue = normalizeString(user?.email).length >= 3;
+  const hasPhoneValue = phoneDigits.length >= 10;
+  const hasPersonalData =
+    normalizeString(user?.firstName).length >= 2 &&
+    normalizeString(user?.lastName).length >= 2 &&
+    /^\d{4}-\d{2}-\d{2}$/.test(String(user?.dob || '')) &&
+    (genderValue === 'male' || genderValue === 'female');
+  const hasAddressFields = ['country', 'city', 'address'].every((key) =>
+    normalizeString(user?.[key]).length >= 2,
+  );
 
-    return {
+  const readinessMap = useMemo(
+    () => ({
       email: hasEmailValue,
       phone: hasPhoneValue,
-      address: hasAddressStrings && hasDocStrings,
-      doc: hasDocStrings && hasIdentityUpload,
-    };
-  }, [user, phoneDigits, genderValue, hasIdentityUpload]);
+      address: hasAddressFields && hasPersonalData && hasAddressUpload,
+      doc: hasPersonalData && hasIdentityUpload,
+    }),
+    [
+      hasEmailValue,
+      hasPhoneValue,
+      hasAddressFields,
+      hasPersonalData,
+      hasAddressUpload,
+      hasIdentityUpload,
+    ],
+  );
 
   const items = useMemo(
     () =>
@@ -120,27 +143,26 @@ export function ModuleStatusWidget() {
       case 'phone':
         return readinessMap.phone
           ? null
-          : 'Укажите номер телефона в разделе «Персональные данные».';
+          : 'Добавьте телефон в разделе «Персональные данные».';
       case 'address':
         if (readinessMap.address) {
           return null;
         }
-        if (!['country', 'city', 'address'].every((key) => normalizeString(user?.[key]).length >= 2)) {
+        if (!hasAddressFields) {
           return 'Заполните страну, город и адрес проживания.';
         }
-        return 'Заполните ФИО, дату рождения и выберите пол.';
+        if (!hasPersonalData) {
+          return 'Заполните ФИО, дату рождения и выберите пол.';
+        }
+        if (!hasAddressUpload) {
+          return 'Загрузите документ, подтверждающий адрес.';
+        }
+        return null;
       case 'doc':
         if (readinessMap.doc) {
           return null;
         }
-        if (
-          !(
-            normalizeString(user?.firstName).length >= 2 &&
-            normalizeString(user?.lastName).length >= 2 &&
-            /^\d{4}-\d{2}-\d{2}$/.test(String(user?.dob || '')) &&
-            (genderValue === 'male' || genderValue === 'female')
-          )
-        ) {
+        if (!hasPersonalData) {
           return 'Заполните ФИО, дату рождения и выберите пол.';
         }
         if (!hasIdentityUpload) {
@@ -170,19 +192,25 @@ export function ModuleStatusWidget() {
         return {
           title: 'Почта',
           description: 'Укажите актуальный e-mail, чтобы получать уведомления и подтверждать вход.',
-          content: <EmailPhoneVerificationForm layout="plain" autoFocusField="email" />,
+          content: <EmailVerificationForm layout="plain" autoFocus />,
         };
       case 'phone':
         return {
           title: 'Телефон',
           description: 'Добавьте рабочий номер телефона для подтверждения личности и уведомлений.',
-          content: <EmailPhoneVerificationForm layout="plain" autoFocusField="phone" />,
+          content: <PhoneVerificationForm layout="plain" autoFocus />,
         };
       case 'address':
         return {
           title: 'Адрес проживания',
-          description: 'Заполните страну, город и адрес проживания. Эти данные нужны для проверки адреса.',
-          content: <AddressVerificationForm layout="plain" />,
+          description:
+            'Заполните страну, город и адрес проживания и приложите подтверждающий документ.',
+          content: (
+            <div className="d-grid gap-4">
+              <AddressVerificationForm layout="plain" />
+              <AddressDocumentUploadForm layout="plain" />
+            </div>
+          ),
         };
       case 'doc':
         return {
@@ -191,7 +219,7 @@ export function ModuleStatusWidget() {
           content: (
             <div className="d-grid gap-4">
               <PersonalDataVerificationForm layout="plain" />
-              <DocumentsVerificationForm layout="plain" />
+              <IdentityDocumentUploadForm layout="plain" />
             </div>
           ),
         };
