@@ -1,7 +1,11 @@
 import { loadExtras, saveExtras, pickExtras } from './profileExtras';
 import { notifyAdminTransactionsChanged } from '../admin/features/transactions/index.js';
 import { updateVerificationSnapshot } from '../tables/verification.js';
-import { normalizeNotes, normalizeBooleanMap } from '../logic/verificationHelpers.js';
+import {
+  normalizeNotes,
+  normalizeBooleanMap,
+  normalizeStatus,
+} from '../logic/verificationHelpers.js';
 
 const toNumber = (value, fallback = 0) => {
   const numeric = Number(value);
@@ -304,9 +308,14 @@ export const createProfileActions = (uid) => {
       };
 
       const queue = Array.isArray(requests) ? requests.slice() : [];
-      const openIndex = queue.findIndex(
-        (request) => request && request.status !== 'approved' && request.status !== 'rejected',
-      );
+      const openIndex = queue.findIndex((request) => {
+        if (!request) {
+          return false;
+        }
+
+        const status = normalizeStatus(request.status);
+        return status === 'pending';
+      });
 
       if (openIndex >= 0) {
         const existing = queue[openIndex] || {};
@@ -431,9 +440,11 @@ export const createProfileActions = (uid) => {
       const nextHistory = [nextHistoryEntry, ...history];
       const completedCount = Object.values(completedFieldsNormalized).filter(Boolean).length;
 
+      const nextStatus = stillRequested ? 'pending' : 'cancelled';
+
       const nextRequest = {
         ...target,
-        status: stillRequested ? 'pending' : 'idle',
+        status: nextStatus,
         requestedFields: nextRequested,
         updatedAt: nowIso,
         history: nextHistory,

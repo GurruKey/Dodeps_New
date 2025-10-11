@@ -36,8 +36,12 @@ export const normalizeStatus = (value) => {
     return 'pending';
   }
 
-  if (normalized === 'reset' || normalized === 'cancelled' || normalized === 'canceled') {
-    return 'idle';
+  if (normalized === 'reset') {
+    return 'reset';
+  }
+
+  if (normalized === 'cancelled' || normalized === 'canceled') {
+    return 'cancelled';
   }
 
   if (['waiting', 'idle', 'new', 'created', 'requested'].includes(normalized)) {
