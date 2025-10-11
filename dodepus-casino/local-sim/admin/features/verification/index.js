@@ -252,6 +252,12 @@ const buildRequestEntry = (client, request) => {
   const id = normalizeString(request.id);
   if (!id) return null;
 
+  const status = normalizeStatus(request.status);
+
+  if (status === 'cancelled') {
+    return null;
+  }
+
   const completedFields = normalizeBooleanMap(request.completedFields);
   const requestedFields = normalizeBooleanMap(request.requestedFields ?? request.completedFields);
   const requestedCount = Object.values(requestedFields).filter(Boolean).length;
@@ -281,7 +287,7 @@ const buildRequestEntry = (client, request) => {
     userEmail: normalizeString(client.email),
     userPhone: normalizeString(client.phone),
     userNickname: normalizeString(client?.profile?.nickname),
-    status: normalizeStatus(request.status),
+    status,
     submittedAt,
     updatedAt,
     reviewedAt,

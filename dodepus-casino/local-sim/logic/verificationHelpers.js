@@ -1,4 +1,11 @@
-const VALID_STATUSES = Object.freeze(['idle', 'pending', 'rejected', 'approved']);
+const VALID_STATUSES = Object.freeze([
+  'idle',
+  'pending',
+  'rejected',
+  'approved',
+  'reset',
+  'cancelled',
+]);
 
 export const normalizeString = (value, fallback = '') => {
   if (typeof value !== 'string') return fallback;
@@ -25,7 +32,10 @@ export const normalizeStatus = (value) => {
     return 'pending';
   }
   if (normalized === 'reset') {
-    return 'idle';
+    return 'reset';
+  }
+  if (normalized === 'cancelled' || normalized === 'canceled') {
+    return 'cancelled';
   }
   if (VALID_STATUSES.includes(normalized)) {
     return normalized;

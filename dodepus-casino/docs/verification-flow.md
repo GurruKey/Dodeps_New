@@ -81,7 +81,7 @@
 
 ### 6.1 Отправка и отмена (клиент)
 
-`submitVerificationRequest` создаёт или дополняет открытую заявку. `cancelVerificationRequest` проверяет, что запрос ещё не обработан администратором, снимает выбранные модули, добавляет запись истории со статусом `cancelled` и возвращает заявку в `idle` (если всё снято) или `pending`. 【F:dodepus-casino/local-sim/auth/profileActions.js†L260-L456】
+`submitVerificationRequest` создаёт или дополняет открытую заявку. `cancelVerificationRequest` проверяет, что запрос ещё не обработан администратором, снимает выбранные модули, добавляет запись истории со статусом `cancelled` и переводит заявку в `cancelled` (если всё снято) или `pending`. 【F:dodepus-casino/local-sim/auth/profileActions.js†L260-L456】
 
 ### 6.2 Действия администратора
 
