@@ -330,6 +330,52 @@ export const readAdminVerificationRequests = () => {
   return entries;
 };
 
+const toFiniteNumber = (value) => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : 0;
+};
+
+export const readAdminVerificationIdleAccounts = () => {
+  const clients = readAdminClients();
+  const entries = [];
+
+  clients.forEach((client) => {
+    const requests = Array.isArray(client?.profile?.verificationRequests)
+      ? client.profile.verificationRequests
+      : [];
+
+    if (requests.length > 0) {
+      return;
+    }
+
+    const userId = normalizeString(client?.id, 'UNKNOWN');
+    if (!userId) {
+      return;
+    }
+
+    const createdAt = normalizeString(client?.createdAt);
+    const sortTimestamp = parseTimestamp(createdAt) || 0;
+    const currency = normalizeString(client?.profile?.currency) || 'USD';
+
+    entries.push({
+      userId,
+      email: normalizeString(client?.email),
+      phone: normalizeString(client?.phone),
+      totalBalance: toFiniteNumber(client?.totalBalance),
+      currency,
+      createdAt,
+      sortTimestamp,
+    });
+  });
+
+  entries.sort((a, b) => (b.sortTimestamp || 0) - (a.sortTimestamp || 0));
+  return entries.map((entry) => {
+    const result = { ...entry };
+    delete result.sortTimestamp;
+    return result;
+  });
+};
+
 const createAbortError = (reason) => {
   if (reason instanceof Error) return reason;
   if (typeof DOMException === 'function') {
@@ -352,6 +398,43 @@ export function listAdminVerificationRequests({ signal, delay = 200 } = {}) {
       try {
         const requests = readAdminVerificationRequests().map((entry) => ({ ...entry }));
         resolve(requests);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    if (!timeout) {
+      complete();
+      return;
+    }
+
+    const timer = setTimeout(complete, timeout);
+
+    if (signal) {
+      signal.addEventListener(
+        'abort',
+        () => {
+          clearTimeout(timer);
+          reject(createAbortError(signal.reason));
+        },
+        { once: true },
+      );
+    }
+  });
+}
+
+export function listAdminVerificationIdleAccounts({ signal, delay = 200 } = {}) {
+  if (signal?.aborted) {
+    return Promise.reject(createAbortError(signal.reason));
+  }
+
+  return new Promise((resolve, reject) => {
+    const timeout = Math.max(0, delay);
+
+    const complete = () => {
+      try {
+        const accounts = readAdminVerificationIdleAccounts().map((entry) => ({ ...entry }));
+        resolve(accounts);
       } catch (error) {
         reject(error);
       }

@@ -3,6 +3,7 @@ export {
   subscribeToAdminVerificationRequests,
   updateVerificationRequestStatus,
   resetVerificationRequestModules,
+  listAdminVerificationIdleAccounts,
 } from '../admin/features/verification/index.js';
 
 export {

@@ -155,6 +155,7 @@ export const composeAdminClient = (record) => {
     id: user.id,
     email: user.email,
     phone: user.phone,
+    createdAt: user.createdAt ?? record?.created_at ?? null,
     totalBalance,
     status: resolveStatus(record, user, extras),
     role: composeRole(user),
