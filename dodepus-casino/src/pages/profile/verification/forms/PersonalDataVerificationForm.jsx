@@ -9,7 +9,7 @@ const GENDER_OPTIONS = [
   { value: 'female', label: 'Женщина' },
 ];
 
-export function PersonalDataVerificationForm() {
+export function PersonalDataVerificationForm({ layout = 'card' }) {
   const { user, updateProfile } = useAuth();
   const { locks } = useVerificationState();
 
@@ -100,99 +100,112 @@ export function PersonalDataVerificationForm() {
     ? 'Поля блокируются во время проверки документов. Отмените запрос или дождитесь решения администратора.'
     : 'Эти данные используются для проверки документов.';
 
+  const formContent = (
+    <Form onSubmit={handleSubmit} className="d-grid gap-3">
+      <Row className="g-3">
+        <Col md={6}>
+          <Form.Label>Имя</Form.Label>
+          <Form.Control
+            type="text"
+            value={firstName}
+            onChange={(event) => {
+              if (personalLocked) return;
+              setFirstName(event.target.value);
+            }}
+            placeholder="Иван"
+            disabled={personalLocked}
+          />
+        </Col>
+        <Col md={6}>
+          <Form.Label>Фамилия</Form.Label>
+          <Form.Control
+            type="text"
+            value={lastName}
+            onChange={(event) => {
+              if (personalLocked) return;
+              setLastName(event.target.value);
+            }}
+            placeholder="Иванов"
+            disabled={personalLocked}
+          />
+        </Col>
+      </Row>
+
+      <Row className="g-3">
+        <Col md={6}>
+          <Form.Label>Пол</Form.Label>
+          <Form.Select
+            value={gender}
+            onChange={(event) => {
+              if (personalLocked) return;
+              setGender(event.target.value);
+            }}
+            disabled={personalLocked}
+          >
+            {GENDER_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Form.Select>
+        </Col>
+        <Col md={6}>
+          <Form.Label>Дата рождения</Form.Label>
+          <Form.Control
+            type="date"
+            value={dob ?? ''}
+            onChange={(event) => {
+              if (personalLocked) return;
+              setDob(event.target.value);
+            }}
+            disabled={personalLocked}
+            max={new Date(Date.now() - 568025136000).toISOString().slice(0, 10)}
+          />
+        </Col>
+      </Row>
+
+      <div className="text-secondary small">{infoMessage}</div>
+
+      <div className="d-flex gap-2">
+        <Button type="submit" disabled={!hasChanges || isSaving}>
+          {isSaving ? 'Сохранение…' : 'Сохранить изменения'}
+        </Button>
+        <Button type="button" variant="outline-secondary" disabled={isSaving} onClick={resetForm}>
+          Сбросить
+        </Button>
+      </div>
+
+      {status.type ? (
+        <Alert
+          variant={
+            status.type === 'error'
+              ? 'danger'
+              : status.type === 'success'
+                ? 'success'
+                : 'secondary'
+          }
+          className="mb-0"
+        >
+          {status.message}
+        </Alert>
+      ) : null}
+    </Form>
+  );
+
+  if (layout === 'plain') {
+    return (
+      <div className="d-grid gap-3">
+        <div className="fw-semibold fs-5">Персональные данные</div>
+        {formContent}
+      </div>
+    );
+  }
+
   return (
     <Card className="w-100">
       <Card.Body>
         <Card.Title className="mb-3">Персональные данные</Card.Title>
-        <Form onSubmit={handleSubmit} className="d-grid gap-3">
-          <Row className="g-3">
-            <Col md={6}>
-              <Form.Label>Имя</Form.Label>
-              <Form.Control
-                type="text"
-                value={firstName}
-                onChange={(event) => {
-                  if (personalLocked) return;
-                  setFirstName(event.target.value);
-                }}
-                placeholder="Иван"
-                disabled={personalLocked}
-              />
-            </Col>
-            <Col md={6}>
-              <Form.Label>Фамилия</Form.Label>
-              <Form.Control
-                type="text"
-                value={lastName}
-                onChange={(event) => {
-                  if (personalLocked) return;
-                  setLastName(event.target.value);
-                }}
-                placeholder="Иванов"
-                disabled={personalLocked}
-              />
-            </Col>
-          </Row>
-
-          <Row className="g-3">
-            <Col md={6}>
-              <Form.Label>Пол</Form.Label>
-              <Form.Select
-                value={gender}
-                onChange={(event) => {
-                  if (personalLocked) return;
-                  setGender(event.target.value);
-                }}
-                disabled={personalLocked}
-              >
-                {GENDER_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-            <Col md={6}>
-              <Form.Label>Дата рождения</Form.Label>
-              <Form.Control
-                type="date"
-                value={dob ?? ''}
-                onChange={(event) => {
-                  if (personalLocked) return;
-                  setDob(event.target.value);
-                }}
-                disabled={personalLocked}
-                max={new Date(Date.now() - 568025136000).toISOString().slice(0, 10)}
-              />
-            </Col>
-          </Row>
-
-          <div className="text-secondary small">{infoMessage}</div>
-
-          <div className="d-flex gap-2">
-            <Button type="submit" disabled={!hasChanges || isSaving}>
-              {isSaving ? 'Сохранение…' : 'Сохранить изменения'}
-            </Button>
-            <Button type="button" variant="outline-secondary" disabled={isSaving} onClick={resetForm}>
-              Сбросить
-            </Button>
-          </div>
-
-          {status.type ? (
-            <Alert
-              variant={
-                status.type === 'error'
-                  ? 'danger'
-                  : status.type === 'success'
-                    ? 'success'
-                    : 'secondary'
-              }
-              className="mb-0"
-            >
-              {status.message}
-            </Alert>
-          ) : null}
-        </Form>
+        {formContent}
       </Card.Body>
     </Card>
   );

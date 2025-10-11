@@ -1,10 +1,15 @@
 import { useMemo, useState } from 'react';
-import { Card, Row, Col, Button, Toast, ToastContainer, Alert } from 'react-bootstrap';
+import { Card, Row, Col, Button, Toast, ToastContainer, Alert, Modal } from 'react-bootstrap';
 import { Circle, CheckCircle, CircleHelp, CircleX, RotateCcw } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useVerificationState } from '../state/useVerificationState.js';
 import { useVerificationActions } from '../actions/useVerificationActions.js';
 import { VERIFICATION_MODULES } from '../../../../shared/verification/index.js';
+import {
+  EmailPhoneVerificationForm,
+  PersonalDataVerificationForm,
+  AddressVerificationForm,
+  DocumentsVerificationForm,
+} from '../forms/index.js';
 
 const ICON_LABELS = Object.freeze({
   idle: 'требуется подтверждение',
@@ -31,8 +36,12 @@ const ICON_SIZE = 56;
 
 const normalizeString = (value) => (typeof value === 'string' ? value.trim() : '');
 
+const MODULE_LABELS = VERIFICATION_MODULES.reduce((acc, module) => {
+  acc[module.key] = module.label;
+  return acc;
+}, {});
+
 export function ModuleStatusWidget() {
-  const navigate = useNavigate();
   const { user, modules, summary } = useVerificationState();
   const { submitVerificationRequest, cancelVerificationRequest } = useVerificationActions();
 
@@ -43,6 +52,9 @@ export function ModuleStatusWidget() {
   const [actionError, setActionError] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeModuleKey, setActiveModuleKey] = useState(null);
+  const [modalHint, setModalHint] = useState('');
 
   const uploads = useMemo(
     () => (Array.isArray(user?.verificationUploads) ? user.verificationUploads : []),
@@ -95,6 +107,103 @@ export function ModuleStatusWidget() {
       })),
     [modules, readinessMap],
   );
+  const computeHintMessage = (moduleKey, iconKey) => {
+    if (iconKey === 'pending' || iconKey === 'approved') {
+      return 'Поля временно заблокированы до завершения проверки.';
+    }
+
+    switch (moduleKey) {
+      case 'email':
+        return readinessMap.email
+          ? null
+          : 'Добавьте почту в разделе «Персональные данные».';
+      case 'phone':
+        return readinessMap.phone
+          ? null
+          : 'Укажите номер телефона в разделе «Персональные данные».';
+      case 'address':
+        if (readinessMap.address) {
+          return null;
+        }
+        if (!['country', 'city', 'address'].every((key) => normalizeString(user?.[key]).length >= 2)) {
+          return 'Заполните страну, город и адрес проживания.';
+        }
+        return 'Заполните ФИО, дату рождения и выберите пол.';
+      case 'doc':
+        if (readinessMap.doc) {
+          return null;
+        }
+        if (
+          !(
+            normalizeString(user?.firstName).length >= 2 &&
+            normalizeString(user?.lastName).length >= 2 &&
+            /^\d{4}-\d{2}-\d{2}$/.test(String(user?.dob || '')) &&
+            (genderValue === 'male' || genderValue === 'female')
+          )
+        ) {
+          return 'Заполните ФИО, дату рождения и выберите пол.';
+        }
+        if (!hasIdentityUpload) {
+          return 'Загрузите документ, подтверждающий личность.';
+        }
+        return null;
+      default:
+        return null;
+    }
+  };
+
+  const handleOpenModule = (moduleKey, hintMessage = '') => {
+    setActiveModuleKey(moduleKey);
+    setModalHint(hintMessage || '');
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModule = () => {
+    setIsModalOpen(false);
+    setActiveModuleKey(null);
+    setModalHint('');
+  };
+
+  const getModalConfig = (moduleKey) => {
+    switch (moduleKey) {
+      case 'email':
+        return {
+          title: 'Почта',
+          description: 'Укажите актуальный e-mail, чтобы получать уведомления и подтверждать вход.',
+          content: <EmailPhoneVerificationForm layout="plain" autoFocusField="email" />,
+        };
+      case 'phone':
+        return {
+          title: 'Телефон',
+          description: 'Добавьте рабочий номер телефона для подтверждения личности и уведомлений.',
+          content: <EmailPhoneVerificationForm layout="plain" autoFocusField="phone" />,
+        };
+      case 'address':
+        return {
+          title: 'Адрес проживания',
+          description: 'Заполните страну, город и адрес проживания. Эти данные нужны для проверки адреса.',
+          content: <AddressVerificationForm layout="plain" />,
+        };
+      case 'doc':
+        return {
+          title: 'Документы и персональные данные',
+          description: 'Заполните персональные данные и загрузите документы, подтверждающие личность.',
+          content: (
+            <div className="d-grid gap-4">
+              <PersonalDataVerificationForm layout="plain" />
+              <DocumentsVerificationForm layout="plain" />
+            </div>
+          ),
+        };
+      default:
+        return null;
+    }
+  };
+
+  const modalConfig = activeModuleKey ? getModalConfig(activeModuleKey) : null;
+  const modalTitle = modalConfig?.title || (activeModuleKey ? MODULE_LABELS[activeModuleKey] : '');
+  const modalDescription = modalConfig?.description || '';
+  const modalContent = modalConfig?.content || null;
 
   const hasAnyReady = items.some((item) => item.isReady);
   const isRequestPending = Boolean(summary?.hasPending);
@@ -234,8 +343,6 @@ export function ModuleStatusWidget() {
                 </span>
               );
 
-              const canNavigateToPersonal =
-                !item.isReady && (iconKey === 'idle' || iconKey === 'rejected');
               const canSubmit = item.isReady && (iconKey === 'idle' || iconKey === 'rejected');
               const canCancel = iconKey === 'pending';
               const isSubmittingCurrent = isSubmitting && submittingKey === item.key;
@@ -247,70 +354,26 @@ export function ModuleStatusWidget() {
               const cancelVariant = 'outline-secondary';
               const cancelLabel = isCancelingCurrent ? 'Отмена…' : 'Отменить запрос';
 
-              const hintMessage = (() => {
-                if (iconKey === 'pending' || iconKey === 'approved') {
-                  return 'Поля временно заблокированы до завершения проверки.';
-                }
-
-                switch (item.key) {
-                  case 'email':
-                    return readinessMap.email
-                      ? null
-                      : 'Добавьте почту в разделе «Персональные данные».';
-                  case 'phone':
-                    return readinessMap.phone
-                      ? null
-                      : 'Укажите номер телефона в разделе «Персональные данные».';
-                  case 'address':
-                    if (!readinessMap.address) {
-                      if (!['country', 'city', 'address'].every((key) => normalizeString(user?.[key]).length >= 2)) {
-                        return 'Заполните страну, город и адрес проживания.';
-                      }
-                      return 'Заполните ФИО, дату рождения и выберите пол.';
-                    }
-                    return null;
-                  case 'doc':
-                    if (!readinessMap.doc) {
-                      if (
-                        !(
-                          normalizeString(user?.firstName).length >= 2 &&
-                          normalizeString(user?.lastName).length >= 2 &&
-                          /^\d{4}-\d{2}-\d{2}$/.test(String(user?.dob || '')) &&
-                          (genderValue === 'male' || genderValue === 'female')
-                        )
-                      ) {
-                        return 'Заполните ФИО, дату рождения и выберите пол.';
-                      }
-                      if (!hasIdentityUpload) {
-                        return 'Загрузите документ, подтверждающий личность.';
-                      }
-                    }
-                    return null;
-                  default:
-                    return null;
-                }
-              })();
+              const hintMessage = computeHintMessage(item.key, iconKey);
 
               return (
                 <Col key={item.key} xs={6} md={3} className="d-flex flex-column align-items-center">
                   <div className="fw-medium mb-2">{item.label}</div>
 
-                  {canNavigateToPersonal ? (
-                    <Button
-                      variant="link"
-                      className="p-0 text-decoration-none"
-                      onClick={() => navigate('/profile/personal')}
-                      aria-label={`Открыть Персональные данные: ${item.label}`}
+                  <div>
+                    <button
+                      type="button"
+                      className="p-0 border-0 bg-transparent"
+                      onClick={() => handleOpenModule(item.key, hintMessage)}
+                      aria-label={`Открыть модуль: ${item.label}`}
+                      title={`Заполнить модуль «${item.label}»`}
+                      style={{ lineHeight: 0, cursor: 'pointer' }}
                     >
                       <span role="img" aria-label={iconLabel}>
                         {iconWrapper}
                       </span>
-                    </Button>
-                  ) : (
-                    <div role="img" aria-label={iconLabel}>
-                      {iconWrapper}
-                    </div>
-                  )}
+                    </button>
+                  </div>
 
                   {iconKey === 'pending' ? (
                     <div className="mt-2 small fw-semibold text-warning">Ожидание</div>
@@ -375,6 +438,26 @@ export function ModuleStatusWidget() {
           <Toast.Body className="text-white">{toastMessage}</Toast.Body>
         </Toast>
       </ToastContainer>
+      <Modal
+        show={isModalOpen && Boolean(activeModuleKey)}
+        onHide={handleCloseModule}
+        size="lg"
+        centered
+        scrollable
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>{modalTitle}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="d-grid gap-3">
+          {modalDescription ? <div className="text-secondary">{modalDescription}</div> : null}
+          {modalHint ? (
+            <Alert variant="secondary" className="mb-0">
+              {modalHint}
+            </Alert>
+          ) : null}
+          {modalContent}
+        </Modal.Body>
+      </Modal>
     </>
   );
 }
