@@ -1,7 +1,7 @@
 import { Badge, Button, Card, Collapse, ListGroup, Spinner } from 'react-bootstrap';
 import { ChevronDown } from 'lucide-react';
 import VerificationFieldBadges from '../components/VerificationFieldBadges.jsx';
-import { formatDateTime, getStatusLabel } from '../utils.js';
+import { formatDateTime } from '../utils.js';
 
 export default function VerificationRejectedBlock({
   requests = [],
@@ -91,10 +91,7 @@ export default function VerificationRejectedBlock({
                   <div className="d-flex flex-column flex-xl-row gap-3 align-items-xl-start justify-content-between">
                     <div className="flex-grow-1">
                       <div className="fw-semibold">{entry.userId}</div>
-                      <div className="text-muted small">Модуль: {entry.moduleLabel}</div>
-                      <div className="text-muted small">
-                        Статус: {getStatusLabel(entry.moduleStatus)}
-                      </div>
+                      <div className="text-muted small">{entry.moduleLabel}</div>
                       <div className="mt-3">
                         <VerificationFieldBadges
                           modules={entry.modules}
