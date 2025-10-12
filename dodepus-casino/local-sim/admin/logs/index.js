@@ -41,17 +41,7 @@ const ADMIN_LOG_ROLE_LABELS = Object.freeze({
   owner: 'Владелец',
 });
 
-const OVERVIEW_LOGS = Object.freeze([
-  {
-    id: 'LOG-2024-0003',
-    adminId: 'ADM-003',
-    adminName: 'Мария Лебедева',
-    role: 'analyst',
-    section: 'overview',
-    action: 'Экспортировала отчёт по вовлечённости за неделю',
-    createdAt: '2024-04-15T10:17:00.000Z',
-  },
-]);
+const OVERVIEW_LOGS = Object.freeze([]);
 
 const STATIC_SECTION_LOGS = Object.freeze([
   ...OVERVIEW_LOGS,

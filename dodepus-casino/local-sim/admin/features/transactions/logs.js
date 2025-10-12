@@ -112,17 +112,7 @@ const createTransactionLogEntry = (details = {}) => {
   return entry;
 };
 
-export const TRANSACTIONS_STATIC_LOGS = Object.freeze([
-  {
-    id: 'LOG-2024-0006',
-    adminId: 'ADM-002',
-    adminName: 'Иван Ковалёв',
-    role: 'manager',
-    section: 'transactions',
-    action: 'Одобрил вывод средств #784321',
-    createdAt: '2024-04-15T11:35:00.000Z',
-  },
-]);
+export const TRANSACTIONS_STATIC_LOGS = Object.freeze([]);
 
 export const readTransactionLogs = ({ storage = getStorage() } = {}) => {
   const dynamicLogs = readDynamicLogsFromStorage(storage).map((entry) => clone(entry));
