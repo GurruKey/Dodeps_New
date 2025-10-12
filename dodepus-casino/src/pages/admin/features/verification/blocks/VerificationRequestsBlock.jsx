@@ -91,10 +91,7 @@ export default function VerificationRequestsBlock({
                   <div className="d-flex flex-column flex-xl-row gap-3 align-items-xl-start justify-content-between">
                     <div className="flex-grow-1">
                       <div className="fw-semibold">{entry.userId}</div>
-                      <div className="text-muted small">Модуль: {entry.moduleLabel}</div>
-                      <div className="text-muted small">
-                        Статус: {getStatusLabel(entry.moduleStatus)}
-                      </div>
+                      <div className="text-muted small">{entry.moduleLabel}</div>
                       <div className="mt-3">
                         <VerificationFieldBadges
                           modules={entry.modules}
@@ -105,9 +102,11 @@ export default function VerificationRequestsBlock({
                     <div className="text-xl-center" style={{ minWidth: 140 }}>
                       <div className="fw-medium">{getStatusLabel(entry.moduleStatus)}</div>
                       <div className="text-muted small">Статус</div>
-                      <div className="text-muted small mt-2">
-                        Документов: {entry.attachmentsCount}
-                      </div>
+                      {Number(entry.attachmentsCount) > 0 && (
+                        <div className="text-muted small mt-2">
+                          Документы: {entry.attachmentsCount}
+                        </div>
+                      )}
                     </div>
                     <div className="text-xl-end" style={{ minWidth: 200 }}>
                       <div className="text-muted small">Отправлено</div>
