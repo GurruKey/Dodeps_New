@@ -121,8 +121,6 @@ const normalizeProfilePatch = (patch = {}) => {
   return normalized;
 };
 
-const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-
 const parseTimestamp = (value) => {
   if (!value) return null;
   try {
@@ -260,12 +258,6 @@ const buildRequestEntry = (client, request) => {
 
   const completedFields = normalizeBooleanMap(request.completedFields);
   const requestedFields = normalizeBooleanMap(request.requestedFields ?? request.completedFields);
-  const requestedCount = Object.values(requestedFields).filter(Boolean).length;
-  const calculatedCompleted = Object.values(completedFields).filter(Boolean).length;
-  const baseTotal = Math.max(requestedCount, calculatedCompleted);
-  const totalFields = clamp(baseTotal || Object.keys(requestedFields).length || 4, 1, 10);
-  const completedCount = clamp(calculatedCompleted, 0, totalFields);
-
   const submittedAt = normalizeString(
     request.submittedAt || request.createdAt || request.updatedAt || '',
     '',
@@ -293,8 +285,6 @@ const buildRequestEntry = (client, request) => {
     reviewedAt,
     completedFields: { ...completedFields },
     requestedFields: { ...requestedFields },
-    completedCount,
-    totalFields,
     attachments,
     profile,
     history,
@@ -556,15 +546,6 @@ export const updateVerificationRequestStatus = ({
 
   const completedTrueCount = Object.values(nextCompleted).filter(Boolean).length;
   const requestedTrueCount = Object.values(nextRequested).filter(Boolean).length;
-  const relevantTotal = Math.max(
-    requestedTrueCount,
-    completedTrueCount,
-    Object.keys(nextCompleted).length,
-    Object.keys(nextRequested).length,
-  );
-
-  const totalFields = clamp(relevantTotal || Object.keys(nextRequested).length || 4, 1, 10);
-  const completedCount = clamp(completedTrueCount, 0, totalFields);
   const hasOutstanding = requestedTrueCount > completedTrueCount;
   const finalStatus =
     normalizedStatus === 'rejected'
@@ -597,8 +578,6 @@ export const updateVerificationRequestStatus = ({
     updatedAt: nowIso,
     completedFields: nextCompleted,
     requestedFields: nextRequested,
-    completedCount,
-    totalFields,
     notes: normalizedNotes,
     history: nextHistory,
   };
@@ -723,16 +702,6 @@ export const resetVerificationRequestModules = ({
   });
 
   const completedTrueCount = Object.values(normalizedCompleted).filter(Boolean).length;
-  const requestedTrueCount = Object.values(normalizedRequested).filter(Boolean).length;
-  const relevantTotal = Math.max(
-    requestedTrueCount,
-    completedTrueCount,
-    Object.keys(normalizedCompleted).length,
-    Object.keys(normalizedRequested).length,
-  );
-
-  const totalFields = clamp(relevantTotal || Object.keys(normalizedRequested).length || 4, 1, 10);
-  const completedCount = clamp(completedTrueCount, 0, totalFields);
   const normalizedNotes = normalizeNotes(notes);
   const nowIso = new Date().toISOString();
 
@@ -759,8 +728,6 @@ export const resetVerificationRequestModules = ({
     updatedAt: nowIso,
     completedFields: normalizedCompleted,
     requestedFields: normalizedRequested,
-    completedCount,
-    totalFields,
     notes: normalizedNotes,
     history: nextHistory,
   };
