@@ -50,6 +50,7 @@ export const createTransactionSeed = ({
   method,
 }) => ({
   id: createTransactionId(userId, entryIndex),
+  userId,
   currency,
   date: buildTransactionTimestamp(accountIndex, entryIndex),
   status,

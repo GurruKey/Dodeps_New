@@ -1,4 +1,5 @@
 import { readAdminClients } from '../clients/index.js';
+import { getLocalDatabase } from '../../../database/engine.js';
 
 export const ADMIN_TRANSACTIONS_EVENT = 'dodepus:admin-transactions-change';
 
@@ -58,18 +59,23 @@ const resolveCurrency = (transaction, client) => {
 };
 
 const normalizeTransaction = (transaction, client) => {
-  if (!transaction || !client) return null;
+  if (!transaction) return null;
 
   const createdAt = toIsoDate(transaction.date ?? transaction.createdAt ?? transaction.timestamp);
   const baseId = transaction.id || createdAt || `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
-  const entryId = `${client.id || 'unknown'}:${baseId}`;
+  const userId = transaction.userId || client?.id;
+  if (!userId) {
+    return null;
+  }
+  const entryId = `${userId}:${baseId}`;
 
   return {
     id: transaction.id || baseId,
     entryId,
-    userId: client.id,
-    userEmail: typeof client.email === 'string' ? client.email : '',
-    userNickname: typeof client.profile?.nickname === 'string' ? client.profile.nickname : '',
+    userId,
+    userEmail: typeof client?.email === 'string' ? client.email : '',
+    userNickname:
+      typeof client?.profile?.nickname === 'string' ? client.profile.nickname : '',
     amount: toNumber(transaction.amount),
     currency: resolveCurrency(transaction, client),
     type: normalizeType(transaction.type),
@@ -84,17 +90,13 @@ const normalizeTransaction = (transaction, client) => {
 
 export const readAdminTransactions = () => {
   const clients = readAdminClients();
-  const transactions = [];
+  const clientMap = new Map(clients.map((client) => [client.id, client]));
+  const db = getLocalDatabase();
+  const rows = db.select('profile_transactions');
 
-  clients.forEach((client) => {
-    const entries = Array.isArray(client?.profile?.transactions) ? client.profile.transactions : [];
-    entries.forEach((transaction) => {
-      const normalized = normalizeTransaction(transaction, client);
-      if (normalized) {
-        transactions.push(normalized);
-      }
-    });
-  });
+  const transactions = rows
+    .map((transaction) => normalizeTransaction(transaction, clientMap.get(transaction.userId)))
+    .filter(Boolean);
 
   transactions.sort((a, b) => {
     const timeA = a.createdAt ? Date.parse(a.createdAt) : 0;

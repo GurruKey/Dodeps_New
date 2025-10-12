@@ -13,16 +13,33 @@ const clone = (value) => {
   }
 };
 
-const splitVerificationExtras = (extras) => {
+const splitProfileExtras = (extras, userId) => {
   const verificationRequests = Array.isArray(extras.verificationRequests)
     ? extras.verificationRequests.map(clone)
     : [];
   const verificationUploads = Array.isArray(extras.verificationUploads)
     ? extras.verificationUploads.map(clone)
     : [];
+  const transactions = Array.isArray(extras.transactions)
+    ? extras.transactions.map((transaction) => ({
+        ...clone(transaction),
+        userId: transaction?.userId ?? userId,
+      }))
+    : [];
 
-  const { verificationRequests: _ignoredReq, verificationUploads: _ignoredUp, ...profile } = extras;
-  return { profile: clone(profile), verificationRequests, verificationUploads };
+  const {
+    verificationRequests: _ignoredReq,
+    verificationUploads: _ignoredUp,
+    transactions: _ignoredTxn,
+    ...profile
+  } = extras;
+
+  return {
+    profile: clone(profile),
+    verificationRequests,
+    verificationUploads,
+    transactions,
+  };
 };
 
 const buildProfileSeed = (account) => {
@@ -33,7 +50,10 @@ const buildProfileSeed = (account) => {
   });
 
   const seededExtras = applyVerificationSeed(baseExtras, account.id);
-  const { profile, verificationRequests, verificationUploads } = splitVerificationExtras(seededExtras);
+  const { profile, verificationRequests, verificationUploads, transactions } = splitProfileExtras(
+    seededExtras,
+    account.id,
+  );
 
   return {
     profileRow: { id: account.id, ...profile },
@@ -45,6 +65,10 @@ const buildProfileSeed = (account) => {
       ...clone(upload),
       userId: upload.userId ?? account.id,
     })),
+    transactionRows: transactions.map((transaction) => ({
+      ...clone(transaction),
+      userId: transaction.userId ?? account.id,
+    })),
   };
 };
 
@@ -54,12 +78,14 @@ export const buildLocalDatabaseSeedState = () => {
   const profileRows = [];
   const verificationRequests = [];
   const verificationUploads = [];
+  const profileTransactions = [];
 
   PRESET_ACCOUNTS.forEach((account) => {
-    const { profileRow, requestRows, uploadRows } = buildProfileSeed(account);
+    const { profileRow, requestRows, uploadRows, transactionRows } = buildProfileSeed(account);
     profileRows.push(profileRow);
     verificationRequests.push(...requestRows);
     verificationUploads.push(...uploadRows);
+    profileTransactions.push(...transactionRows);
   });
 
   const baseTables = Object.keys(DEFAULT_LOCAL_DB_SCHEMA.tables).reduce((acc, tableName) => {
@@ -75,6 +101,7 @@ export const buildLocalDatabaseSeedState = () => {
       profiles: { primaryKey: 'id', rows: profileRows },
       verification_requests: { primaryKey: 'id', rows: verificationRequests },
       verification_uploads: { primaryKey: 'id', rows: verificationUploads },
+      profile_transactions: { primaryKey: 'id', rows: profileTransactions },
     },
   };
 };
