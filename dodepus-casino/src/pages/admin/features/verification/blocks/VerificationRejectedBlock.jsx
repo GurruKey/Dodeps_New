@@ -1,7 +1,7 @@
 import { Badge, Button, Card, Collapse, ListGroup, Spinner } from 'react-bootstrap';
 import { ChevronDown } from 'lucide-react';
 import VerificationFieldBadges from '../components/VerificationFieldBadges.jsx';
-import { formatDateTime } from '../utils.js';
+import { formatDateTime, getStatusLabel } from '../utils.js';
 
 export default function VerificationRejectedBlock({
   requests = [],
@@ -82,7 +82,7 @@ export default function VerificationRejectedBlock({
             <ListGroup variant="flush" className="border-top">
               {requests.map((entry) => (
                 <ListGroup.Item
-                  key={entry.primaryRequest?.id || entry.requestId || entry.userId}
+                  key={`${entry.requestId || entry.userId}:${entry.moduleKey || 'module'}`}
                   className="py-3"
                   action={Boolean(onOpen)}
                   onClick={() => handleOpen(entry)}
@@ -91,9 +91,10 @@ export default function VerificationRejectedBlock({
                   <div className="d-flex flex-column flex-xl-row gap-3 align-items-xl-start justify-content-between">
                     <div className="flex-grow-1">
                       <div className="fw-semibold">{entry.userId}</div>
-                      {entry.primaryRequest?.id && (
-                        <div className="text-muted small">Запрос: {entry.primaryRequest.id}</div>
-                      )}
+                      <div className="text-muted small">Модуль: {entry.moduleLabel}</div>
+                      <div className="text-muted small">
+                        Статус: {getStatusLabel(entry.moduleStatus)}
+                      </div>
                       <div className="mt-3">
                         <VerificationFieldBadges
                           modules={entry.modules}
