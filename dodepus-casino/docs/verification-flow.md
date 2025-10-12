@@ -1,110 +1,87 @@
-# Поток верификации: реализация vs требования
+# Поток верификации: клиент и админ
 
-Документ описывает, как текущая реализация покрывает ожидания из `task.md`, какие модули участвуют в клиентском и админском потоке, и какие сценарии поддержаны.
+Документ объясняет, как работает верификация в проекте: какие модули участвуют, что делает клиентская страница `/profile/verification`, как реагирует админка `/admin/verification`, и какие сценарии нужно проверять целиком.
 
-## 1. Сопоставление с шагами плана
+## 1. Что проверяется
 
-| Шаг плана | Что требовалось | Реализация сейчас |
-| --- | --- | --- |
-| 1. Клиентская папка `profile/verification` | Подкаталоги `page`, `widgets`, `modules`, `state`, `actions`, `history`, `services`. | Структура выровнена: страница `page/VerificationPage.jsx`, статусы `widgets/ModuleStatusWidget.jsx`, модули клиента разложены по `modules/email`, `modules/phone`, `modules/address`, `modules/documents`, состояние `state/useVerificationState.js`, действия `actions/useVerificationActions.js`, история `history/VerificationHistory.jsx`, сервисы `services/verificationServices.js`. |
-| 2. Админка `admin/verification` | Аккордеоны, поиск, карточки, модалка, слой данных. | Страница `Verification.jsx` управляет поиском и группировкой, секции вынесены в `blocks`, модалка и бейджи в `components`, данные подгружает `hooks/useAdminVerificationRequests.js`. |
-| 3. `local-sim` | Таблицы, seed, логика, API. | Клиентские действия (`local-sim/auth/profileActions.js`) и админские (`local-sim/admin/features/verification/index.js`) поддерживают отправку, отмену, решения, сброс, историю и уведомления. |
-| 4. Навигация | Маршруты профиля и админки. | Маршруты `profile/personal`, `profile/verification`, `admin/verification` зарегистрированы и доступны через layout’ы. |
-| 5. Общие статусы | ◻️/❓/✅/❌, прогресс x/4, история. | Статусы нормализуются в `shared/verification/modules.js`, прогресс собирается через `summarizeModuleStates`, история отображается в клиентском и админском UI. |
-| 6–9. Клиентские блокировки, отмена, повторная отправка | Блокировать поля на ❓/✅, разрешать отмену и повторную отправку. | Поля персональных данных и адреса блокируются при `pending/approved`, кнопка «Отменить запрос» доступна для модулей в статусе ❓, повторная отправка доступна после `idle/❌`. |
-| 10–13. Работа админа, перемещения, поиск | Модалка, история, фильтры. | Модалка поддерживает подтверждение, отказ, сброс, историю и правку адреса; поиск и группировка реализованы по статусам. |
-| 14. Роли и доступы | Клиент без имён админов, админ видит имена. | Клиентская история скрывает имена, админская модалка показывает `reviewer`. |
-| 15. Тестовые сценарии | Все ключевые сценарии. | Отправка, отказ, повторная отправка, отмена, сброс и перемещения по секциям выполняются. |
-| 16–19. Общая связка и готовность к демо | Единые правила, единый источник данных, готовность к замене API. | Клиент и админ работают через общий `local-sim`, история и статусы синхронизированы, переход на API потребует лишь замены сервисного слоя. |
+- Четыре модуля: `email`, `phone`, `address`, `doc`. Подписи и статусы заданы в общем сервисе. `normalizeStatus` приводит любые внешние значения к `idle`, `pending`, `approved`, `rejected`; `computeModuleLocks` решает, какие поля должны быть заблокированы, пока модуль на проверке. 【F:src/shared/verification/modules.js†L1-L157】【F:src/shared/verification/modules.js†L226-L259】
+- Контекст клиента собирается через `createModuleContext`: почта требуется для `email`, номер из ≥10 цифр — для `phone`, адрес + персональные данные + файл категории `address` — для `address`, персональные данные + файл категории `identity` — для `doc`. 【F:src/pages/profile/verification/modules/utils.js†L1-L54】
 
-## 2. Модули и данные
+## 2. Клиентская страница `/profile/verification`
 
-### 2.1 Модули верификации
+### 2.1 Блок статусов
 
-Четыре ключа: `email`, `phone`, `address`, `doc`. Сервисный слой (`shared/verification/modules.js`) задаёт подписи, нормализует статусы, считает сводку и таймлайн. 【F:dodepus-casino/src/shared/verification/modules.js†L1-L194】【F:dodepus-casino/src/pages/profile/verification/services/verificationServices.js†L1-L12】
+- `ModuleStatusWidget` показывает четыре кружка со статусами, текст подсказки и кнопки «Подтвердить»/«Отменить запрос». Компонент блокирует действия, если модуль уже на проверке или подтверждён, и выводит тост при успехе. 【F:src/pages/profile/verification/widgets/ModuleStatusWidget.jsx†L1-L266】
+- При клике по кружку открывается модальное окно модуля. Подсказка `getHint` сообщает, каких данных не хватает или что модуль заблокирован. 【F:src/pages/profile/verification/modules/email/emailModule.jsx†L1-L24】【F:src/pages/profile/verification/modules/phone/phoneModule.jsx†L1-L38】【F:src/pages/profile/verification/modules/address/addressModule.jsx†L1-L66】【F:src/pages/profile/verification/modules/documents/documentsModule.jsx†L1-L78】
 
-### 2.2 Статусы и блокировки
+### 2.2 Формы и загрузка документов
 
-`normalizeStatus` приводит внешние значения к `idle`, `pending`, `approved`, `rejected`. Функции `isModuleLocked` и `computeModuleLocks` определяют, нужно ли блокировать поля. 【F:dodepus-casino/src/shared/verification/modules.js†L9-L119】
+- Формы берут данные из `useAuth` и повторно проверяют блокировки через `useVerificationState`. Клиент может обновить почту, телефон, адрес, ФИО, дату рождения, пол. При статусах `pending/approved` поля недоступны. 【F:src/pages/profile/verification/modules/email/EmailVerificationForm.jsx†L1-L101】【F:src/pages/profile/verification/modules/phone/PhoneVerificationForm.jsx†L1-L132】【F:src/pages/profile/verification/modules/address/AddressVerificationForm.jsx†L1-L143】【F:src/pages/profile/verification/modules/documents/PersonalDataVerificationForm.jsx†L1-L143】
+- `DocumentUploader` загружает файл в `local-sim`: проверяет выбранный тип документа, запрещает загрузку при блокировке и сохраняет файл через `addVerificationUpload`. 【F:src/pages/profile/verification/modules/shared/DocumentUploader.jsx†L1-L115】
 
-### 2.3 История
+### 2.3 История отправок
 
-`buildVerificationTimeline` собирает события отправки, решений, отмен и сбросов. Для отмен добавляется `type: 'cancelled'`, актор фиксируется как `client`, для административных действий — `admin`. 【F:dodepus-casino/src/shared/verification/modules.js†L194-L360】
+- Блок `VerificationHistory` показывает простой список загруженных файлов. Если ничего не отправлено — выводится серый текст. 【F:src/pages/profile/verification/history/VerificationHistory.jsx†L1-L49】
 
-## 3. Клиентский интерфейс `profile/verification`
+## 3. Данные клиента и API
 
-### 3.1 Состояние и действия
+- `useVerificationState` берёт пользователя из `AuthProvider`, строит карту модулей и сводку через `useVerificationModules`. 【F:src/pages/profile/verification/state/useVerificationState.js†L1-L18】【F:src/shared/verification/useVerificationModules.js†L1-L17】
+- `createUserProfileActions` пробрасывает методы `submitVerificationRequest`, `cancelVerificationRequest` и `addVerificationUpload` из `local-sim`. После выполнения действия пользователь в контексте обновляется. 【F:src/app/auth/user/createUserProfileActions.js†L1-L76】
+- `local-sim/auth/profileActions.js` хранит заявки и загрузки в snapshot-е, разбивает общие заявки по модулям, добавляет историю и уведомляет админскую часть через событие. 【F:local-sim/auth/profileActions.js†L120-L457】
 
-Хук `useVerificationState` возвращает пользователя, статусы модулей, сводку и карту блокировок. `useVerificationActions` пробрасывает отправку, отмену и загрузку документов. 【F:dodepus-casino/src/pages/profile/verification/state/useVerificationState.js†L1-L18】【F:dodepus-casino/src/pages/profile/verification/actions/useVerificationActions.js†L1-L14】
+## 4. Админская страница `/admin/verification`
 
-### 3.2 Страница и виджеты
+- Хук `useAdminVerificationRequests` подгружает заявки и подписывается на `ADMIN_VERIFICATION_EVENT`, чтобы страница обновлялась при любых изменениях со стороны клиента или администратора. 【F:src/pages/admin/features/verification/hooks/useAdminVerificationRequests.js†L1-L86】【F:local-sim/admin/features/verification/index.js†L239-L477】
+- `Verification.jsx` группирует заявки по статусам («На проверке», «Частично», «Отклонено», «Подтверждено»), открывает модалку и вызывает `updateVerificationRequestStatus` либо `resetVerificationRequestModules`. 【F:src/pages/admin/features/verification/Verification.jsx†L1-L210】
+- Логика админских действий нормализует поля, добавляет запись истории с ревьюером и синхронизирует снимок профиля. 【F:local-sim/admin/features/verification/index.js†L432-L724】
 
-`page/VerificationPage.jsx` собирает статусы, две формы данных, блок загрузки документов и историю событий. 【F:dodepus-casino/src/pages/profile/verification/page/VerificationPage.jsx†L1-L24】
+## 5. Сценарии end-to-end
 
-### 3.3 Клиентские модули и формы
+Ниже перечислены сценарии, которые покрывают поток целиком. Каждый сценарий начинается на стороне клиента и заканчивается результатом в админке и обратным обновлением клиента.
 
-`modules/email`, `modules/phone`, `modules/address` и `modules/documents` содержат формы и конфигурации для каждого блока. Почта и телефон обновляют контакты, адрес — профиль и вложения, документы — персональные данные и загрузку удостоверений. 【F:dodepus-casino/src/pages/profile/verification/modules/email/EmailVerificationForm.jsx†L1-L103】【F:dodepus-casino/src/pages/profile/verification/modules/phone/PhoneVerificationForm.jsx†L1-L127】【F:dodepus-casino/src/pages/profile/verification/modules/address/AddressVerificationForm.jsx†L1-L136】【F:dodepus-casino/src/pages/profile/verification/modules/documents/PersonalDataVerificationForm.jsx†L1-L143】
+1. **Подтверждение почты**
+   - Клиент: вводит корректный e-mail в форме почты, жмёт «Сохранить», затем кнопку «Подтвердить» в модуле. 【F:src/pages/profile/verification/modules/email/EmailVerificationForm.jsx†L23-L77】【F:src/pages/profile/verification/widgets/ModuleStatusWidget.jsx†L95-L176】
+   - Админ: в модалке модуля «Почта» выбирает «Подтвердить», пишет (опционально) комментарий и сохраняет. 【F:src/pages/admin/features/verification/components/VerificationRequestModal.jsx†L1-L200】
+   - Результат: статус модуля меняется на ✅ у клиента, заявка переходит в блок «Подтверждено». 【F:src/pages/admin/features/verification/blocks/VerificationApprovedBlock.jsx†L1-L73】
 
-### 3.4 Статусы и действия клиента
+2. **Подтверждение телефона**
+   - Клиент: вводит номер (≥10 цифр), сохраняет, отправляет заявку через модуль «Телефон». 【F:src/pages/profile/verification/modules/phone/PhoneVerificationForm.jsx†L23-L105】
+   - Админ: проверяет данные и подтверждает или отклоняет с комментарием. 【F:local-sim/admin/features/verification/index.js†L534-L620】
+   - Результат: статус «Телефон» у клиента обновляется, блок «На проверке» или «Отклонено» в админке меняет счётчик. 【F:src/pages/admin/features/verification/blocks/VerificationRequestsBlock.jsx†L1-L132】【F:src/pages/admin/features/verification/blocks/VerificationRejectedBlock.jsx†L1-L109】
 
-`ModuleStatusWidget` показывает прогресс, подсказки, кнопки «Подтвердить» и «Отменить запрос». Кнопка отмены доступна для модулей в статусе ❓ и вызывает `cancelVerificationRequest`. После отмены выводится уведомление, статусы возвращаются в ◻️, поля разблокируются. 【F:dodepus-casino/src/pages/profile/verification/widgets/ModuleStatusWidget.jsx†L1-L260】
+3. **Подтверждение адреса**
+   - Клиент: заполняет страну, город, адрес, ФИО, дату рождения, пол; загружает файл с категорией `address`; отправляет заявку. 【F:src/pages/profile/verification/modules/address/AddressVerificationForm.jsx†L23-L131】【F:src/pages/profile/verification/modules/shared/DocumentUploader.jsx†L14-L91】
+   - Админ: проверяет данные профиля и вложения в модалке, подтверждает либо отклоняет с указанием, чего не хватает. 【F:src/pages/admin/features/verification/components/VerificationRequestModal.jsx†L66-L171】
+   - Результат: адрес блокируется или возвращается в состояние «Требуется подтверждение», история содержит запись решения. 【F:local-sim/admin/features/verification/index.js†L540-L620】
 
-Условия готовности:
-- `email` — заполненная почта.
-- `phone` — номер ≥10 цифр.
-- `address` — страна/город/адрес + персональные данные + документ по адресу.
-- `doc` — персональные данные + документ, подтверждающий личность.
+4. **Подтверждение документов личности**
+   - Клиент: заполняет персональные данные, загружает документ категории `identity` (паспорт/ID), отправляет модуль «Документы». 【F:src/pages/profile/verification/modules/documents/PersonalDataVerificationForm.jsx†L23-L139】【F:src/pages/profile/verification/modules/documents/documentsModule.jsx†L1-L78】
+   - Админ: сверяет персональные поля и вложения, подтверждает. 【F:src/pages/admin/features/verification/components/VerificationRequestModal.jsx†L66-L171】
+   - Результат: все четыре модуля могут стать подтверждёнными, и карточка пользователя попадает в раздел «Подтверждено». 【F:src/pages/admin/features/verification/blocks/VerificationApprovedBlock.jsx†L1-L73】
 
-### 3.5 Загрузка документов
+5. **Отмена клиентом**
+   - Клиент: нажимает «Отменить запрос» на модуле в статусе «На проверке». 【F:src/pages/profile/verification/widgets/ModuleStatusWidget.jsx†L177-L208】
+   - Админ: получает событие обновления; заявка пропадает из блока «На проверке». 【F:src/pages/admin/features/verification/hooks/useAdminVerificationRequests.js†L37-L78】
+   - Результат: модуль возвращается в «Требуется подтверждение», поля снова доступны для редактирования. 【F:src/shared/verification/modules.js†L260-L318】
 
-`IdentityDocumentUploadForm` и `AddressDocumentUploadForm` учитывают блокировки: если соответствующая категория находится на проверке или подтверждена, формы и зона загрузки выключены и показывают подсказку. 【F:dodepus-casino/src/pages/profile/verification/modules/documents/IdentityDocumentUploadForm.jsx†L1-L18】【F:dodepus-casino/src/pages/profile/verification/modules/address/AddressDocumentUploadForm.jsx†L1-L18】【F:dodepus-casino/src/pages/profile/verification/modules/shared/DocumentUploader.jsx†L1-L109】
+6. **Повторная отправка после отказа**
+   - Клиент: видит подсказку с причиной отказа, исправляет данные и снова отправляет модуль. 【F:src/pages/profile/verification/widgets/ModuleStatusWidget.jsx†L138-L166】
+   - Админ: видит новую заявку с обновлённым таймштампом и может подтвердить. 【F:src/pages/admin/features/verification/Verification.jsx†L80-L149】
+   - Результат: история заявки содержит оба решения; статус меняется на новый. 【F:local-sim/admin/features/verification/index.js†L540-L704】
 
-### 3.6 История для клиента
+7. **Сброс администратором**
+   - Клиент: может запросить полный сброс после полной верификации (по договорённости). 【F:src/pages/admin/features/verification/components/VerificationRequestModal.jsx†L122-L166】
+   - Админ: выбирает «Сбросить выбранные модули», отмечает галочками нужные поля, добавляет комментарий. 【F:local-sim/admin/features/verification/index.js†L620-L704】
+   - Результат: выбранные модули падают в `idle`, клиент снова может редактировать данные и отправлять. 【F:src/shared/verification/modules.js†L260-L318】
 
-`VerificationHistory` выводит таблицу событий и загрузок. Для отмен отображается статус «Запрос отменён клиентом», для административных действий — «Статусы сброшены администратором» и бейдж «Администратор». 【F:dodepus-casino/src/pages/profile/verification/history/VerificationHistory.jsx†L1-L103】
+8. **Новый пользователь без заявок**
+   - Клиент: видит подсказку «Заполните данные…», кнопки «Подтвердить» отключены, пока не выполнены требования. 【F:src/pages/profile/verification/widgets/ModuleStatusWidget.jsx†L61-L121】
+   - Админ: раздел «На проверке» пуст, карточка пользователя не появляется до первой отправки. 【F:src/pages/admin/features/verification/Verification.jsx†L36-L78】
 
-## 4. Персональные данные и блокировки
+## 6. Что проверить перед релизом
 
-Формы на `/profile/personal` читают `computeModuleLocks` и блокируют поля на статусах ❓/✅:
-- Контакты: номер недоступен, пока модуль телефона на проверке или подтверждён. 【F:dodepus-casino/src/pages/profile/personal/blocks/ContactsBlock/ContactsBlock.jsx†L1-L155】
-- Имя и фамилия: блокируются при проверке адреса или документов. 【F:dodepus-casino/src/pages/profile/personal/blocks/NameBlock/NameBlock.jsx†L1-L81】
-- Пол и дата рождения: доступны только при разблокированном адресе/документах. 【F:dodepus-casino/src/pages/profile/personal/blocks/GenderDobBlock/GenderDobBlock.jsx†L1-L124】
-- Адрес: изменяется только до отправки или после отмены/сброса. 【F:dodepus-casino/src/pages/profile/personal/blocks/AddressBlock/AddressBlock.jsx†L1-L108】
-
-## 5. Админский интерфейс
-
-`Verification.jsx` группирует карточки по статусам, управляет поиском, открывает модалку и вызывает `updateVerificationRequestStatus`/`resetVerificationRequestModules`. Карточки отображают прогресс, таймстемпы и счётчик вложений. 【F:dodepus-casino/src/pages/admin/features/verification/Verification.jsx†L1-L236】
-
-Модалка `VerificationRequestModal` поддерживает режимы «Подтвердить», «Отклонить», «Сбросить», «Просмотр», отображает историю и вложения, требует комментарий при отказе и сбросе. 【F:dodepus-casino/src/pages/admin/features/verification/components/VerificationRequestModal.jsx†L1-L200】
-
-## 6. Локальный симулятор
-
-### 6.1 Отправка и отмена (клиент)
-
-`submitVerificationRequest` создаёт или дополняет открытую заявку. `cancelVerificationRequest` проверяет, что запрос ещё не обработан администратором, снимает выбранные модули, добавляет запись истории со статусом `cancelled` и переводит заявку в `cancelled` (если всё снято) или `pending`. 【F:dodepus-casino/local-sim/auth/profileActions.js†L260-L456】
-
-### 6.2 Действия администратора
-
-`updateVerificationRequestStatus` и `resetVerificationRequestModules` нормализуют статусы, обновляют историю, фиксируют администратора и уведомляют подписчиков `ADMIN_VERIFICATION_EVENT`. 【F:dodepus-casino/local-sim/admin/features/verification/index.js†L432-L724】
-
-### 6.3 Общие таблицы и API
-
-Общий доступ к данным вынесен в `local-sim/tables/verification.js`, где описаны чтение и обновление снимка профиля. 【F:dodepus-casino/local-sim/tables/verification.js†L1-L52】 Логика нормализации статусов и полей собрана в `local-sim/logic/verificationHelpers.js`. 【F:dodepus-casino/local-sim/logic/verificationHelpers.js†L1-L100】 Предустановленные заявки для тестов описаны в `local-sim/seed/verificationSeed.js`. 【F:dodepus-casino/local-sim/seed/verificationSeed.js†L1-L102】 Клиентский и административный API собраны в `local-sim/api/verification.js`. 【F:dodepus-casino/local-sim/api/verification.js†L1-L8】
-
-## 7. Поддерживаемые сценарии
-
-| Сценарий | Выполнено |
-| --- | --- |
-| Регистрация по почте → добавление номера → подтверждение номера | ✔️ — при заполненном номере кнопка «Подтвердить» активна, админ может утвердить. |
-| Регистрация по номеру → подтверждение почты | ✔️ — модуль «Почта» доступен при заполненном email. |
-| Адрес: неполные данные → подсказка → дозаполнение → отправка | ✔️ — подсказки в статусах объясняют, чего не хватает, поля блокируются после отправки. |
-| Отмена на ❓ → редактирование → повторная отправка | ✔️ — кнопка «Отменить запрос» активна, история фиксирует отмену, поля разблокируются. |
-| Админ: подтверждение/отказ + комментарий | ✔️ — модалка требует комментарий при отказе, история отображает решение. |
-| Сброс из «Верифицировано» → падение x/4 и переход в «Частичную» | ✔️ — `resetVerificationRequestModules` обнуляет выбранные модули и перемещает карточку. |
-
-## 8. Готовность к демо и следующая интеграция
-
-- Карточки в админке сгруппированы по статусам, поиск раскрывает подходящую секцию.
-- Клиент видит четыре модуля, может отправлять, отменять и повторять заявки, видит комментарии отказов.
-- История синхронизирована между клиентом и админом; актор (клиент/админ) помечается бейджами.
-- Переход на реальный сервер потребует замены вызовов из `services/verificationServices.js` на HTTP-API при сохранении интерфейсов и статусов.
+- Создать тестового пользователя, пройти сценарии 1–4, проверяя, что статусы и блокировки совпадают с описанием выше.
+- Убедиться, что отмена (сценарий 5) убирает заявку из админки без перезагрузки страницы.
+- После отклонения (сценарий 6) повторная заявка отображается с новым временем.
+- Сброс (сценарий 7) возвращает модули в состояние «Требуется подтверждение» и открывает формы.
+- В списке файлов (история) остаются все загруженные документы даже после подтверждения. 【F:src/pages/profile/verification/history/VerificationHistory.jsx†L1-L49】
