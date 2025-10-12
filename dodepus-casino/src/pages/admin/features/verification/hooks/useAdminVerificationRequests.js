@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   listAdminVerificationRequests,
   subscribeToAdminVerificationRequests,
-} from '../../../../../../local-sim/api/verification.js';
+} from '../../../../../../local-sim/modules/verification/api.js';
 
 const STORAGE_KEY_PREFIX = 'dodepus_profile_v1:';
 

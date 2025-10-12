@@ -1,4 +1,4 @@
-import { loadExtras, saveExtras, pickExtras } from '../auth/profileExtras.js';
+import { loadExtras, saveExtras, pickExtras } from '../../auth/profileExtras.js';
 
 const cloneArray = (value) => (Array.isArray(value) ? value.slice() : []);
 

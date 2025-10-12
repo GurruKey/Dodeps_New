@@ -1,12 +1,12 @@
 import { loadExtras, saveExtras, pickExtras } from './profileExtras';
 import { notifyAdminTransactionsChanged } from '../admin/features/transactions/index.js';
-import { updateVerificationSnapshot } from '../tables/verification.js';
+import { updateVerificationSnapshot } from '../modules/verification/storage.js';
 import {
   normalizeNotes,
   normalizeBooleanMap,
   normalizeStatus,
   normalizeString,
-} from '../logic/verificationHelpers.js';
+} from '../modules/verification/helpers.js';
 
 const toNumber = (value, fallback = 0) => {
   const numeric = Number(value);

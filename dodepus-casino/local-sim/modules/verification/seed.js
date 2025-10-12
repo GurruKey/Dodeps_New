@@ -1,4 +1,4 @@
-import { normalizeBooleanMap } from '../logic/verificationHelpers.js';
+import { normalizeBooleanMap } from './helpers.js';
 
 const clone = (value) => {
   try {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { listAdminVerificationIdleAccounts } from '../../../../../../local-sim/api/verification.js';
+import { listAdminVerificationIdleAccounts } from '../../../../../../local-sim/modules/verification/api.js';
 
 export function useAdminVerificationIdleAccounts() {
   const [accounts, setAccounts] = useState([]);
