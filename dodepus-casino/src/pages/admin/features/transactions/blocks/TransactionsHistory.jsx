@@ -7,7 +7,7 @@ import TransactionsTable from '../components/TransactionsTable.jsx';
 import { METHOD_LABELS, STATUS_VARIANTS, TYPE_VARIANTS } from '../constants.js';
 import { formatMethod, normalizeMethodValue } from '../utils.js';
 import { useAdminTransactions } from '../hooks/useAdminTransactions.js';
-import { useAuth } from '../../../../../app/AuthContext.jsx';
+import { useAuth } from '../../../../../app/providers';
 import { appendAdminLog } from '../../../../../../local-sim/admin/logs/index.js';
 
 const TRANSACTIONS_VIEW_CONTEXT = 'transactions-view';

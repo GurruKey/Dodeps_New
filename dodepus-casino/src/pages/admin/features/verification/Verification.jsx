@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Stack, Form } from 'react-bootstrap';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../../../app/AuthContext.jsx';
+import { useAuth } from '../../../../app/providers';
 import {
   updateVerificationRequestStatus,
   resetVerificationRequestModules,

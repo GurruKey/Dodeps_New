@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, Button, Form, Row, Col, Badge } from 'react-bootstrap';
-import { useAuth } from '../app/AuthContext.jsx';
+import { useAuth } from '../app/providers';
 
 export default function Profile() {
   const { user, addBalance, setBalance, logout } = useAuth();

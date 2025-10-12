@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Card, Form, Row, Col, InputGroup, Dropdown, Alert } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/AuthContext.jsx';
+import { useAuth } from '../../../../../app/providers';
 import {
   useVerificationModules,
   computeModuleLocks,

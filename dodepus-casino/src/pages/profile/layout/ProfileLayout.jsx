@@ -1,6 +1,6 @@
 import { Container, Row, Col, Nav, Badge } from 'react-bootstrap';
 import { NavLink, Outlet } from 'react-router-dom';
-import { useAuth } from '../../../app/AuthContext.jsx';
+import { useAuth } from '../../../app/providers';
 import { useVerificationModules } from '../../../shared/verification/index.js';
 
 export default function ProfileLayout() {

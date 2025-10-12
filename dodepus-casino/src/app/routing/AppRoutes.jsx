@@ -1,10 +1,8 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from './AuthContext.jsx';
-
-import Home from '../pages/home';
-import Lobby from '../pages/lobby';
-import Game from '../pages/game';
-import Admin from '../pages/admin';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Home from '../../pages/home';
+import Lobby from '../../pages/lobby';
+import Game from '../../pages/game';
+import Admin from '../../pages/admin';
 import {
   AdminOverviewPage,
   AdminClientsPage,
@@ -19,47 +17,25 @@ import {
   AdminAdministratorsChatPage,
   AdminStaffChatPage,
   AdminLogPage,
-} from '../pages/admin/features';
-import { ProviderDetailsPage, ProvidersListPage } from '../pages/catalog/providers';
-import CategoriesPage from '../pages/catalog/categories';
-import NotFound from '../pages/not-found';
+} from '../../pages/admin/features';
+import { ProviderDetailsPage, ProvidersListPage } from '../../pages/catalog/providers';
+import CategoriesPage from '../../pages/catalog/categories';
+import NotFound from '../../pages/not-found';
 
-import Login from '../pages/auth/login';
-import Register from '../pages/auth/register';
+import Login from '../../pages/auth/login';
+import Register from '../../pages/auth/register';
 
-import ProfileLayout from '../pages/profile/layout';
-import Personal from '../pages/profile/personal';
-import Wallet from '../pages/profile/wallet';
-import Terminal from '../pages/profile/terminal';
-import History from '../pages/profile/history';
-import Promos from '../pages/profile/promos';
-import Season from '../pages/profile/season';
-import GamesHistory from '../pages/profile/games-history';
-import ProfileVerification from '../pages/profile/verification';
+import ProfileLayout from '../../pages/profile/layout';
+import Personal from '../../pages/profile/personal';
+import Wallet from '../../pages/profile/wallet';
+import Terminal from '../../pages/profile/terminal';
+import History from '../../pages/profile/history';
+import Promos from '../../pages/profile/promos';
+import Season from '../../pages/profile/season';
+import GamesHistory from '../../pages/profile/games-history';
+import ProfileVerification from '../../pages/profile/verification';
 
-function RequireAuth({ children }) {
-  const { isAuthed } = useAuth();
-  const location = useLocation();
-  if (!isAuthed) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
-  return children;
-}
-
-function RequireAdmin({ children }) {
-  const { isAuthed, canAccessAdminPanel } = useAuth();
-  const location = useLocation();
-
-  if (!isAuthed) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
-
-  if (!canAccessAdminPanel?.()) {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
-}
+import { RequireAdmin, RequireAuth } from './guards';
 
 export default function AppRoutes() {
   return (

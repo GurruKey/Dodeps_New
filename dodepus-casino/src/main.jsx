@@ -4,17 +4,14 @@ import { BrowserRouter } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css'; // ← добавь эту строку
 import App from './app/App.jsx';
-import { AuthProvider } from './app/AuthContext.jsx';
-import { ThemeProvider } from './app/ThemeContext.jsx';
+import { AppProviders } from './app/providers';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </ThemeProvider>
+      <AppProviders>
+        <App />
+      </AppProviders>
     </BrowserRouter>
   </React.StrictMode>
 );

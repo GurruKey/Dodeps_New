@@ -1,5 +1,5 @@
 import { Card, Table, Badge } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/AuthContext.jsx';
+import { useAuth } from '../../../../../app/providers';
 
 function fmtCurrency(v, curr) {
   try {

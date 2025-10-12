@@ -6,7 +6,7 @@ import {
   DEFAULT_COUNTRY,
   formatPhonePlaceholder,
 } from './country-codes';
-import { useAuth } from '../../app/AuthContext.jsx';
+import { useAuth } from '../../app/providers';
 
 // утилиты
 const onlyDigits = (s) => (s || '').replace(/\D/g, '');

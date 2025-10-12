@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { Button, Alert, Dropdown } from 'react-bootstrap';
 import { Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../../app/AuthContext.jsx';
+import { useAuth } from '../../app/providers';
 import { COUNTRY_CODES, DEFAULT_COUNTRY, formatPhonePlaceholder } from './country-codes';
 
 // утилиты
