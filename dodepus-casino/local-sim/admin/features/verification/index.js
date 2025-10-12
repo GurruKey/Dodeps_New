@@ -7,11 +7,11 @@ import {
   normalizeFieldsPatch,
   mergeFieldStates,
   normalizeNotes,
-} from '../../../logic/verificationHelpers.js';
+} from '../../../modules/verification/helpers.js';
 import {
   readVerificationSnapshot,
   updateVerificationSnapshot,
-} from '../../../tables/verification.js';
+} from '../../../modules/verification/storage.js';
 
 export const ADMIN_VERIFICATION_EVENT = 'dodepus:admin-verification-change';
 

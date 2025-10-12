@@ -7,6 +7,7 @@
 - `local-sim/database/engine.js` — движок с базовыми операциями (`select`, `upsert`, `replaceWhere`, `execute`).
 - `local-sim/database/schema.js` — схема таблиц: `auth_users`, `profiles`, `profile_transactions`, `verification_requests`, `verification_uploads`, `admin_logs`.
 - `local-sim/database/seed.js` — наполнение таблиц предустановленными данными из сидов авторизации и верификации.
+- `local-sim/modules/verification/` — модуль верификации (нормализация данных, seed, API и хранилище снапшотов поверх `profileExtras`).
 
 ## Как это работает
 

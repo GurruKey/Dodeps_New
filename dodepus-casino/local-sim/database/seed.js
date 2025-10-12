@@ -1,7 +1,7 @@
 import { buildSeedUserRecords } from '../auth/accounts/seedLocalAuth.js';
 import { PRESET_ACCOUNTS } from '../auth/accounts/seedAccounts.js';
 import { pickExtras } from '../auth/profileExtras.js';
-import { applyVerificationSeed } from '../seed/verificationSeed.js';
+import { applyVerificationSeed } from '../modules/verification/seed.js';
 import { getLocalDatabase, resetLocalDatabase } from './engine.js';
 import { DEFAULT_LOCAL_DB_SCHEMA } from './schema.js';
 

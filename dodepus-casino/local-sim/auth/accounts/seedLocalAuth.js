@@ -1,6 +1,6 @@
 import { PROFILE_KEY } from '../constants';
 import { pickExtras } from '../profileExtras';
-import { applyVerificationSeed } from '../../seed/verificationSeed.js';
+import { applyVerificationSeed } from '../../modules/verification/seed.js';
 import { PRESET_ACCOUNTS } from './seedAccounts';
 import { applyLocalDatabaseSeed } from '../../database/seed.js';
 

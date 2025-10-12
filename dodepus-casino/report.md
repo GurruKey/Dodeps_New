@@ -1,4 +1,29 @@
 <!-- DO NOT REMOVE:TAKES_START -->
+## TAKE-20251012-012 — Рефакторинг local-sim
+- Автор, Время: gpt-5-codex, 2025-10-12 19:42 (Europe/Kyiv)
+- Резюме: Привёл local-sim к модульной схеме — вынес верификацию в общий модуль, удалил разрозненные каталоги и обновил документацию по структуре.
+- Объём работ:
+  - local-sim/modules/verification/**/*
+  - local-sim/admin/features/verification/index.js
+  - local-sim/auth/accounts/seedLocalAuth.js
+  - local-sim/auth/profileActions.js
+  - local-sim/database/seed.js
+  - src/pages/admin/features/verification/**/*
+  - local-sim/README.md
+  - docs/local-sim-database.md
+  - report.md
+- Чеклист выполнения:
+  - [x] Проанализировать текущие подпапки и файлы local-sim, составить план реорганизации.
+  - [x] Переместить/удалить файлы и обновить импорты под новую структуру.
+  - [x] Обновить документацию/README, описав назначение каждой части local-sim.
+  - [x] Обновить запись в report.md.
+- Критерии приёмки:
+  - [x] Структура local-sim описана простым языком.
+  - [x] Лишние и дублирующие файлы удалены.
+  - [x] Файлы логично разложены по папкам.
+- Блокеры: —
+- Итоги выполнения: Статус: ✅ Выполнено; Что сделано: Выделил модуль верификации, подчистил импорты/seed/документацию и описал структуру local-sim; Что осталось: —; Коммиты/PR: HEAD (refactor: reorganize local-sim verification module); Список затронутых файлов: local-sim/modules/verification/*, local-sim/admin/features/verification/index.js, local-sim/auth/accounts/seedLocalAuth.js, local-sim/auth/profileActions.js, local-sim/database/seed.js, local-sim/README.md, docs/local-sim-database.md, src/pages/admin/features/verification/*, report.md; Замечания: Автотесты не запускал (структурные изменения).
+
 ## TAKE-20251012-011 — Очистка фейковых данных
 - Автор, Время: gpt-5-codex, 2025-10-12 19:08 (Europe/Kyiv)
 - Резюме: Удалил все предустановленные аккаунты, заявки на верификацию и статические логи, оставив local-sim только с динамическими источниками данных.
