@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, Form, Button, Alert } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/AuthContext.jsx';
+import { useAuth } from '../../../../../app/providers';
 import { useVerificationState } from '../../state/useVerificationState.js';
 
 export function EmailVerificationForm({ layout = 'card', autoFocus = false }) {

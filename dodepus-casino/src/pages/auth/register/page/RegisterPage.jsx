@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, Button, Alert } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../../../app/AuthContext.jsx';
+import { useAuth } from '../../../../app/providers';
 
 // блоки (создадим следующими файлами)
 import EmailRegisterForm from '../../../../features/auth/EmailRegisterForm.jsx';

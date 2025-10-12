@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAuth } from '../../../../app/AuthContext.jsx';
+import { useAuth } from '../../../../app/providers';
 import {
   useVerificationModules,
   computeModuleLocks,

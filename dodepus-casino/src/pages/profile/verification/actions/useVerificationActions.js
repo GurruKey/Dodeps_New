@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAuth } from '../../../../app/AuthContext.jsx';
+import { useAuth } from '../../../../app/providers';
 
 export function useVerificationActions() {
   const ctx = useAuth?.() || {};

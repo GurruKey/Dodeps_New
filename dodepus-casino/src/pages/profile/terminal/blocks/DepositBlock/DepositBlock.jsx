@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, Form, Button, Stack, Badge } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/AuthContext.jsx';
+import { useAuth } from '../../../../../app/providers';
 
 export default function DepositBlock() {
   const { user, addBalance, addTransaction } = useAuth();

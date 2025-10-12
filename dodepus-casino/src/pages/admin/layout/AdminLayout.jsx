@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Container, Row, Col, Nav, Card } from 'react-bootstrap';
 import { NavLink, Outlet } from 'react-router-dom';
 
-import { useAuth } from '../../../app/AuthContext.jsx';
+import { useAuth } from '../../../app/providers';
 import { availableRoles, rolePermissionMatrix } from '../features/access/roles/data/roleConfigs.js';
 
 const NAV_ITEMS = [

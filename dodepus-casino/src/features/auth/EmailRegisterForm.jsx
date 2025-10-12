@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Button, Alert } from 'react-bootstrap';
 import { Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../../app/AuthContext.jsx';
+import { useAuth } from '../../app/providers';
 
 export default function EmailRegisterForm({ onSuccess, onError }) {
   const { signUp } = useAuth();

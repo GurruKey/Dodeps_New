@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navbar, Nav, Button, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Coins, Sun, Moon, LogOut } from 'lucide-react';
-import { useAuth } from '../../app/AuthContext.jsx';
+import { useAuth } from '../../app/providers';
 
 function ThemeToggle() {
   const getInitial = () => {

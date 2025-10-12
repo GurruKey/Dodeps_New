@@ -1,6 +1,6 @@
 import { Card, Button, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../../../app/AuthContext.jsx';
+import { useAuth } from '../../../../../app/providers';
 
 function fmtCurrency(v, curr) {
   try {
