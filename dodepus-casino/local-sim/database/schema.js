@@ -3,6 +3,7 @@ export const DEFAULT_LOCAL_DB_SCHEMA = Object.freeze({
   tables: {
     auth_users: { primaryKey: 'id' },
     profiles: { primaryKey: 'id' },
+    profile_transactions: { primaryKey: 'id' },
     verification_requests: { primaryKey: 'id' },
     verification_uploads: { primaryKey: 'id' },
     admin_logs: { primaryKey: 'id' },

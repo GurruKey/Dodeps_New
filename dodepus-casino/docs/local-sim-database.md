@@ -5,7 +5,7 @@
 ## Что внутри
 
 - `local-sim/database/engine.js` — движок с базовыми операциями (`select`, `upsert`, `replaceWhere`, `execute`).
-- `local-sim/database/schema.js` — схема таблиц: `auth_users`, `profiles`, `verification_requests`, `verification_uploads`, `admin_logs`.
+- `local-sim/database/schema.js` — схема таблиц: `auth_users`, `profiles`, `profile_transactions`, `verification_requests`, `verification_uploads`, `admin_logs`.
 - `local-sim/database/seed.js` — наполнение таблиц предустановленными данными из сидов авторизации и верификации.
 
 ## Как это работает
@@ -14,8 +14,8 @@
 2. Любые операции с пользователями проходят через `auth_users`:
    - чтение — `getLocalDatabase().select('auth_users')`;
    - запись — `writeUsers` обновляет и localStorage, и таблицу.
-3. Профили и заявки верификации берутся из базы через `loadExtras`:
-   - профиль (`profiles`) и связанные заявки (`verification_requests`, `verification_uploads`) объединяются в единый snapshot;
+3. Профили и связанные сущности берутся из базы через `loadExtras`:
+   - профиль (`profiles`), заявки (`verification_requests`), загрузки (`verification_uploads`) и транзакции (`profile_transactions`) объединяются в единый snapshot;
    - сохранение (`saveExtras`) синхронизирует все таблицы и оставляет копию в legacy `localStorage`.
 
 ## Мини-SQL

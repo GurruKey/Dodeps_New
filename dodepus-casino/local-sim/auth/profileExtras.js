@@ -96,15 +96,24 @@ const writeLegacyExtras = (uid, extras) => {
   }
 };
 
-const enrichWithVerification = (profile, verificationRequests, verificationUploads) => ({
+const mergeProfileRelations = (profile, verificationRequests, verificationUploads, transactions) => ({
   ...profile,
   verificationRequests: Array.isArray(verificationRequests) ? verificationRequests : [],
   verificationUploads: Array.isArray(verificationUploads) ? verificationUploads : [],
+  transactions: Array.isArray(transactions) ? transactions : [],
 });
 
 const toVerificationRows = (rows, uid) =>
   (Array.isArray(rows) ? rows : [])
     .filter((row) => row && typeof row === 'object')
+    .map((row) => ({
+      ...row,
+      userId: row.userId ?? uid,
+    }));
+
+const toTransactionRows = (rows, uid) =>
+  (Array.isArray(rows) ? rows : [])
+    .filter((row) => row && typeof row === 'object' && row.id)
     .map((row) => ({
       ...row,
       userId: row.userId ?? uid,
@@ -117,7 +126,7 @@ const persistExtras = (uid, extras) => {
   const normalized = pickExtras(extras);
 
   const db = getLocalDatabase();
-  const { verificationRequests, verificationUploads, ...profileFields } = normalized;
+  const { verificationRequests, verificationUploads, transactions, ...profileFields } = normalized;
   db.upsert('profiles', {
     id: uid,
     ...profileFields,
@@ -132,6 +141,11 @@ const persistExtras = (uid, extras) => {
     'verification_uploads',
     (row) => row.userId === uid,
     toVerificationRows(verificationUploads, uid),
+  );
+  db.replaceWhere(
+    'profile_transactions',
+    (row) => row.userId === uid,
+    toTransactionRows(transactions, uid),
   );
 
   writeLegacyExtras(uid, normalized);
@@ -166,8 +180,14 @@ export const loadExtras = (uid) => {
   const profileRow = db.findById('profiles', uid);
   const verificationRequests = db.select('verification_requests', (row) => row.userId === uid);
   const verificationUploads = db.select('verification_uploads', (row) => row.userId === uid);
+  const transactionRows = db.select('profile_transactions', (row) => row.userId === uid);
 
-  if (!profileRow && !verificationRequests.length && !verificationUploads.length) {
+  if (
+    !profileRow &&
+    !verificationRequests.length &&
+    !verificationUploads.length &&
+    !transactionRows.length
+  ) {
     const legacy = readLegacyExtras(uid);
     if (legacy) {
       persistExtras(uid, legacy);
@@ -177,7 +197,12 @@ export const loadExtras = (uid) => {
   }
 
   return pickExtras(
-    enrichWithVerification(profileRow ?? {}, verificationRequests, verificationUploads),
+    mergeProfileRelations(
+      profileRow ?? {},
+      verificationRequests,
+      verificationUploads,
+      transactionRows,
+    ),
   );
 };
 
