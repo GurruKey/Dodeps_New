@@ -370,8 +370,6 @@ export const createProfileActions = (uid) => {
               requestedFields: normalizeBooleanMap(),
               completedFields: normalizeBooleanMap(),
               clearedFields: normalizeBooleanMap(),
-              totalFields: 0,
-              completedCount: 0,
               moduleKey: '',
               history: [],
             });
@@ -396,8 +394,6 @@ export const createProfileActions = (uid) => {
               requestedFields: moduleRequested,
               completedFields: moduleCompleted,
               clearedFields: moduleCleared,
-              totalFields: 1,
-              completedCount: moduleCompleted[moduleKey] ? 1 : 0,
               moduleKey,
               history: buildModuleHistory(request.history, requestId, moduleKey),
             });
@@ -452,7 +448,6 @@ export const createProfileActions = (uid) => {
             clearedFields: emptyMap,
           };
 
-          const completedCount = previousCompleted[moduleKey] ? 1 : 0;
           const nextRequest = {
             ...existing,
             status: 'pending',
@@ -465,8 +460,6 @@ export const createProfileActions = (uid) => {
             clearedFields: normalizeBooleanMap({
               [moduleKey]: previousCleared[moduleKey],
             }),
-            totalFields: 1,
-            completedCount,
             reviewerId: '',
             reviewerName: '',
             reviewerRole: '',
@@ -507,8 +500,6 @@ export const createProfileActions = (uid) => {
           requestedFields,
           completedFields,
           clearedFields: emptyMap,
-          completedCount: 0,
-          totalFields: 1,
           reviewerId: '',
           reviewerName: '',
           reviewerRole: '',
@@ -616,7 +607,6 @@ export const createProfileActions = (uid) => {
       };
 
       const nextHistory = [nextHistoryEntry, ...history];
-      const completedCount = Object.values(completedFieldsNormalized).filter(Boolean).length;
 
       const nextStatus = stillRequested ? 'pending' : 'cancelled';
 
@@ -627,7 +617,6 @@ export const createProfileActions = (uid) => {
         updatedAt: nowIso,
         history: nextHistory,
         notes: normalizeNotes(input.notes) || target.notes || '',
-        completedCount,
         clearedFields: {
           email: Boolean(target?.clearedFields?.email) || clearedMap.email,
           phone: Boolean(target?.clearedFields?.phone) || clearedMap.phone,

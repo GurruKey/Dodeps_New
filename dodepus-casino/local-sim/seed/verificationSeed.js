@@ -28,8 +28,6 @@ const baseRequest = ({ id, userId, status, submittedAt, updatedAt, completed, re
   updatedAt,
   completedFields: normalizeBooleanMap(completed),
   requestedFields: normalizeBooleanMap(requested ?? completed),
-  completedCount: Object.values(normalizeBooleanMap(completed)).filter(Boolean).length,
-  totalFields: 4,
   history: history.map(clone),
 });
 
