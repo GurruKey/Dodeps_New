@@ -53,70 +53,192 @@ const getRequestSortTimestamp = (request) => {
   return 0;
 };
 
+const normalizeBooleanMap = (input = {}) => {
+  if (!input || typeof input !== 'object') {
+    return {};
+  }
+
+  return Object.keys(input).reduce((acc, key) => {
+    acc[key] = Boolean(input[key]);
+    return acc;
+  }, {});
+};
+
+const requestIncludesModule = (request, moduleKey) => {
+  if (!request || !moduleKey) {
+    return false;
+  }
+
+  const requested = normalizeBooleanMap(request.requestedFields ?? request.completedFields);
+  const completed = normalizeBooleanMap(request.completedFields);
+  const cleared = normalizeBooleanMap(request.clearedFields);
+
+  return Boolean(requested[moduleKey] || completed[moduleKey] || cleared[moduleKey]);
+};
+
+const buildModuleSummary = (status, timestamp = 0) => {
+  const summary = {
+    total: 1,
+    approved: status === 'approved' ? 1 : 0,
+    pending: status === 'pending' ? 1 : 0,
+    rejected: status === 'rejected' ? 1 : 0,
+    idle: status === 'idle' ? 1 : 0,
+    latestTimestamp: timestamp || 0,
+    allApproved: status === 'approved',
+    hasPending: status === 'pending',
+    hasRejected: status === 'rejected',
+  };
+
+  return summary;
+};
+
 const buildRequestEntries = (rawRequests = []) => {
   const entries = [];
+  const validRequests = Array.isArray(rawRequests)
+    ? rawRequests.filter((request) => request && typeof request === 'object')
+    : [];
 
-  rawRequests.forEach((request) => {
-    if (!request || typeof request !== 'object') {
+  const requestsById = new Map();
+  const requestsByUser = new Map();
+
+  validRequests.forEach((request) => {
+    const normalizedUserId = request.userId || request.id || '';
+    if (!normalizedUserId) {
       return;
     }
 
-    const modulesMap = deriveModuleStatesFromRequests([request]);
-    const summary = summarizeModuleStates(modulesMap);
-    const attachmentsCount = Array.isArray(request.attachments) ? request.attachments.length : 0;
-    const normalizedUserId = request.userId || request.id || '';
-    const displayName = getUserDisplayName(request || { userId: normalizedUserId });
+    const idCandidates = [request.id, request.requestId];
+    idCandidates.forEach((candidate) => {
+      if (!candidate) {
+        return;
+      }
+      const key = String(candidate);
+      if (key) {
+        requestsById.set(key, request);
+      }
+    });
 
-    const searchIndex = [
-      request.id,
-      normalizedUserId,
-      displayName,
-      request.userEmail,
-      request.userPhone,
-      request?.profile?.firstName,
-      request?.profile?.lastName,
-      request?.profile?.nickname,
-    ]
-      .filter(Boolean)
-      .map((value) => String(value).toLowerCase())
-      .join(' ');
+    if (!requestsByUser.has(normalizedUserId)) {
+      requestsByUser.set(normalizedUserId, []);
+    }
 
-    const modules = VERIFICATION_MODULES.map((module) => ({
-      key: module.key,
-      label: module.label,
-      status: modulesMap[module.key]?.status || 'idle',
-    }));
+    requestsByUser.get(normalizedUserId).push(request);
+  });
 
-    const section = summary.hasPending
-      ? 'requests'
-      : summary.hasRejected
-        ? 'rejected'
-        : summary.allApproved
-          ? 'verified'
-          : 'partial';
+  requestsByUser.forEach((userRequests, userId) => {
+    if (!Array.isArray(userRequests) || userRequests.length === 0) {
+      return;
+    }
 
-    entries.push({
-      userId: normalizedUserId,
-      displayName,
-      requestId: request.id || '',
-      modules,
-      modulesMap,
-      summary,
-      attachmentsCount,
-      primaryRequest: request,
-      pendingRequest: request.status === 'pending' ? request : null,
-      rejectedRequest: request.status === 'rejected' ? request : null,
-      approvedRequest: request.status === 'approved' ? request : null,
-      idleRequest: request.status === 'idle' ? request : null,
-      latestRequest: request,
-      sortTimestamp: getRequestSortTimestamp(request),
-      searchIndex,
-      section,
-      submittedAt: request.submittedAt || '',
-      updatedAt: request.updatedAt || '',
-      reviewedAt: request.reviewedAt || '',
-      reviewer: request.reviewer || {},
-      status: request.status || '',
+    const modulesMap = deriveModuleStatesFromRequests(userRequests);
+    const overallSummary = summarizeModuleStates(modulesMap);
+    const primary = userRequests[0];
+    const displayName = getUserDisplayName(primary || { userId });
+
+    VERIFICATION_MODULES.forEach((module) => {
+      const moduleState = modulesMap[module.key];
+      if (!moduleState) {
+        return;
+      }
+
+      const moduleStatus = moduleState.status || 'idle';
+      if (moduleStatus === 'idle' && !moduleState.requested && !moduleState.completed) {
+        return;
+      }
+
+      const moduleRequest = (() => {
+        if (moduleState.requestId) {
+          const request = requestsById.get(String(moduleState.requestId));
+          if (request) {
+            return request;
+          }
+        }
+
+        return (
+          userRequests.find((request) => requestIncludesModule(request, module.key)) ||
+          primary ||
+          null
+        );
+      })();
+
+      const attachmentsCount = Array.isArray(moduleRequest?.attachments)
+        ? moduleRequest.attachments.length
+        : 0;
+
+      const requestId =
+        (moduleRequest?.id && String(moduleRequest.id)) ||
+        (moduleRequest?.requestId && String(moduleRequest.requestId)) ||
+        String(moduleState.requestId || '') ||
+        '';
+
+      const summary = buildModuleSummary(moduleStatus, moduleState.timestamp || 0);
+
+      const section = (() => {
+        if (moduleStatus === 'pending') {
+          return 'requests';
+        }
+        if (moduleStatus === 'rejected') {
+          return 'rejected';
+        }
+        if (moduleStatus === 'approved') {
+          return overallSummary.allApproved ? 'verified' : 'partial';
+        }
+        return 'partial';
+      })();
+
+      const sortTimestamp =
+        moduleState.timestamp || getRequestSortTimestamp(moduleRequest) || overallSummary.latestTimestamp;
+
+      const searchIndex = [
+        requestId,
+        userId,
+        displayName,
+        module.label,
+        moduleRequest?.userEmail,
+        moduleRequest?.userPhone,
+        moduleRequest?.profile?.firstName,
+        moduleRequest?.profile?.lastName,
+        moduleRequest?.profile?.nickname,
+      ]
+        .filter(Boolean)
+        .map((value) => String(value).toLowerCase())
+        .join(' ');
+
+      const baseRequestStatus = moduleRequest?.status || moduleStatus;
+
+      entries.push({
+        userId,
+        displayName,
+        requestId,
+        moduleKey: module.key,
+        moduleLabel: module.label,
+        moduleStatus,
+        modules: [
+          {
+            key: module.key,
+            label: module.label,
+            status: moduleStatus,
+          },
+        ],
+        modulesMap,
+        summary,
+        overallSummary,
+        attachmentsCount,
+        primaryRequest: moduleRequest || primary,
+        pendingRequest: moduleStatus === 'pending' ? moduleRequest : null,
+        rejectedRequest: moduleStatus === 'rejected' ? moduleRequest : null,
+        approvedRequest: moduleStatus === 'approved' ? moduleRequest : null,
+        idleRequest: moduleStatus === 'idle' ? moduleRequest : null,
+        latestRequest: moduleRequest || primary,
+        sortTimestamp,
+        searchIndex,
+        section,
+        submittedAt: moduleRequest?.submittedAt || '',
+        updatedAt: moduleRequest?.updatedAt || '',
+        reviewedAt: moduleRequest?.reviewedAt || '',
+        reviewer: moduleRequest?.reviewer || {},
+        status: baseRequestStatus || moduleStatus,
+      });
     });
   });
 
