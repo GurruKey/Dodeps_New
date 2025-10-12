@@ -1,11 +1,5 @@
-import { useMemo } from 'react';
-import { Card, Table, Badge } from 'react-bootstrap';
+import { Card, Table } from 'react-bootstrap';
 import { useVerificationState } from '../state/useVerificationState.js';
-import {
-  buildVerificationTimeline,
-  formatModuleList,
-  VERIFICATION_STATUS_LABELS,
-} from '../../../../shared/verification/index.js';
 
 const DOCUMENT_TYPE_LABELS = Object.freeze({
   internet_statement: 'Интернет-выписка',
@@ -16,20 +10,6 @@ const DOCUMENT_TYPE_LABELS = Object.freeze({
   residence_permit: 'Вид на жительство',
 });
 
-const CATEGORY_LABELS = Object.freeze({
-  address: 'Подтверждение адреса',
-  identity: 'Подтверждение личности',
-});
-
-const getCategoryLabel = (upload) => {
-  const raw =
-    upload?.verificationCategory ||
-    upload?.verificationKind ||
-    upload?.category ||
-    upload?.kind;
-  return CATEGORY_LABELS[String(raw).toLowerCase()] || 'Документ';
-};
-
 const getDocumentLabel = (upload) => {
   if (!upload || typeof upload !== 'object') return 'Документ';
   const label =
@@ -39,126 +19,36 @@ const getDocumentLabel = (upload) => {
   return label || 'Документ';
 };
 
-const formatDateTime = (value) => {
-  if (!value) return '—';
-  try {
-    const date = new Date(value);
-    if (!Number.isNaN(date.getTime())) {
-      return date.toLocaleString('ru-RU');
-    }
-  } catch (error) {
-    console.warn('Failed to format verification history date', error);
-  }
-  return value || '—';
-};
-
-const getStatusLabel = (event) => {
-  if (event.type === 'submitted') {
-    return 'Запрос отправлен';
-  }
-
-  if (event.type === 'cancelled' || event.status === 'cancelled') {
-    return 'Запрос отменён клиентом';
-  }
-
-  if (event.type === 'reset' || event.status === 'reset') {
-    return 'Статусы сброшены администратором';
-  }
-
-  const status = String(event.status || '').toLowerCase();
-  return VERIFICATION_STATUS_LABELS[status] || 'Обновление';
-};
-
-const getActorBadge = (event) => {
-  const actor = String(event.actor || event.source || '').toLowerCase();
-  if (!actor) {
-    return null;
-  }
-  if (actor === 'client') {
-    return <Badge bg="secondary">Клиент</Badge>;
-  }
-  if (actor === 'admin') {
-    return <Badge bg="dark">Администратор</Badge>;
-  }
-  return null;
-};
-
 export function VerificationHistory() {
   const { user } = useVerificationState();
   const uploads = Array.isArray(user?.verificationUploads) ? user.verificationUploads : [];
-  const timeline = useMemo(
-    () => buildVerificationTimeline(user?.verificationRequests),
-    [user?.verificationRequests],
-  );
 
   return (
     <Card>
       <Card.Body>
-        <Card.Title className="mb-3">История</Card.Title>
+        <Card.Title className="mb-3">Отправленные файлы</Card.Title>
 
-        <div className="d-grid gap-4">
-          <div>
-            <h6 className="fw-semibold mb-2">Решения и заявки</h6>
-            {timeline.length === 0 ? (
-              <div className="text-secondary">История пока отсутствует.</div>
-            ) : (
-              <Table responsive hover className="mb-0 align-middle">
-                <thead>
-                  <tr>
-                    <th style={{ width: 220 }}>Когда</th>
-                    <th style={{ width: 220 }}>Статус</th>
-                    <th style={{ width: 220 }}>Верификация</th>
-                    <th>Комментарий</th>
+        {uploads.length === 0 ? (
+          <div className="text-secondary">Пока нет отправленных файлов.</div>
+        ) : (
+          <Table responsive hover className="mb-0 align-middle">
+            <thead>
+              <tr>
+                <th>Файл</th>
+              </tr>
+            </thead>
+            <tbody>
+              {uploads.map((upload) => {
+                const fileName = upload?.name || getDocumentLabel(upload);
+                return (
+                  <tr key={upload.id}>
+                    <td>{fileName}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {timeline.map((event) => (
-                    <tr key={event.id}>
-                      <td>{formatDateTime(event.updatedAt)}</td>
-                      <td>
-                        <div className="d-flex flex-column gap-1">
-                          <span>{getStatusLabel(event)}</span>
-                          {getActorBadge(event)}
-                        </div>
-                      </td>
-                      <td>{formatModuleList(event.modules) || '—'}</td>
-                      <td>{event.notes ? <span>{event.notes}</span> : <span className="text-secondary">—</span>}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            )}
-          </div>
-
-          <div>
-            <h6 className="fw-semibold mb-2">Загруженные документы</h6>
-            {uploads.length === 0 ? (
-              <div className="text-secondary">Пока нет загрузок.</div>
-            ) : (
-              <Table responsive hover className="mb-0 align-middle">
-                <thead>
-                  <tr>
-                    <th style={{ width: 220 }}>Когда</th>
-                    <th style={{ width: 220 }}>Назначение</th>
-                    <th>Документ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {uploads.map((u) => (
-                    <tr key={u.id}>
-                      <td>{formatDateTime(u.uploadedAt)}</td>
-                      <td>{getCategoryLabel(u)}</td>
-                      <td>
-                        <div className="fw-medium">{getDocumentLabel(u)}</div>
-                        <div className="text-secondary small text-truncate">{u.name}</div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            )}
-          </div>
-        </div>
+                );
+              })}
+            </tbody>
+          </Table>
+        )}
       </Card.Body>
     </Card>
   );
