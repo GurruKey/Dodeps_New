@@ -8,6 +8,7 @@ import {
 import { composeUser } from './composeUser';
 import { loadExtras, saveExtras } from './profileExtras';
 import { availableRoles } from '../../src/pages/admin/features/access/roles/data/roleConfigs.js';
+import { getLocalDatabase } from '../database/engine.js';
 
 const USERS_KEY = 'dodepus_local_users_v1';
 const SESSION_KEY = 'dodepus_local_session_v1';
@@ -37,8 +38,20 @@ const requireStorage = () => {
 };
 
 const readUsers = (storage = tryGetStorage()) => {
-  if (!storage) return buildSeedUserRecords();
-  return ensureSeededAuthStorage({ storage, usersKey: USERS_KEY });
+  const db = getLocalDatabase();
+  const dbUsers = db.select('auth_users');
+  if (dbUsers.length) {
+    return dbUsers;
+  }
+
+  if (!storage) {
+    const fallback = buildSeedUserRecords();
+    db.replaceWhere('auth_users', () => true, fallback);
+    return fallback;
+  }
+
+  ensureSeededAuthStorage({ storage, usersKey: USERS_KEY });
+  return db.select('auth_users');
 };
 
 const writeUsers = (users, storage = requireStorage()) => {
@@ -46,6 +59,16 @@ const writeUsers = (users, storage = requireStorage()) => {
     storage.setItem(USERS_KEY, JSON.stringify(users));
   } catch {
     // ignore quota errors
+  }
+
+  try {
+    const db = getLocalDatabase();
+    const normalized = Array.isArray(users)
+      ? users.filter((user) => user && typeof user === 'object')
+      : [];
+    db.replaceWhere('auth_users', () => true, normalized);
+  } catch (err) {
+    console.warn('[local-sim] Не удалось обновить таблицу auth_users в локальной БД', err);
   }
 };
 

@@ -1,4 +1,29 @@
 <!-- DO NOT REMOVE:TAKES_START -->
+## TAKE-20251012-005 — Заглушка local-sim БД
+- Автор, Время: gpt-5-codex, 2025-10-12 13:51 (Europe/Kyiv)
+- Резюме: Реализовал SQL-подобный слой local-sim/database, чтобы весь проект мог работать на локальной БД без внешних сервисов. Перенастроил авторизацию и профили на новую прослойку и описал порядок запуска.
+- Объём работ:
+  - docs/local-sim-database.md
+  - local-sim/README.md
+  - local-sim/auth/accounts/seedLocalAuth.js
+  - local-sim/auth/api.js
+  - local-sim/auth/profileExtras.js
+  - local-sim/database/engine.js
+  - local-sim/database/schema.js
+  - local-sim/database/seed.js
+  - local-sim/database/storage.js
+  - report.md
+- Чеклист выполнения:
+  - [x] Проанализировать текущую структуру local-sim и определить точки подключения БД.
+  - [x] Реализовать локальную заглушку базы данных и маршрутизацию запросов через неё.
+  - [x] Обновить документацию по запуску проверки проекта.
+- Критерии приёмки:
+  - [x] Все запросы проекта проходят через local-sim и временную БД.
+  - [x] Документация содержит шаги по запуску локальной проверки.
+- Блокеры: —
+- Итоги выполнения: Статус: ✅ Выполнено; Что сделано: Добавил SQL-подобный движок, синхронизировал auth_users/профили и обновил инструкцию по запуску; Что осталось: —; Коммиты/PR: 9f5b64a9bc7984d46ca95472f99b580bd59f6052; Список затронутых файлов: docs/local-sim-database.md, local-sim/README.md, local-sim/auth/accounts/seedLocalAuth.js, local-sim/auth/api.js, local-sim/auth/profileExtras.js, local-sim/database/engine.js, local-sim/database/schema.js, local-sim/database/seed.js, local-sim/database/storage.js, report.md; Замечания: `npm run lint` завершается существующими ошибками (react-refresh, хуки, no-empty).
+
+
 ## TAKE-20251012-004 — Синхронизация модулей верификации
 - Автор, Время: gpt-5-codex, 2025-10-12 10:14 (Europe/Kyiv)
 - Резюме: Убрал вспомогательные счётчики модулей из local-sim, чтобы профиль и админка работали с единым списком полей. Обновил сиды и обработчики статусов, теперь поток profile → local-sim → admin использует только реальные карты модулей.

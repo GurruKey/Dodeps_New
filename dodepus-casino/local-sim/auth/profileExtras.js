@@ -1,4 +1,5 @@
 import { PROFILE_KEY } from './constants';
+import { getLocalDatabase } from '../database/engine.js';
 
 const GENDER_MALE_VALUES = Object.freeze([
   'male',
@@ -62,6 +63,80 @@ const normalizeGender = (value) => {
   return '';
 };
 
+const readLegacyExtras = (uid) => {
+  if (!uid) {
+    return null;
+  }
+  try {
+    if (typeof globalThis === 'undefined' || !globalThis.localStorage) {
+      return null;
+    }
+    const raw = globalThis.localStorage.getItem(PROFILE_KEY(uid));
+    if (!raw) {
+      return null;
+    }
+    return pickExtras(JSON.parse(raw));
+  } catch (err) {
+    console.warn('Не удалось загрузить профиль из localStorage, будет использовано значение по умолчанию', err);
+    return null;
+  }
+};
+
+const writeLegacyExtras = (uid, extras) => {
+  if (!uid) {
+    return;
+  }
+  try {
+    if (typeof globalThis === 'undefined' || !globalThis.localStorage) {
+      return;
+    }
+    globalThis.localStorage.setItem(PROFILE_KEY(uid), JSON.stringify(extras));
+  } catch (err) {
+    console.warn('Не удалось сохранить профиль в localStorage', err);
+  }
+};
+
+const enrichWithVerification = (profile, verificationRequests, verificationUploads) => ({
+  ...profile,
+  verificationRequests: Array.isArray(verificationRequests) ? verificationRequests : [],
+  verificationUploads: Array.isArray(verificationUploads) ? verificationUploads : [],
+});
+
+const toVerificationRows = (rows, uid) =>
+  (Array.isArray(rows) ? rows : [])
+    .filter((row) => row && typeof row === 'object')
+    .map((row) => ({
+      ...row,
+      userId: row.userId ?? uid,
+    }));
+
+const persistExtras = (uid, extras) => {
+  if (!uid) {
+    return;
+  }
+  const normalized = pickExtras(extras);
+
+  const db = getLocalDatabase();
+  const { verificationRequests, verificationUploads, ...profileFields } = normalized;
+  db.upsert('profiles', {
+    id: uid,
+    ...profileFields,
+    updatedAt: new Date().toISOString(),
+  });
+  db.replaceWhere(
+    'verification_requests',
+    (row) => row.userId === uid,
+    toVerificationRows(verificationRequests, uid),
+  );
+  db.replaceWhere(
+    'verification_uploads',
+    (row) => row.userId === uid,
+    toVerificationRows(verificationUploads, uid),
+  );
+
+  writeLegacyExtras(uid, normalized);
+};
+
 export const pickExtras = (u = {}) => ({
   nickname: u.nickname ?? (u.email || ''),
   firstName: u.firstName ?? '',
@@ -83,19 +158,29 @@ export const pickExtras = (u = {}) => ({
 });
 
 export const loadExtras = (uid) => {
-  try {
-    const raw = localStorage.getItem(PROFILE_KEY(uid));
-    return raw ? pickExtras(JSON.parse(raw)) : pickExtras();
-  } catch (err) {
-    console.warn('Не удалось загрузить локальный профиль пользователя', err);
+  if (!uid) {
     return pickExtras();
   }
+
+  const db = getLocalDatabase();
+  const profileRow = db.findById('profiles', uid);
+  const verificationRequests = db.select('verification_requests', (row) => row.userId === uid);
+  const verificationUploads = db.select('verification_uploads', (row) => row.userId === uid);
+
+  if (!profileRow && !verificationRequests.length && !verificationUploads.length) {
+    const legacy = readLegacyExtras(uid);
+    if (legacy) {
+      persistExtras(uid, legacy);
+      return pickExtras(legacy);
+    }
+    return pickExtras();
+  }
+
+  return pickExtras(
+    enrichWithVerification(profileRow ?? {}, verificationRequests, verificationUploads),
+  );
 };
 
 export const saveExtras = (uid, extras) => {
-  try {
-    localStorage.setItem(PROFILE_KEY(uid), JSON.stringify(pickExtras(extras)));
-  } catch (err) {
-    console.warn('Не удалось сохранить локальные данные профиля', err);
-  }
+  persistExtras(uid, extras);
 };

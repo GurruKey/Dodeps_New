@@ -2,6 +2,7 @@ import { PROFILE_KEY } from '../constants';
 import { pickExtras } from '../profileExtras';
 import { applyVerificationSeed } from '../../seed/verificationSeed.js';
 import { PRESET_ACCOUNTS } from './seedAccounts';
+import { applyLocalDatabaseSeed } from '../../database/seed.js';
 
 const ADMIN_ROLES = new Set(['admin', 'owner']);
 
@@ -143,6 +144,8 @@ export function seedLocalAuthStorage({ storage, usersKey }) {
       console.warn(`Не удалось сохранить профиль пользователя ${record.id}`, err);
     }
   });
+
+  applyLocalDatabaseSeed();
 
   return records;
 }
