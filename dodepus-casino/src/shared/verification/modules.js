@@ -65,6 +65,42 @@ const normalizeBooleanMap = (input = {}) => {
   }, {});
 };
 
+const collectModuleKeys = (modules) => {
+  if (Array.isArray(modules)) {
+    return modules.filter((key) => MODULE_KEYS.includes(key));
+  }
+
+  if (!modules || typeof modules !== 'object') {
+    return [];
+  }
+
+  return MODULE_KEYS.filter((key) => {
+    const value = modules[key];
+
+    if (!value) {
+      return false;
+    }
+
+    if (typeof value === 'object') {
+      if ('requested' in value || 'completed' in value || 'cleared' in value) {
+        if (value.cleared) {
+          return true;
+        }
+
+        return Boolean(value.requested || value.completed);
+      }
+
+      if ('status' in value) {
+        return Boolean(value.status && value.status !== 'idle');
+      }
+
+      return true;
+    }
+
+    return Boolean(value);
+  });
+};
+
 const parseTimestamp = (value) => {
   if (!value) {
     return 0;
@@ -426,8 +462,32 @@ export const buildVerificationTimeline = (requests) => {
     }
   });
 
+  const expandedEvents = events.flatMap((event) => {
+    const moduleKeys = collectModuleKeys(event.modules);
+
+    if (moduleKeys.length <= 1) {
+      if (moduleKeys.length === 1) {
+        const [singleKey] = moduleKeys;
+        return [
+          {
+            ...event,
+            modules: { [singleKey]: true },
+          },
+        ];
+      }
+
+      return [event];
+    }
+
+    return moduleKeys.map((key) => ({
+      ...event,
+      id: `${event.id}:module:${key}`,
+      modules: { [key]: true },
+    }));
+  });
+
   const byId = new Map();
-  events.forEach((event) => {
+  expandedEvents.forEach((event) => {
     if (!event || !event.id) {
       return;
     }
@@ -442,16 +502,15 @@ export const buildVerificationTimeline = (requests) => {
 };
 
 export const formatModuleList = (modules) => {
-  const map = ensureModuleMap(
-    Array.isArray(modules)
-      ? modules.reduce((acc, key) => {
-          acc[key] = true;
-          return acc;
-        }, {})
-      : modules,
-  );
+  const moduleKeys = collectModuleKeys(modules);
 
-  return VERIFICATION_MODULES.filter((module) => map[module.key])
+  if (moduleKeys.length === 0) {
+    return '';
+  }
+
+  const allowed = new Set(moduleKeys);
+
+  return VERIFICATION_MODULES.filter((module) => allowed.has(module.key))
     .map((module) => module.label)
     .join(', ');
 };
