@@ -7,6 +7,8 @@ export { default as AdminPromoCreatePage } from './promo/create/index.js';
 export { default as AdminPromoArchivePage } from './promo/archive/index.js';
 export { default as AdminRolesPage } from './access/roles/index.js';
 export { default as AdminRoleEditPage } from './access/role-edit/index.js';
+export { default as AdminRanksPage } from './access/ranks/index.js';
+export { default as AdminRankEditPage } from './access/rank-edit/index.js';
 export { default as AdminModeratorsChatPage } from './communications/moderators-chat/index.js';
 export { default as AdminAdministratorsChatPage } from './communications/administrators-chat/index.js';
 export { default as AdminStaffChatPage } from './communications/staff-chat/index.js';

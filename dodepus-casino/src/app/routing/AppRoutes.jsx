@@ -13,6 +13,8 @@ import {
   AdminPromoArchivePage,
   AdminRolesPage,
   AdminRoleEditPage,
+  AdminRanksPage,
+  AdminRankEditPage,
   AdminModeratorsChatPage,
   AdminAdministratorsChatPage,
   AdminStaffChatPage,
@@ -73,6 +75,8 @@ export default function AppRoutes() {
         <Route path="promocode-archive" element={<AdminPromoArchivePage />} />
         <Route path="roles" element={<AdminRolesPage />} />
         <Route path="role-edit" element={<AdminRoleEditPage />} />
+        <Route path="ranks" element={<AdminRanksPage />} />
+        <Route path="rank-edit" element={<AdminRankEditPage />} />
         <Route path="transactions" element={<AdminTransactionsPage />} />
         <Route path="verification" element={<AdminVerificationPage />} />
         <Route path="moderators-chat" element={<AdminModeratorsChatPage />} />
