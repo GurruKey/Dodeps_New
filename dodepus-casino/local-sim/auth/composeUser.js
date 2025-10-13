@@ -1,5 +1,9 @@
 import { pickExtras } from './profileExtras';
 import { availableRoles } from '../../src/pages/admin/features/access/roles/data/roleConfigs.js';
+import {
+  availableRanks,
+  rankBenefitMatrix,
+} from '../../src/pages/admin/features/access/ranks/data/rankConfigs.js';
 
 const collectRoles = (...sources) => {
   const normalized = [];
@@ -95,6 +99,90 @@ const resolveRoleId = (record, extras) => {
   return match?.id ?? null;
 };
 
+const getRankConfig = (rankId) => {
+  if (!rankId) return null;
+  return availableRanks.find((rank) => rank.id === rankId) ?? null;
+};
+
+const resolveRankId = (record, extras) => {
+  const directValues = [
+    record?.playerRankId,
+    record?.user_metadata?.playerRankId,
+    record?.app_metadata?.playerRankId,
+    extras?.playerRankId,
+    record?.user_metadata?.rankId,
+    record?.app_metadata?.rankId,
+  ];
+
+  for (const value of directValues) {
+    if (!value) continue;
+    const candidate = getRankConfig(value);
+    if (candidate) {
+      return candidate.id;
+    }
+  }
+
+  const hasPlayerGroup =
+    record?.role === 'player' ||
+    record?.user_metadata?.role === 'player' ||
+    record?.app_metadata?.role === 'player';
+
+  if (hasPlayerGroup) {
+    return 'user';
+  }
+
+  return 'user';
+};
+
+const resolveRankTier = (record, extras, rankId) => {
+  const tierValues = [
+    record?.playerRankTier,
+    record?.user_metadata?.playerRankTier,
+    record?.app_metadata?.playerRankTier,
+    record?.user_metadata?.tier,
+    record?.app_metadata?.tier,
+    extras?.playerRankTier,
+  ].filter((value) => typeof value === 'number' && Number.isFinite(value));
+
+  if (tierValues.length) {
+    return tierValues[0];
+  }
+
+  const config = getRankConfig(rankId);
+  return typeof config?.tier === 'number' ? config.tier : null;
+};
+
+const getRankBenefitTemplate = (rankId) => {
+  const template = rankBenefitMatrix.find((rank) => rank.rankId === rankId);
+  if (!template) return {};
+  return Object.keys(template.benefits ?? {}).reduce((acc, key) => {
+    acc[key] = Boolean(template.benefits[key]);
+    return acc;
+  }, {});
+};
+
+const resolveRankBenefits = (record, extras, rankId) => {
+  const template = getRankBenefitTemplate(rankId);
+  const sources = [
+    template,
+    record?.playerRankBenefits,
+    record?.user_metadata?.playerRankBenefits,
+    record?.app_metadata?.playerRankBenefits,
+    extras?.playerRankBenefits,
+  ];
+
+  const merged = {};
+
+  sources.forEach((source) => {
+    if (!source || typeof source !== 'object') return;
+    Object.entries(source).forEach(([key, value]) => {
+      merged[key] = Boolean(value);
+    });
+  });
+
+  return merged;
+};
+
 export function composeUser(record, extras) {
   if (!record) return null;
   const emailVerified =
@@ -121,6 +209,11 @@ export function composeUser(record, extras) {
     roles[0] ||
     'user';
 
+  const playerRankId = resolveRankId(record, extras);
+  const playerRankTier = resolveRankTier(record, extras, playerRankId);
+  const playerRankBenefits = resolveRankBenefits(record, extras, playerRankId);
+  const playerRankConfig = getRankConfig(playerRankId);
+
   return {
     id: record.id,
     email: record.email ?? '',
@@ -132,6 +225,11 @@ export function composeUser(record, extras) {
     role,
     roleId: resolveRoleId(record, extras),
     isAdmin: resolveAdminFlag(record, extras),
+    playerRankId,
+    playerRank: playerRankConfig?.group ?? 'player',
+    playerRankName: playerRankConfig?.name ?? playerRankId,
+    playerRankTier: playerRankTier ?? undefined,
+    playerRankBenefits,
     ...pickExtras({ ...extras, emailVerified, email: record.email, phone: record.phone }),
   };
 }

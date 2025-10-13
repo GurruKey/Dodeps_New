@@ -8,6 +8,11 @@ import {
 import { composeUser } from './composeUser';
 import { loadExtras, saveExtras } from './profileExtras';
 import { availableRoles } from '../../src/pages/admin/features/access/roles/data/roleConfigs.js';
+import {
+  availableRanks,
+  rankBenefitMatrix,
+  findRankById,
+} from '../../src/pages/admin/features/access/ranks/data/rankConfigs.js';
 import { getLocalDatabase } from '../database/engine.js';
 
 const USERS_KEY = 'dodepus_local_users_v1';
@@ -104,6 +109,40 @@ const getRoleConfigById = (roleId) => {
   return normalizeRoleConfig(match);
 };
 
+const normalizeRankConfig = (rankConfig) => {
+  if (!rankConfig) return null;
+  const tier =
+    typeof rankConfig.tier === 'number' && Number.isFinite(rankConfig.tier)
+      ? rankConfig.tier
+      : undefined;
+
+  return {
+    id: rankConfig.id,
+    name: rankConfig.name ?? rankConfig.id,
+    group: typeof rankConfig.group === 'string' ? rankConfig.group : 'player',
+    tier,
+    description: rankConfig.description ?? '',
+  };
+};
+
+const getRankConfigById = (rankId) => {
+  const normalizedId = String(rankId ?? '').trim();
+  if (!normalizedId) return null;
+  const match = findRankById(normalizedId) ?? availableRanks.find((rank) => rank.id === normalizedId);
+  return normalizeRankConfig(match);
+};
+
+const getRankBenefitsTemplate = (rankId) => {
+  const template = rankBenefitMatrix.find((rank) => rank.rankId === rankId);
+  if (!template) {
+    return {};
+  }
+  return Object.keys(template.benefits ?? {}).reduce((acc, key) => {
+    acc[key] = Boolean(template.benefits[key]);
+    return acc;
+  }, {});
+};
+
 const collectRoles = (record, { id, group, isAdmin }) => {
   const allowAdmin = Boolean(isAdmin);
   const roles = [];
@@ -193,6 +232,69 @@ const applyRoleToRecord = (record, roleConfig) => {
   if (typeof level !== 'number') {
     delete updatedRecord.roleLevel;
   }
+
+  return updatedRecord;
+};
+
+const applyRankToRecord = (record, rankConfig, benefitOverrides) => {
+  if (!record || !rankConfig) return record;
+
+  const baseBenefits = getRankBenefitsTemplate(rankConfig.id);
+  const overrideKeys =
+    benefitOverrides && typeof benefitOverrides === 'object' ? Object.keys(benefitOverrides) : [];
+  const mergedKeys = Array.from(
+    new Set([...Object.keys(baseBenefits ?? {}), ...overrideKeys])
+  );
+
+  const normalizedBenefits = mergedKeys.reduce((acc, key) => {
+    if (benefitOverrides && Object.prototype.hasOwnProperty.call(benefitOverrides, key)) {
+      acc[key] = Boolean(benefitOverrides[key]);
+    } else {
+      acc[key] = Boolean(baseBenefits?.[key]);
+    }
+    return acc;
+  }, {});
+
+  const appMetadata = {
+    ...(record.app_metadata ?? {}),
+    playerRankId: rankConfig.id,
+    playerRank: rankConfig.group,
+    playerRankTier: rankConfig.tier,
+    playerRankBenefits: normalizedBenefits,
+  };
+
+  const userMetadata = {
+    ...(record.user_metadata ?? {}),
+    playerRankId: rankConfig.id,
+    playerRank: rankConfig.group,
+    playerRankTier: rankConfig.tier,
+    playerRankBenefits: normalizedBenefits,
+  };
+
+  const hasAdminRole =
+    (Array.isArray(record?.roles) && record.roles.includes('admin')) ||
+    (Array.isArray(record?.app_metadata?.roles) && record.app_metadata.roles.includes('admin')) ||
+    (Array.isArray(record?.user_metadata?.roles) && record.user_metadata.roles.includes('admin'));
+
+  const updatedRecord = {
+    ...record,
+    playerRankId: rankConfig.id,
+    playerRank: rankConfig.group,
+    playerRankTier: rankConfig.tier,
+    playerRankBenefits: normalizedBenefits,
+    app_metadata: appMetadata,
+    user_metadata: userMetadata,
+    isAdmin: hasAdminRole,
+  };
+
+  if (typeof rankConfig.tier !== 'number') {
+    delete appMetadata.playerRankTier;
+    delete userMetadata.playerRankTier;
+    delete updatedRecord.playerRankTier;
+  }
+
+  updatedRecord.app_metadata.isAdmin = hasAdminRole;
+  updatedRecord.user_metadata.isAdmin = hasAdminRole;
 
   return updatedRecord;
 };
@@ -406,6 +508,43 @@ export async function assignUserRole({ userId, roleId, delay = WAIT_ASSIGN_ROLE_
 
   const record = users[userIndex];
   const updatedRecord = applyRoleToRecord(record, roleConfig);
+  users[userIndex] = updatedRecord;
+  writeUsers(users, storage);
+
+  const waitMs = Math.max(0, Number(delay) || 0);
+  if (waitMs > 0) {
+    await new Promise((resolve) => setTimeout(resolve, waitMs));
+  }
+
+  return composeUserWithExtras(updatedRecord);
+}
+
+export async function assignUserRank({
+  userId,
+  rankId,
+  benefits,
+  delay = WAIT_ASSIGN_ROLE_MS,
+} = {}) {
+  const normalizedUserId = String(userId ?? '').trim();
+  if (!normalizedUserId) {
+    throw new Error('Укажите ID пользователя.');
+  }
+
+  const rankConfig = getRankConfigById(rankId);
+  if (!rankConfig) {
+    throw new Error('Выбранный ранг недоступен.');
+  }
+
+  const storage = requireStorage();
+  const users = readUsers(storage);
+  const userIndex = users.findIndex((user) => user.id === normalizedUserId);
+
+  if (userIndex === -1) {
+    throw new Error('Пользователь с таким ID не найден.');
+  }
+
+  const record = users[userIndex];
+  const updatedRecord = applyRankToRecord(record, rankConfig, benefits);
   users[userIndex] = updatedRecord;
   writeUsers(users, storage);
 

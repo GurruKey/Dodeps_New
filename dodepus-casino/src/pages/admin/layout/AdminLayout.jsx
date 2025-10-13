@@ -27,6 +27,8 @@ const NAV_ITEMS = [
   { key: 'divider-2', type: 'divider' },
   { key: 'roles', to: 'roles', label: 'Выдать роль', permission: 'roles' },
   { key: 'role-edit', to: 'role-edit', label: 'Изменить роль', permission: 'roles' },
+  { key: 'ranks', to: 'ranks', label: 'Выдать ранг', permission: 'ranks' },
+  { key: 'rank-edit', to: 'rank-edit', label: 'Изменить ранг', permission: 'ranks' },
   { key: 'divider-3', type: 'divider' },
   { key: 'moderators-chat', to: 'moderators-chat', label: 'Модератор Чат', permission: 'chat' },
   { key: 'administrators-chat', to: 'administrators-chat', label: 'Админ Чат', permission: 'chat' },

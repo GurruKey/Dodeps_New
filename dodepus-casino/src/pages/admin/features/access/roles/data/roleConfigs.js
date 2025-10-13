@@ -1,13 +1,5 @@
 export const availableRoles = [
   {
-    id: 'user',
-    group: 'user',
-    level: null,
-    isAdmin: false,
-    name: 'Пользователь',
-    description: 'Базовая роль с полным доступом без админских флагов.',
-  },
-  {
     id: 'intern-l1',
     group: 'intern',
     level: 1,
@@ -111,6 +103,7 @@ const ROLE_PERMISSION_LABELS = Object.freeze({
   clients: 'Клиенты',
   promocodes: 'Promo',
   roles: 'Выдать роль',
+  ranks: 'Ранги игроков',
   transactions: 'Транзакции',
   verification: 'Верификация',
   chat: 'Модератор Чат',
