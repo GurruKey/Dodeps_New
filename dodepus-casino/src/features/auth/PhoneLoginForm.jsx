@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Button, Alert, Dropdown } from 'react-bootstrap';
+import { Button, Dropdown } from 'react-bootstrap';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../app/providers';
 import { COUNTRY_CODES, DEFAULT_COUNTRY, formatPhonePlaceholder } from './country-codes';
@@ -20,13 +20,11 @@ export default function PhoneLoginForm({ onSuccess, onError }) {
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [localError, setLocalError] = useState('');
 
   const phoneInputRef = useRef(null);
 
   const setError = (msg) => {
     const text = msg || '';
-    setLocalError(text);
     onError?.(text);
   };
 
@@ -74,8 +72,6 @@ export default function PhoneLoginForm({ onSuccess, onError }) {
 
   return (
     <form onSubmit={onSubmit} noValidate autoComplete="on">
-      {localError && <Alert variant="danger" className="mb-3">{localError}</Alert>}
-
       {/* Телефон */}
       <div className="p-3 mb-3 rounded-3 border border-secondary-subtle">
         <label className="form-label fw-semibold">Номер телефона</label>
