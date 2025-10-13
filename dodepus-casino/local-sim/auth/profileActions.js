@@ -520,7 +520,52 @@ export const createProfileActions = (uid) => {
   const cancelVerificationRequest = (input = {}) => {
     const nextExtras = updateVerificationSnapshot(uid, ({ requests, extras }) => {
       const queue = Array.isArray(requests) ? requests.slice() : [];
-      const index = queue.findIndex((request) => request && request.status === 'pending');
+      const normalizedSelection = normalizeBooleanMap(
+        normalizeCancellationCandidates(input),
+      );
+      const selectionKeys = Object.keys(normalizedSelection).filter(
+        (key) => normalizedSelection[key],
+      );
+      const hasExplicitSelection = selectionKeys.length > 0;
+
+      const findPendingIndex = () => {
+        for (let i = 0; i < queue.length; i += 1) {
+          const request = queue[i];
+          if (!request) {
+            continue;
+          }
+
+          const status = normalizeStatus(request.status);
+          if (status !== 'pending') {
+            continue;
+          }
+
+          if (!hasExplicitSelection) {
+            return i;
+          }
+
+          const moduleKey = normalizeString(request.moduleKey);
+          if (moduleKey && selectionKeys.includes(moduleKey)) {
+            return i;
+          }
+
+          const requested = normalizeRequestedCandidates(request.requestedFields);
+          const completed = normalizeRequestedCandidates(request.completedFields);
+          const cleared = normalizeRequestedCandidates(request.clearedFields);
+
+          const matchesSelection = selectionKeys.some(
+            (key) => requested[key] || completed[key] || cleared[key],
+          );
+
+          if (matchesSelection) {
+            return i;
+          }
+        }
+
+        return -1;
+      };
+
+      const index = findPendingIndex();
 
       if (index === -1) {
         throw new Error('Нет активного запроса для отмены.');
@@ -553,14 +598,12 @@ export const createProfileActions = (uid) => {
 
       const requested = normalizeRequestedCandidates(target.requestedFields);
       const completed = normalizeRequestedCandidates(target.completedFields);
-      const selection = normalizeCancellationCandidates(input);
 
       const cancelSelection = { email: false, phone: false, address: false, doc: false };
-      const selectionKeys = Object.keys(selection);
       let hasCancelled = false;
 
       Object.keys(cancelSelection).forEach((key) => {
-        const shouldCancel = selection[key] ?? selectionKeys.length === 0;
+        const shouldCancel = hasExplicitSelection ? normalizedSelection[key] : true;
         if (shouldCancel && requested[key] && !completed[key]) {
           cancelSelection[key] = true;
           hasCancelled = true;
