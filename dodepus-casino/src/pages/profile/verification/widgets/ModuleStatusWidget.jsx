@@ -182,6 +182,33 @@ export function ModuleStatusWidget() {
     }
   };
 
+  const buildCancelPayload = (moduleKey) => {
+    if (!moduleKey) {
+      return {};
+    }
+
+    const normalizedKey = String(moduleKey).trim().toLowerCase();
+    const aliasMap = {
+      email: ['email'],
+      phone: ['phone'],
+      address: ['address'],
+      doc: ['doc', 'document', 'documents'],
+    };
+
+    const aliases = aliasMap[normalizedKey] || [normalizedKey];
+    const selection = aliases.reduce((acc, key) => {
+      acc[key] = true;
+      return acc;
+    }, {});
+
+    return {
+      field: normalizedKey,
+      fields: selection,
+      modules: selection,
+      requestedFields: selection,
+    };
+  };
+
   const handleCancel = async (originKey = null) => {
     setActionError(null);
     setToastMessage('');
@@ -196,7 +223,7 @@ export function ModuleStatusWidget() {
     setCancelingKey(originKey);
 
     try {
-      const payload = originKey ? { field: originKey } : {};
+      const payload = buildCancelPayload(originKey);
       await Promise.resolve(cancelVerificationRequest(payload));
       setToastMessage('Запрос отменён. Поля снова доступны для редактирования.');
       setShowToast(true);
