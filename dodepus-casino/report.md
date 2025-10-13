@@ -1,4 +1,21 @@
 <!-- DO NOT REMOVE:TAKES_START -->
+## TAKE-20251013-001 — Проверка local-sim на лишние файлы
+- Автор, Время: gpt-5-codex, 2025-10-13 09:13 (Europe/Kyiv)
+- Резюме: Удалил пустые файлы логов админки из local-sim и упростил индекс логов, чтобы не хранить заглушки без данных. Обновил отчёт с перечислением удалённых файлов и причиной очистки.
+- Объём работ:
+  - local-sim/admin/features/**/*
+  - report.md
+- Чеклист выполнения:
+  - [x] Проанализировать содержимое local-sim и отметить пустые/неиспользуемые файлы.
+  - [x] Подтвердить, что на удаляемые файлы нет внешних зависимостей.
+  - [x] Удалить ненужные файлы и обновить связанные импорты.
+  - [x] Обновить запись в report.md.
+- Критерии приёмки:
+  - [x] Удалены все обнаруженные пустые/неиспользуемые файлы local-sim.
+  - [x] В отчёте перечислено, что именно удалено и почему.
+- Блокеры: —
+- Итоги выполнения: Статус: ✅ Выполнено; Что сделано: Удалены пустые файлы логов (экспортировали Object.freeze([])) и очищен индекс логов от лишних импортов; Что осталось: —; Коммиты/PR: HEAD (chore: remove empty admin log placeholders); Список затронутых файлов: local-sim/admin/logs/index.js, local-sim/admin/features/access/roleEditLogs.js, local-sim/admin/features/access/rolesLogs.js, local-sim/admin/features/clients/logs.js, local-sim/admin/features/communications/administratorsChatLogs.js, local-sim/admin/features/communications/moderatorsChatLogs.js, local-sim/admin/features/communications/staffChatLogs.js, local-sim/admin/features/promo/archiveLogs.js, local-sim/admin/features/promo/createLogs.js, local-sim/admin/features/promo/listLogs.js, local-sim/admin/features/verification/logs.js, report.md; Замечания: Автотесты не запускал (изменения касаются локальных заглушек).
+
 ## TAKE-20251012-012 — Рефакторинг local-sim
 - Автор, Время: gpt-5-codex, 2025-10-12 19:42 (Europe/Kyiv)
 - Резюме: Привёл local-sim к модульной схеме — вынес верификацию в общий модуль, удалил разрозненные каталоги и обновил документацию по структуре.
