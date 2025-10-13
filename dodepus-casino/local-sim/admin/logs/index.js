@@ -1,13 +1,3 @@
-import { ADMINISTRATORS_CHAT_LOGS } from '../features/communications/administratorsChatLogs.js';
-import { CLIENTS_LOGS } from '../features/clients/logs.js';
-import { MODERATORS_CHAT_LOGS } from '../features/communications/moderatorsChatLogs.js';
-import { PROMOCODE_CREATE_LOGS } from '../features/promo/createLogs.js';
-import { PROMOCODES_LOGS } from '../features/promo/listLogs.js';
-import { PROMO_ARCHIVE_LOGS } from '../features/promo/archiveLogs.js';
-import { ROLE_EDIT_LOGS } from '../features/access/roleEditLogs.js';
-import { ROLES_LOGS } from '../features/access/rolesLogs.js';
-import { STAFF_CHAT_LOGS } from '../features/communications/staffChatLogs.js';
-import { VERIFICATION_LOGS } from '../features/verification/logs.js';
 import {
   TRANSACTIONS_LOG_STORAGE_KEY,
   TRANSACTIONS_STATIC_LOGS,
@@ -43,19 +33,7 @@ const ADMIN_LOG_ROLE_LABELS = Object.freeze({
 
 const OVERVIEW_LOGS = Object.freeze([]);
 
-const STATIC_SECTION_LOGS = Object.freeze([
-  ...OVERVIEW_LOGS,
-  ...CLIENTS_LOGS,
-  ...PROMOCODES_LOGS,
-  ...PROMOCODE_CREATE_LOGS,
-  ...PROMO_ARCHIVE_LOGS,
-  ...ROLES_LOGS,
-  ...ROLE_EDIT_LOGS,
-  ...VERIFICATION_LOGS,
-  ...MODERATORS_CHAT_LOGS,
-  ...ADMINISTRATORS_CHAT_LOGS,
-  ...STAFF_CHAT_LOGS,
-]);
+const STATIC_SECTION_LOGS = Object.freeze([...OVERVIEW_LOGS]);
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
