@@ -1,6 +1,35 @@
 import { pickExtras } from './profileExtras';
 import { availableRoles } from '../../src/pages/admin/features/access/roles/data/roleConfigs.js';
 
+const collectRoles = (...sources) => {
+  const normalized = [];
+
+  const pushValue = (value) => {
+    if (typeof value !== 'string') return;
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    const lowered = trimmed.toLowerCase();
+    if (!normalized.includes(lowered)) {
+      normalized.push(lowered);
+    }
+  };
+
+  sources.forEach((source) => {
+    if (!source) return;
+    if (Array.isArray(source)) {
+      source.forEach(pushValue);
+      return;
+    }
+    pushValue(source);
+  });
+
+  if (!normalized.includes('user')) {
+    normalized.push('user');
+  }
+
+  return normalized;
+};
+
 export const isAdminUser = (user) =>
   Boolean(
     user?.isAdmin || (Array.isArray(user?.roles) && user.roles.includes('admin'))
@@ -73,13 +102,16 @@ export function composeUser(record, extras) {
     Boolean(record.confirmed_at) ||
     Boolean(extras?.emailVerified);
 
-  const roles = Array.isArray(record?.app_metadata?.roles)
-    ? record.app_metadata.roles
-    : Array.isArray(record?.roles)
-    ? record.roles
-    : Array.isArray(extras?.roles)
-    ? extras.roles
-    : [];
+  const roles = collectRoles(
+    record?.app_metadata?.roles,
+    record?.roles,
+    record?.user_metadata?.roles,
+    extras?.roles,
+    record?.roleId,
+    record?.app_metadata?.roleId,
+    record?.user_metadata?.roleId,
+    extras?.roleId,
+  );
 
   const role =
     record?.role ||

@@ -36,7 +36,7 @@ const getStorage = () => {
 const buildDefaultVisibility = () => {
   const defaults = {};
   availableRoles.forEach((role) => {
-    defaults[role.id] = Boolean(role.isAdmin);
+    defaults[role.id] = true;
   });
   return defaults;
 };
