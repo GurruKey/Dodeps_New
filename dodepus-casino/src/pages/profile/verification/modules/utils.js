@@ -44,7 +44,7 @@ export const createModuleContext = (userInput, uploadsInput) => {
   const readiness = {
     email: hasEmailValue,
     phone: hasPhoneValue,
-    address: hasAddressFields && hasPersonalData && hasAddressUpload,
+    address: hasAddressFields && hasAddressUpload,
     doc: hasPersonalData && hasIdentityUpload,
   };
 

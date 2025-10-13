@@ -13,7 +13,7 @@ export default function NameBlock() {
     () => computeModuleLocks(verification?.modules ?? {}),
     [verification?.modules],
   );
-  const nameLocked = locks.address || locks.doc;
+  const nameLocked = locks.doc;
 
   const [firstName, setFirstName] = useState(user?.firstName ?? '');
   const [lastName, setLastName] = useState(user?.lastName ?? '');
@@ -84,7 +84,7 @@ export default function NameBlock() {
         </Form>
         {nameLocked ? (
           <div className="text-secondary small mt-3">
-            Поля блокируются, пока запрос по адресу или документам находится на проверке.
+            Поля блокируются, пока запрос по документам находится на проверке или подтверждён.
           </div>
         ) : null}
       </Card.Body>

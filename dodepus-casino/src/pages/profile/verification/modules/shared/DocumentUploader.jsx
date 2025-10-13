@@ -84,27 +84,63 @@ export function DocumentUploader({ layout = 'card', config }) {
   const formContent = (
     <>
       <div className="d-grid gap-3">
-        <Form.Group>
+        <Form.Group className="d-grid gap-2">
           <Form.Label className="fw-medium">Вид документа</Form.Label>
-          <Form.Select
-            value={documentType}
-            onChange={(event) => {
-              setDocumentType(event.target.value);
-              setError('');
-            }}
-            aria-label="Выберите документ для загрузки"
-            disabled={isLocked}
-          >
-            <option value="" disabled hidden>
-              Выберите из списка
-            </option>
-            {documentOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Form.Select>
           {helperText ? <Form.Text className="text-secondary">{helperText}</Form.Text> : null}
+          <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-2">
+            {documentOptions.map((option) => {
+              const optionId = `${category}-document-${option.value}`;
+              const isSelected = documentType === option.value;
+              const tileClasses = [
+                'btn',
+                'w-100',
+                'h-100',
+                'py-3',
+                'text-start',
+                'border',
+                'border-2',
+                'rounded-3',
+                'fw-medium',
+              ];
+
+              if (isSelected) {
+                tileClasses.push('btn-primary', 'border-primary', 'shadow-sm');
+              } else {
+                tileClasses.push('btn-outline-secondary', 'border-secondary-subtle', 'bg-white');
+              }
+
+              if (isLocked) {
+                tileClasses.push('disabled');
+              }
+
+              return (
+                <div className="col" key={option.value}>
+                  <input
+                    type="radio"
+                    className="btn-check"
+                    name={`document-type-${category}`}
+                    id={optionId}
+                    value={option.value}
+                    checked={isSelected}
+                    onChange={(event) => {
+                      setDocumentType(event.target.value);
+                      setError('');
+                    }}
+                    disabled={isLocked}
+                    autoComplete="off"
+                  />
+                  <label
+                    htmlFor={optionId}
+                    className={tileClasses.join(' ')}
+                    style={{ minHeight: '4.5rem', whiteSpace: 'normal' }}
+                    aria-disabled={isLocked}
+                  >
+                    {option.label}
+                  </label>
+                </div>
+              );
+            })}
+          </div>
         </Form.Group>
       </div>
 
