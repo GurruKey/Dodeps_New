@@ -6,7 +6,7 @@ import {
   ensureSeededAuthStorage,
 } from './accounts/seedLocalAuth';
 import { composeUser } from './composeUser';
-import { loadExtras, saveExtras } from './profileExtras';
+import { loadExtras, saveExtras, pickExtras } from './profileExtras';
 import { availableRoles } from '../../src/pages/admin/features/access/roles/data/roleConfigs.js';
 import {
   availableRanks,
@@ -17,6 +17,7 @@ import { getLocalDatabase } from '../database/engine.js';
 
 const USERS_KEY = 'dodepus_local_users_v1';
 const SESSION_KEY = 'dodepus_local_session_v1';
+const OWNER_ROLE_ID = 'owner';
 
 const EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 const PHONE_RE = /^\+[1-9]\d{5,14}$/;
@@ -24,6 +25,12 @@ const PHONE_RE = /^\+[1-9]\d{5,14}$/;
 const nowIso = () => new Date().toISOString();
 const randomId = (prefix) =>
   (globalThis.crypto?.randomUUID?.() ?? `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`);
+
+const generateOwnerPassword = () => {
+  const randomSource = `${randomId('pwd')}${randomId('key')}`.replace(/[^a-zA-Z0-9]/g, '');
+  const segment = randomSource.slice(-8) || 'AbCdEf12';
+  return `Ow${segment}A1!`;
+};
 
 const tryGetStorage = () => {
   try {
@@ -309,6 +316,43 @@ const composeUserWithExtras = (record) => {
   return composeUser(record, loadExtras(record.id));
 };
 
+const mergeMetadata = (target, source) => {
+  const base = target && typeof target === 'object' ? target : {};
+  if (!source || typeof source !== 'object') {
+    return { ...base };
+  }
+  return { ...base, ...source };
+};
+
+const buildOwnerExtras = ({
+  profile = {},
+  email,
+  phone,
+  confirmEmail,
+  confirmPhone,
+}) => {
+  const base = pickExtras({
+    ...profile,
+    email,
+    phone,
+    emailVerified: Boolean(confirmEmail && email),
+  });
+
+  if (confirmPhone && phone) {
+    base.phone = phone;
+  }
+
+  if (!base.nickname) {
+    base.nickname = email || phone || 'owner';
+  }
+
+  if (!base.firstName) {
+    base.firstName = 'Owner';
+  }
+
+  return base;
+};
+
 const storeSession = (session, storage = requireStorage()) => {
   try {
     if (!session) {
@@ -561,6 +605,115 @@ const isEmailDuplicate = (users, email, currentId) =>
 
 const isPhoneDuplicate = (users, phone, currentId) =>
   users.some((user) => user.id !== currentId && user.phone && user.phone === phone);
+
+export function createOwnerAccount({
+  email,
+  phone,
+  password,
+  confirmEmail = true,
+  confirmPhone = true,
+  roleId = OWNER_ROLE_ID,
+  profile = {},
+  appMetadata = {},
+  userMetadata = {},
+} = {}) {
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  if (normalizedEmail && !EMAIL_RE.test(normalizedEmail)) {
+    throw new Error('Некорректный адрес e-mail для владельца.');
+  }
+
+  const normalizedPhone = phone != null ? normalizePhone(phone) : '';
+
+  if (!normalizedEmail && !normalizedPhone) {
+    throw new Error('Укажите e-mail или телефон владельца.');
+  }
+
+  const storage = requireStorage();
+  const users = readUsers(storage);
+
+  if (normalizedEmail && findByEmail(users, normalizedEmail)) {
+    throw new Error('Аккаунт с таким e-mail уже существует.');
+  }
+
+  if (normalizedPhone && findByPhone(users, normalizedPhone)) {
+    throw new Error('Аккаунт с таким номером уже существует.');
+  }
+
+  let finalPassword = typeof password === 'string' ? password.trim() : '';
+  let passwordGenerated = false;
+
+  if (!finalPassword) {
+    finalPassword = generateOwnerPassword();
+    passwordGenerated = true;
+  }
+
+  ensurePasswordStrong(finalPassword);
+
+  const record = createUserRecord({
+    email: normalizedEmail || undefined,
+    phone: normalizedPhone || undefined,
+    password: finalPassword,
+  });
+
+  if (normalizedEmail) {
+    record.email = normalizedEmail;
+  }
+
+  if (normalizedPhone) {
+    record.phone = normalizedPhone;
+  }
+
+  const confirmationMarks = [];
+
+  if (confirmEmail && normalizedEmail) {
+    const stamp = nowIso();
+    record.email_confirmed_at = stamp;
+    confirmationMarks.push(stamp);
+  }
+
+  if (confirmPhone && normalizedPhone) {
+    const stamp = nowIso();
+    record.phone_confirmed_at = stamp;
+    confirmationMarks.push(stamp);
+  }
+
+  if (confirmationMarks.length > 0) {
+    record.confirmed_at = confirmationMarks[0];
+  }
+
+  const roleConfig = getRoleConfigById(roleId) ?? getRoleConfigById(OWNER_ROLE_ID);
+  const recordWithRole = roleConfig ? applyRoleToRecord(record, roleConfig) : record;
+
+  recordWithRole.app_metadata = mergeMetadata(recordWithRole.app_metadata, appMetadata);
+  recordWithRole.user_metadata = mergeMetadata(recordWithRole.user_metadata, userMetadata);
+
+  const normalizedProfile = profile && typeof profile === 'object' ? profile : {};
+
+  const extrasPayload = buildOwnerExtras({
+    profile: normalizedProfile,
+    email: normalizedEmail || null,
+    phone: normalizedPhone || null,
+    confirmEmail,
+    confirmPhone,
+  });
+
+  saveExtras(recordWithRole.id, extrasPayload);
+
+  users.push(recordWithRole);
+  writeUsers(users, storage);
+
+  const composedUser = composeUserWithExtras(recordWithRole);
+
+  return {
+    user: composedUser,
+    credentials: {
+      email: normalizedEmail || null,
+      phone: normalizedPhone || null,
+      password: finalPassword,
+      generated: passwordGenerated,
+    },
+  };
+}
 
 export async function updateUserContacts({ userId, email, phone } = {}) {
   const normalizedUserId = String(userId ?? '').trim();
