@@ -104,6 +104,7 @@ export function ModuleStatusWidget() {
         context: moduleContext,
         readiness: moduleContext.readiness,
         requirements: moduleContext.requirements,
+        closeModal: handleCloseModule,
       })
     : null;
   const modalTitle = modalConfig?.title || (activeModuleKey ? MODULE_LABELS[activeModuleKey] : '');

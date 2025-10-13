@@ -30,7 +30,11 @@ const composePhone = (dial, number) => {
   return `${prefix}${digits}`;
 };
 
-export function PhoneVerificationForm({ layout = 'card', autoFocus = false }) {
+export function PhoneVerificationForm({
+  layout = 'card',
+  autoFocus = false,
+  onSubmitSuccess,
+}) {
   const { user, updateContacts } = useAuth();
   const { locks } = useVerificationState();
 
@@ -75,6 +79,9 @@ export function PhoneVerificationForm({ layout = 'card', autoFocus = false }) {
     try {
       await Promise.resolve(updateContacts({ phone: composedPhone }));
       setStatus({ type: 'success', message: 'Телефон сохранён.' });
+      if (typeof onSubmitSuccess === 'function') {
+        onSubmitSuccess();
+      }
     } catch (error) {
       const message =
         error instanceof Error
@@ -124,22 +131,9 @@ export function PhoneVerificationForm({ layout = 'card', autoFocus = false }) {
 
       <div className="text-secondary small">{infoMessage}</div>
 
-      <div className="d-flex gap-2">
+      <div className="d-flex justify-content-center">
         <Button type="submit" disabled={!hasPhoneChange || isSaving}>
           {isSaving ? 'Сохранение…' : 'Сохранить изменения'}
-        </Button>
-        <Button
-          type="button"
-          variant="outline-secondary"
-          disabled={isSaving || !hasPhoneChange}
-          onClick={() => {
-            const next = splitPhone(user?.phone);
-            setDial(next.dial);
-            setNumber(next.number);
-            setStatus({ type: null, message: '' });
-          }}
-        >
-          Сбросить
         </Button>
       </div>
 

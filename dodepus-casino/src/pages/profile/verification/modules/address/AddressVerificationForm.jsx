@@ -72,13 +72,6 @@ export function AddressVerificationForm({ layout = 'card' }) {
     }
   };
 
-  const resetForm = () => {
-    setCountry(user?.country ?? '');
-    setCity(user?.city ?? '');
-    setAddress(user?.address ?? '');
-    setStatus({ type: null, message: '' });
-  };
-
   const formContent = (
     <Form onSubmit={handleSubmit} className="d-grid gap-3">
       <Row className="g-3">
@@ -129,12 +122,9 @@ export function AddressVerificationForm({ layout = 'card' }) {
           : 'Эти данные необходимы для проверки адреса.'}
       </div>
 
-      <div className="d-flex gap-2">
+      <div className="d-flex justify-content-center">
         <Button type="submit" disabled={!hasChanges || isSaving}>
           {isSaving ? 'Сохранение…' : 'Сохранить изменения'}
-        </Button>
-        <Button type="button" variant="outline-secondary" disabled={isSaving} onClick={resetForm}>
-          Сбросить
         </Button>
       </div>
 
