@@ -16,10 +16,20 @@ export const emailModule = {
 
     return null;
   },
-  getModalConfig: () => ({
+  getModalConfig: ({ closeModal }) => ({
     title: 'Почта',
     description: 'Укажите актуальный e-mail, чтобы получать уведомления и подтверждать вход.',
-    content: <EmailVerificationForm layout="plain" autoFocus />,
+    content: (
+      <EmailVerificationForm
+        layout="plain"
+        autoFocus
+        onSubmitSuccess={() => {
+          if (typeof closeModal === 'function') {
+            closeModal();
+          }
+        }}
+      />
+    ),
   }),
 };
 

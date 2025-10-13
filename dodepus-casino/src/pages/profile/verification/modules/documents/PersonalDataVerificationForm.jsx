@@ -88,14 +88,6 @@ export function PersonalDataVerificationForm({ layout = 'card' }) {
     }
   };
 
-  const resetForm = () => {
-    setFirstName(user?.firstName ?? '');
-    setLastName(user?.lastName ?? '');
-    setGender(user?.gender === 'male' || user?.gender === 'female' ? user.gender : '');
-    setDob(user?.dob ?? '');
-    setStatus({ type: null, message: '' });
-  };
-
   const infoMessage = personalLocked
     ? 'Поля блокируются во время проверки документов. Отмените запрос или дождитесь решения администратора.'
     : 'Эти данные используются для проверки документов.';
@@ -166,12 +158,9 @@ export function PersonalDataVerificationForm({ layout = 'card' }) {
 
       <div className="text-secondary small">{infoMessage}</div>
 
-      <div className="d-flex gap-2">
+      <div className="d-flex justify-content-center">
         <Button type="submit" disabled={!hasChanges || isSaving}>
           {isSaving ? 'Сохранение…' : 'Сохранить изменения'}
-        </Button>
-        <Button type="button" variant="outline-secondary" disabled={isSaving} onClick={resetForm}>
-          Сбросить
         </Button>
       </div>
 

@@ -3,7 +3,11 @@ import { Card, Form, Button, Alert } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/providers';
 import { useVerificationState } from '../../state/useVerificationState.js';
 
-export function EmailVerificationForm({ layout = 'card', autoFocus = false }) {
+export function EmailVerificationForm({
+  layout = 'card',
+  autoFocus = false,
+  onSubmitSuccess,
+}) {
   const { user, updateContacts } = useAuth();
   const { locks } = useVerificationState();
 
@@ -38,6 +42,9 @@ export function EmailVerificationForm({ layout = 'card', autoFocus = false }) {
     try {
       await Promise.resolve(updateContacts({ email: trimmedEmail }));
       setStatus({ type: 'success', message: 'Почта сохранена.' });
+      if (typeof onSubmitSuccess === 'function') {
+        onSubmitSuccess();
+      }
     } catch (error) {
       const message =
         error instanceof Error
@@ -73,20 +80,9 @@ export function EmailVerificationForm({ layout = 'card', autoFocus = false }) {
 
       <div className="text-secondary small">{infoMessage}</div>
 
-      <div className="d-flex gap-2">
+      <div className="d-flex justify-content-center">
         <Button type="submit" disabled={!hasEmailChange || isSaving}>
           {isSaving ? 'Сохранение…' : 'Сохранить изменения'}
-        </Button>
-        <Button
-          type="button"
-          variant="outline-secondary"
-          disabled={isSaving || !hasEmailChange}
-          onClick={() => {
-            setEmail(user?.email ?? '');
-            setStatus({ type: null, message: '' });
-          }}
-        >
-          Сбросить
         </Button>
       </div>
 

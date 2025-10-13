@@ -16,10 +16,20 @@ export const phoneModule = {
 
     return null;
   },
-  getModalConfig: () => ({
+  getModalConfig: ({ closeModal }) => ({
     title: 'Телефон',
     description: 'Добавьте рабочий номер телефона для подтверждения личности и уведомлений.',
-    content: <PhoneVerificationForm layout="plain" autoFocus />,
+    content: (
+      <PhoneVerificationForm
+        layout="plain"
+        autoFocus
+        onSubmitSuccess={() => {
+          if (typeof closeModal === 'function') {
+            closeModal();
+          }
+        }}
+      />
+    ),
   }),
 };
 
