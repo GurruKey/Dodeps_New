@@ -2,9 +2,6 @@ export const STATUS_OPTIONS = [
   { value: 'draft', label: 'Черновик' },
   { value: 'active', label: 'Активен' },
   { value: 'scheduled', label: 'Запланирован' },
-  { value: 'paused', label: 'Пауза' },
-  { value: 'expired', label: 'Истёк' },
-  { value: 'archived', label: 'Архив' },
 ];
 
 export const BALANCE_OPTIONS = [

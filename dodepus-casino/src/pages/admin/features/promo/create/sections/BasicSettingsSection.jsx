@@ -23,6 +23,9 @@ export default function BasicSettingsSection({
                 </option>
               ))}
             </Form.Select>
+            <Form.Text className="text-muted">
+              Выберите подходящий тип, а справа почитайте подсказку о механике.
+            </Form.Text>
           </Form.Group>
         </Col>
         <Col md={6}>
@@ -35,6 +38,9 @@ export default function BasicSettingsSection({
                 </option>
               ))}
             </Form.Select>
+            <Form.Text className="text-muted">
+              Черновик — тестируем, Активен — сразу доступен игрокам, Запланирован — включится по дате.
+            </Form.Text>
           </Form.Group>
         </Col>
       </Row>

@@ -379,33 +379,29 @@ export const usePromoConstructor = () => {
     [formValues, rewardForm, audienceForm, limitsForm, displayForm],
   );
 
-  const summaryItems = useMemo(() => {
-    const items = [];
-    items.push({
-      title: 'Тип промо',
-      value: selectedType?.name ?? 'Не выбран',
-    });
-    items.push({
-      title: 'Статус',
-      value: formValues.status,
-      kind: 'status',
-    });
-    items.push({
-      title: 'Награда',
-      value: rewardPreview || 'Не настроена',
-    });
+  const summaryGroups = useMemo(() => {
+    const groups = [];
+
+    const basics = [
+      { label: 'Тип', value: selectedType?.name ?? 'Не выбран' },
+      { label: 'Статус', value: formValues.status, kind: 'status' },
+      { label: 'Код', value: formValues.code || 'Не задан' },
+    ];
+    if (formValues.title) {
+      basics.push({ label: 'Название', value: formValues.title });
+    }
+    groups.push({ title: 'Основное', items: basics });
+
+    const periodItems = [];
     if (formValues.startsAt || formValues.endsAt) {
       const periodParts = [];
       if (formValues.startsAt) {
-        periodParts.push(`c ${formValues.startsAt}`);
+        periodParts.push(`с ${formValues.startsAt}`);
       }
       if (formValues.endsAt) {
         periodParts.push(`до ${formValues.endsAt}`);
       }
-      items.push({
-        title: 'Период действия',
-        value: periodParts.join(' ').trim(),
-      });
+      periodItems.push({ label: 'Период действия', value: periodParts.join(' ').trim() });
     }
     if (formValues.repeatLimit || formValues.repeatDelayHours) {
       const parts = [];
@@ -415,21 +411,56 @@ export const usePromoConstructor = () => {
       if (formValues.repeatDelayHours) {
         parts.push(`Пауза: ${formValues.repeatDelayHours} ч`);
       }
-      items.push({ title: 'Повторные активации', value: parts.join(' • ') });
+      periodItems.push({ label: 'Повторные активации', value: parts.join(' • ') });
     }
-    if (audiencePreview) {
-      items.push({ title: 'Аудитория', value: audiencePreview });
+    if (periodItems.length > 0) {
+      groups.push({ title: 'Даты и повторы', items: periodItems });
+    }
+
+    groups.push({
+      title: 'Награда',
+      items: [{ label: 'Настройки награды', value: rewardPreview || 'Не настроена' }],
+    });
+
+    const conditions = [];
+    if (formValues.limit) {
+      conditions.push({ label: 'Лимит выдачи', value: formValues.limit });
+    }
+    if (formValues.wager) {
+      conditions.push({ label: 'Вейджер', value: formValues.wager });
+    }
+    if (formValues.cashoutCap) {
+      conditions.push({ label: 'Кеп на вывод', value: formValues.cashoutCap });
     }
     if (limitsPreview) {
-      items.push({ title: 'Ограничения', value: limitsPreview });
+      conditions.push({ label: 'Дополнительные ограничения', value: limitsPreview });
     }
+    if (conditions.length > 0) {
+      groups.push({ title: 'Ограничения', items: conditions });
+    }
+
+    groups.push({
+      title: 'Аудитория',
+      items: [
+        {
+          label: 'Кому показываем',
+          value: audiencePreview || 'Все игроки',
+        },
+      ],
+    });
+
     if (displayPreview) {
-      items.push({ title: 'Отображение', value: displayPreview });
+      groups.push({
+        title: 'Отображение',
+        items: [{ label: 'Каналы и подача', value: displayPreview }],
+      });
     }
+
     if (formValues.notes) {
-      items.push({ title: 'Примечание', value: formValues.notes });
+      groups.push({ title: 'Примечание', items: [{ label: 'Комментарий', value: formValues.notes }] });
     }
-    return items;
+
+    return groups;
   }, [selectedType, formValues, rewardPreview, audiencePreview, limitsPreview, displayPreview]);
 
   const resetForms = useCallback(() => {
@@ -455,7 +486,6 @@ export const usePromoConstructor = () => {
     audiencePreview,
     limitsPreview,
     displayPreview,
-    summaryItems,
     selectedType,
     error,
     success,
@@ -474,5 +504,6 @@ export const usePromoConstructor = () => {
     resetForms,
     setError,
     setSuccess,
+    summaryGroups,
   };
 };

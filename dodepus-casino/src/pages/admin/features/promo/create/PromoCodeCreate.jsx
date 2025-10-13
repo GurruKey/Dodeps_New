@@ -22,7 +22,7 @@ export default function PromoCodeCreate() {
     limitsForm,
     displayForm,
     rewardPreview,
-    summaryItems,
+    summaryGroups,
     selectedType,
     error,
     success,
@@ -128,8 +128,8 @@ export default function PromoCodeCreate() {
         </Col>
         <Col xl={4} lg={5}>
           <Stack gap={3}>
-            <PromoTypesReference selectedTypeId={formValues.typeId} onSelect={handleTypeSelect} />
-            <SummaryCard items={summaryItems} statusOptions={statusOptions} />
+            <PromoTypesReference selectedTypeId={formValues.typeId} />
+            <SummaryCard groups={summaryGroups} statusOptions={statusOptions} />
           </Stack>
         </Col>
       </Row>
