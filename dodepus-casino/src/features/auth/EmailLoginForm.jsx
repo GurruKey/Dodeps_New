@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, Alert } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../app/providers';
 
@@ -10,11 +10,8 @@ export default function EmailLoginForm({ onSuccess, onError }) {
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [localError, setLocalError] = useState('');
-
   const setError = (msg) => {
     const text = msg || '';
-    setLocalError(text);
     onError?.(text);
   };
 
@@ -49,8 +46,6 @@ export default function EmailLoginForm({ onSuccess, onError }) {
 
   return (
     <form onSubmit={onSubmit} noValidate autoComplete="on">
-      {localError && <Alert variant="danger" className="mb-3">{localError}</Alert>}
-
       {/* E-mail */}
       <div className="p-3 mb-3 rounded-3 border border-secondary-subtle">
         <label htmlFor="loginEmail" className="form-label fw-semibold">Электронная почта</label>
