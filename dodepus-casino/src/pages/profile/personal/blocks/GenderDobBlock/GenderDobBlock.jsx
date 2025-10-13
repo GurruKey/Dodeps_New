@@ -25,7 +25,7 @@ export default function GenderDobBlock() {
     () => computeModuleLocks(verification?.modules ?? {}),
     [verification?.modules],
   );
-  const personalLocked = locks.address || locks.doc;
+  const personalLocked = locks.doc;
 
   const init = useMemo(() => parseDob(user?.dob), [user?.dob]);
   const normalizeGender = (g) => (g === 'male' || g === 'female' ? g : '');
@@ -162,7 +162,7 @@ export default function GenderDobBlock() {
         </Form>
         {personalLocked ? (
           <div className="text-secondary small mt-3">
-            Изменение данных заблокировано до завершения проверки адреса или документов.
+            Изменение данных заблокировано, пока запрос по документам на проверке или подтверждён.
           </div>
         ) : null}
       </Card.Body>

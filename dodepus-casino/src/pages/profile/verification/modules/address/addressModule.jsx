@@ -15,10 +15,6 @@ export const addressModule = {
       return 'Заполните страну, город и адрес проживания.';
     }
 
-    if (!requirements?.hasPersonalData) {
-      return 'Заполните ФИО, дату рождения и выберите пол.';
-    }
-
     if (!requirements?.hasAddressUpload) {
       return 'Загрузите документ, подтверждающий адрес.';
     }
