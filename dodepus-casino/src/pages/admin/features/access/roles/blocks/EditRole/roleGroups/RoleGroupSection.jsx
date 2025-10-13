@@ -1,4 +1,4 @@
-import { Accordion, Badge, Card, Form, Stack } from 'react-bootstrap';
+import { Accordion, Badge, Button, Card, Form, Stack } from 'react-bootstrap';
 
 export default function RoleGroupSection({
   roles,
@@ -7,6 +7,7 @@ export default function RoleGroupSection({
   expandedRoles,
   onToggleRole,
   onRequestPermissionToggle,
+  onRequestToggleAll,
 }) {
   if (!roles || roles.length === 0) {
     return (
@@ -46,6 +47,22 @@ export default function RoleGroupSection({
                 {roleDescription && (
                   <Card.Text className="text-muted mb-0">{roleDescription}</Card.Text>
                 )}
+                <div className="d-flex flex-column flex-md-row gap-2">
+                  <Button
+                    variant="outline-danger"
+                    onClick={(event) => onRequestToggleAll?.(event, role, false)}
+                    disabled={permissionKeys.every((permissionKey) => !(role.permissions[permissionKey] ?? false))}
+                  >
+                    Отключить все доступы
+                  </Button>
+                  <Button
+                    variant="outline-success"
+                    onClick={(event) => onRequestToggleAll?.(event, role, true)}
+                    disabled={permissionKeys.every((permissionKey) => Boolean(role.permissions[permissionKey]))}
+                  >
+                    Включить все доступы
+                  </Button>
+                </div>
                 <div className="d-grid gap-3">
                   {permissionKeys.map((permissionKey) => (
                     <Form.Check
