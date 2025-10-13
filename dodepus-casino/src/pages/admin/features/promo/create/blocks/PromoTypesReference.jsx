@@ -1,15 +1,21 @@
-import { Accordion, Badge, Button, Card } from 'react-bootstrap';
+import { Accordion, Badge, Card } from 'react-bootstrap';
 import { promoTypeDefinitions } from '../../../../../../../local-sim/admin/features/promo/definitions/index.js';
 
-export default function PromoTypesReference({ selectedTypeId, onSelect }) {
+export default function PromoTypesReference({ selectedTypeId }) {
+  const defaultActiveKey = selectedTypeId
+    ? [selectedTypeId]
+    : promoTypeDefinitions.length > 0
+    ? [promoTypeDefinitions[0].id]
+    : [];
+
   return (
     <Card>
       <Card.Body>
         <Card.Title as="h4" className="h5">Справочник типов промо</Card.Title>
         <Card.Text className="text-muted mb-3">
-          Здесь можно ознакомиться с механикой каждого типа промокода и быстро выбрать нужный.
+          Короткая памятка: в блоке «Базовые параметры» выберите тип, а здесь подсмотритесь за механикой и примерами.
         </Card.Text>
-        <Accordion alwaysOpen defaultActiveKey={selectedTypeId ? [selectedTypeId] : undefined}>
+        <Accordion alwaysOpen defaultActiveKey={defaultActiveKey}>
           {promoTypeDefinitions.map((type) => {
             const selected = type.id === selectedTypeId;
             return (
@@ -17,7 +23,7 @@ export default function PromoTypesReference({ selectedTypeId, onSelect }) {
                 <Accordion.Header>
                   <div className="d-flex align-items-center gap-2">
                     <span>{type.name}</span>
-                    {selected && <Badge bg="primary">Выбрано</Badge>}
+                    {selected && <Badge bg="primary">Выбрано в форме</Badge>}
                   </div>
                 </Accordion.Header>
                 <Accordion.Body>
@@ -42,20 +48,9 @@ export default function PromoTypesReference({ selectedTypeId, onSelect }) {
                       </Card.Body>
                     </Card>
                   )}
-                  <div className="d-flex justify-content-end mt-3">
-                    <Button
-                      variant={selected ? 'primary' : 'outline-primary'}
-                      size="sm"
-                      type="button"
-                      onClick={() => {
-                        if (typeof onSelect === 'function') {
-                          onSelect(type.id);
-                        }
-                      }}
-                    >
-                      {selected ? 'Тип выбран' : 'Выбрать тип'}
-                    </Button>
-                  </div>
+                  <Card.Text className="small text-muted mt-3 mb-0">
+                    Чтобы применить этот тип, выберите его в выпадающем списке слева.
+                  </Card.Text>
                 </Accordion.Body>
               </Accordion.Item>
             );
