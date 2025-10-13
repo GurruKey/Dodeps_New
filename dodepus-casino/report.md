@@ -1,4 +1,27 @@
 <!-- DO NOT REMOVE:TAKES_START -->
+## TAKE-20251013-002 — Выдача ролей и прав
+- Автор, Время: gpt-5-codex, 2025-10-13 09:56 (Europe/Kyiv)
+- Резюме: Добавил базовую роль user в конфиги, выдал всем ролям полный набор прав и синхронизировал local-sim так, чтобы при назначении роли всегда появлялся user. Обновил поведение local-sim и отчёт.
+- Объём работ:
+  - src/pages/admin/features/access/roles/data/roleConfigs.js
+  - local-sim/auth/accounts/seedLocalAuth.js
+  - local-sim/auth/api.js
+  - local-sim/auth/composeUser.js
+  - local-sim/auth/admin/adminPanelVisibility.js
+  - report.md
+- Чеклист выполнения:
+  - [x] Проанализировать текущие конфиги ролей и матрицу прав.
+  - [x] Добавить базовую роль user и полный набор прав для каждой роли.
+  - [x] Обновить логику local-sim, чтобы всегда добавлять роль user и сохранять права через SQL-эмуляцию.
+  - [x] Проверить, что выдача ролей обновляет локальную БД local-sim.
+  - [x] Обновить запись в report.md после завершения.
+- Критерии приёмки:
+  - [x] Все роли в матрице показывают полный доступ ко всем разделам.
+  - [x] При назначении роли пользователю в его списке ролей всегда есть user.
+  - [x] Изменения проходят через local-sim (таблица auth_users обновляется).
+- Блокеры: —
+- Итоги выполнения: Статус: ✅ Выполнено; Что сделано: Добавил роль user в конфиги и сиды, включил полный набор прав для всех ролей и обновил local-sim так, чтобы роль user всегда сохранялась в auth_users и матрица прав учитывала SQL-эмуляцию; Что осталось: —; Коммиты/PR: HEAD (feat: grant full permissions to all roles); Список затронутых файлов: src/pages/admin/features/access/roles/data/roleConfigs.js, local-sim/auth/accounts/seedLocalAuth.js, local-sim/auth/api.js, local-sim/auth/composeUser.js, local-sim/auth/admin/adminPanelVisibility.js, report.md; Замечания: Автотесты не запускал — правки касаются local-sim и конфигов.
+
 ## TAKE-20251013-001 — Проверка local-sim на лишние файлы
 - Автор, Время: gpt-5-codex, 2025-10-13 09:13 (Europe/Kyiv)
 - Резюме: Удалил пустые файлы логов админки из local-sim и упростил индекс логов, чтобы не хранить заглушки без данных. Обновил отчёт с перечислением удалённых файлов и причиной очистки.

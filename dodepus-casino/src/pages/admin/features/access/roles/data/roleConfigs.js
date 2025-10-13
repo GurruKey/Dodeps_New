@@ -1,5 +1,13 @@
 export const availableRoles = [
   {
+    id: 'user',
+    group: 'user',
+    level: null,
+    isAdmin: false,
+    name: 'Пользователь',
+    description: 'Базовая роль с полным доступом без админских флагов.',
+  },
+  {
     id: 'intern-l1',
     group: 'intern',
     level: 1,
@@ -97,178 +105,7 @@ export const availableRoles = [
   },
 ];
 
-export const rolePermissionMatrix = [
-  {
-    roleId: 'intern-l1',
-    roleName: 'Стажёр 1 lvl',
-    permissions: {
-      adminPanel: false,
-      overview: true,
-      clients: false,
-      promocodes: false,
-      roles: false,
-      transactions: false,
-      verification: false,
-      chat: false,
-    },
-  },
-  {
-    roleId: 'intern-l2',
-    roleName: 'Стажёр 2 lvl',
-    permissions: {
-      adminPanel: false,
-      overview: true,
-      clients: true,
-      promocodes: false,
-      roles: false,
-      transactions: false,
-      verification: false,
-      chat: false,
-    },
-  },
-  {
-    roleId: 'moderator-l1',
-    roleName: 'Модератор 1 lvl',
-    permissions: {
-      adminPanel: false,
-      overview: true,
-      clients: true,
-      promocodes: false,
-      roles: false,
-      transactions: false,
-      verification: true,
-      chat: true,
-    },
-  },
-  {
-    roleId: 'moderator-l2',
-    roleName: 'Модератор 2 lvl',
-    permissions: {
-      adminPanel: false,
-      overview: true,
-      clients: true,
-      promocodes: false,
-      roles: false,
-      transactions: true,
-      verification: true,
-      chat: true,
-    },
-  },
-  {
-    roleId: 'moderator-l3',
-    roleName: 'Модератор 3 lvl',
-    permissions: {
-      adminPanel: false,
-      overview: true,
-      clients: true,
-      promocodes: true,
-      roles: false,
-      transactions: true,
-      verification: true,
-      chat: true,
-    },
-  },
-  {
-    roleId: 'moderator-l4',
-    roleName: 'Модератор 4 lvl',
-    permissions: {
-      adminPanel: false,
-      overview: true,
-      clients: true,
-      promocodes: true,
-      roles: true,
-      transactions: true,
-      verification: true,
-      chat: true,
-    },
-  },
-  {
-    roleId: 'admin-l1',
-    roleName: 'Админ 1 lvl',
-    permissions: {
-      adminPanel: true,
-      overview: true,
-      clients: true,
-      promocodes: true,
-      roles: false,
-      transactions: true,
-      verification: true,
-      chat: true,
-    },
-  },
-  {
-    roleId: 'admin-l2',
-    roleName: 'Админ 2 lvl',
-    permissions: {
-      adminPanel: true,
-      overview: true,
-      clients: true,
-      promocodes: true,
-      roles: true,
-      transactions: true,
-      verification: true,
-      chat: true,
-    },
-  },
-  {
-    roleId: 'admin-l3',
-    roleName: 'Админ 3 lvl',
-    permissions: {
-      adminPanel: true,
-      overview: true,
-      clients: true,
-      promocodes: true,
-      roles: true,
-      transactions: true,
-      verification: true,
-      chat: true,
-    },
-  },
-  {
-    roleId: 'admin-l4',
-    roleName: 'Админ 4 lvl',
-    permissions: {
-      adminPanel: true,
-      overview: true,
-      clients: true,
-      promocodes: true,
-      roles: true,
-      transactions: true,
-      verification: true,
-      chat: true,
-    },
-  },
-  {
-    roleId: 'op',
-    roleName: 'OP',
-    permissions: {
-      adminPanel: true,
-      overview: true,
-      clients: true,
-      promocodes: true,
-      roles: true,
-      transactions: true,
-      verification: true,
-      chat: true,
-    },
-  },
-  {
-    roleId: 'owner',
-    roleName: 'Owner',
-    permissions: {
-      adminPanel: true,
-      overview: true,
-      clients: true,
-      promocodes: true,
-      roles: true,
-      transactions: true,
-      verification: true,
-      chat: true,
-    },
-  },
-];
-
-export const roleMatrixLegend = {
+const ROLE_PERMISSION_LABELS = Object.freeze({
   adminPanel: 'Админ-панель',
   overview: 'Обзор',
   clients: 'Клиенты',
@@ -277,7 +114,23 @@ export const roleMatrixLegend = {
   transactions: 'Транзакции',
   verification: 'Верификация',
   chat: 'Модератор Чат',
-};
+});
+
+const ROLE_PERMISSION_KEYS = Object.keys(ROLE_PERMISSION_LABELS);
+
+const buildFullPermissionSet = () =>
+  ROLE_PERMISSION_KEYS.reduce((acc, key) => {
+    acc[key] = true;
+    return acc;
+  }, {});
+
+export const roleMatrixLegend = ROLE_PERMISSION_LABELS;
+
+export const rolePermissionMatrix = availableRoles.map((role) => ({
+  roleId: role.id,
+  roleName: role.name ?? role.id,
+  permissions: buildFullPermissionSet(),
+}));
 
 export const verificationQueue = [
   {

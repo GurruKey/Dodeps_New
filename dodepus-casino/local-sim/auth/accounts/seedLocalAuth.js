@@ -23,6 +23,8 @@ const mergeRoles = (accountRole, extraRoles = []) => {
       if (role) roles.add(role);
     });
 
+  roles.add('user');
+
   if (ADMIN_ROLES.has(baseRole)) {
     roles.add('admin');
   }

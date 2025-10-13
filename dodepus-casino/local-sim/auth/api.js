@@ -135,6 +135,10 @@ const collectRoles = (record, { id, group, isAdmin }) => {
   addRoles(record?.app_metadata?.roles);
   addRoles(record?.user_metadata?.roles);
 
+  if (!roles.includes('user')) {
+    roles.push('user');
+  }
+
   if (allowAdmin) {
     addRole('admin');
   }
