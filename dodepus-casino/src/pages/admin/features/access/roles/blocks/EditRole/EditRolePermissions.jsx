@@ -138,6 +138,7 @@ export default function EditRolePermissions() {
     const permissionLabel = roleMatrixLegend[permissionKey] ?? permissionKey;
 
     setPendingChange({
+      type: 'single',
       roleId: role.roleId,
       roleName: role.roleName,
       permissionKey,
@@ -147,40 +148,106 @@ export default function EditRolePermissions() {
     });
   };
 
+  const requestToggleAllPermissions = (event, role, nextValue) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const permissionsToUpdate = permissionKeys
+      .map((permissionKey) => ({
+        key: permissionKey,
+        label: roleMatrixLegend[permissionKey] ?? permissionKey,
+        previousValue: role.permissions[permissionKey] ?? false,
+      }))
+      .filter((permission) => permission.previousValue !== nextValue);
+
+    if (permissionsToUpdate.length === 0) {
+      return;
+    }
+
+    setPendingChange({
+      type: 'bulk',
+      roleId: role.roleId,
+      roleName: role.roleName,
+      permissions: permissionsToUpdate,
+      nextValue,
+    });
+  };
+
   const handleConfirmChange = (comment) => {
     if (!pendingChange) return;
 
-    const { roleId, roleName, permissionKey, permissionLabel, currentValue, nextValue } =
-      pendingChange;
+    if (pendingChange.type === 'bulk') {
+      const { roleId, roleName, permissions, nextValue } = pendingChange;
 
-    if (permissionKey === 'adminPanel') {
-      setAdminPanelVisibilityForRole(roleId, nextValue);
-      setAdminVisibility((prev) => ({ ...prev, [roleId]: nextValue }));
+      setMatrix((prev) =>
+        prev.map((role) =>
+          role.roleId === roleId
+            ? {
+                ...role,
+                permissions: {
+                  ...role.permissions,
+                  ...permissions.reduce(
+                    (acc, permission) => {
+                      acc[permission.key] = nextValue;
+                      return acc;
+                    },
+                    {},
+                  ),
+                },
+              }
+            : role,
+        ),
+      );
+
+      if (permissions.some((permission) => permission.key === 'adminPanel')) {
+        setAdminPanelVisibilityForRole(roleId, nextValue);
+        setAdminVisibility((prev) => ({ ...prev, [roleId]: nextValue }));
+      }
+
+      permissions.forEach((permission) => {
+        appendRolePermissionLog({
+          roleId,
+          roleName,
+          permissionKey: permission.key,
+          permissionLabel: permission.label,
+          previousValue: permission.previousValue,
+          nextValue,
+          comment,
+        });
+      });
+    } else {
+      const { roleId, roleName, permissionKey, permissionLabel, currentValue, nextValue } =
+        pendingChange;
+
+      if (permissionKey === 'adminPanel') {
+        setAdminPanelVisibilityForRole(roleId, nextValue);
+        setAdminVisibility((prev) => ({ ...prev, [roleId]: nextValue }));
+      }
+
+      setMatrix((prev) =>
+        prev.map((role) =>
+          role.roleId === roleId
+            ? {
+                ...role,
+                permissions: {
+                  ...role.permissions,
+                  [permissionKey]: nextValue,
+                },
+              }
+            : role,
+        ),
+      );
+
+      appendRolePermissionLog({
+        roleId,
+        roleName,
+        permissionKey,
+        permissionLabel,
+        previousValue: currentValue,
+        nextValue,
+        comment,
+      });
     }
-
-    setMatrix((prev) =>
-      prev.map((role) =>
-        role.roleId === roleId
-          ? {
-              ...role,
-              permissions: {
-                ...role.permissions,
-                [permissionKey]: nextValue,
-              },
-            }
-          : role,
-      ),
-    );
-
-    appendRolePermissionLog({
-      roleId,
-      roleName,
-      permissionKey,
-      permissionLabel,
-      previousValue: currentValue,
-      nextValue,
-      comment,
-    });
 
     handleCloseModal();
   };
@@ -251,6 +318,7 @@ export default function EditRolePermissions() {
                   expandedRoles={expandedRoles}
                   onToggleRole={handleAccordionSelect}
                   onRequestPermissionToggle={requestPermissionToggle}
+                  onRequestToggleAll={requestToggleAllPermissions}
                 />
               );
             })()}
@@ -276,6 +344,15 @@ function ConfirmChangeModal({ pendingChange, onCancel, onConfirm }) {
     }
   }, [pendingChange]);
 
+  const isBulkChange = pendingChange?.type === 'bulk';
+  const actionLabel = isBulkChange
+    ? pendingChange?.nextValue
+      ? 'Включить все доступы'
+      : 'Отключить все доступы'
+    : pendingChange?.nextValue
+    ? `Включить «${pendingChange?.permissionLabel ?? ''}»`
+    : `Отключить «${pendingChange?.permissionLabel ?? ''}»`;
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const comment = commentValue.trim();
@@ -293,9 +370,14 @@ function ConfirmChangeModal({ pendingChange, onCancel, onConfirm }) {
           <Stack gap={3}>
             <div>
               <div className="fw-semibold">{pendingChange?.roleName}</div>
-              <div className="text-muted small">
-                {pendingChange?.nextValue ? 'Включить' : 'Отключить'} «{pendingChange?.permissionLabel}»
-              </div>
+              <div className="text-muted small">{actionLabel}</div>
+              {isBulkChange && pendingChange?.permissions?.length ? (
+                <ul className="small text-muted mt-2 mb-0 ps-3">
+                  {pendingChange.permissions.map((permission) => (
+                    <li key={permission.key}>{permission.label}</li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
             <Form.Group controlId="role-permission-comment">
               <Form.Label>Комментарий</Form.Label>
