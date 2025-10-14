@@ -124,6 +124,20 @@ export const resolveCurrencyCode = (extras = {}) => {
 
 export const enrichAccountWithTransactions = (account, index) => {
   const extras = { ...(account.extras ?? {}) };
+
+  if (extras.skipTransactionsSeed === true) {
+    delete extras.skipTransactionsSeed;
+
+    if (!Array.isArray(extras.transactions)) {
+      extras.transactions = [];
+    }
+
+    return {
+      ...account,
+      extras,
+    };
+  }
+
   const currency = resolveCurrencyCode(extras);
 
   extras.currency = currency;
