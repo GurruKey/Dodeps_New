@@ -8,14 +8,8 @@ export const OWNER_PRESET_ACCOUNT = Object.freeze({
   },
   user_metadata: {
     roles: ['owner'],
-    firstName: 'Local',
-    lastName: 'Owner',
   },
   extras: {
-    firstName: 'Local',
-    lastName: 'Owner',
-    nickname: 'Owner Local',
-    emailVerified: true,
     skipTransactionsSeed: true,
   },
 });
