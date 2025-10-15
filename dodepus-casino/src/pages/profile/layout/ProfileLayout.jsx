@@ -3,33 +3,15 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../../app/providers';
 import { useVerificationModules } from '../../../shared/verification/index.js';
 import { useProfileRankSummary } from '../rank/hooks/useProfileRankSummary.js';
+import { normalizeHexColor, resolveAutoTextColor } from '../../../shared/rank/badgeEffects.js';
 
 const DEFAULT_BADGE_COLOR = '#adb5bd';
 
-const normalizeBadgeColor = (value) => {
-  if (typeof value !== 'string') {
+const pickBadgeColor = (value) => {
+  if (typeof value !== 'string' || !value.trim()) {
     return null;
   }
-  const trimmed = value.trim().toLowerCase();
-  if (!trimmed) {
-    return null;
-  }
-  const normalized = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
-  return /^#([0-9a-f]{6})$/.test(normalized) ? normalized : null;
-};
-
-const resolveBadgeTextColor = (hexColor) => {
-  const hex = (hexColor || DEFAULT_BADGE_COLOR).replace('#', '');
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
-
-  if ([r, g, b].some((value) => Number.isNaN(value))) {
-    return '#fff';
-  }
-
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.65 ? '#212529' : '#fff';
+  return normalizeHexColor(value, DEFAULT_BADGE_COLOR);
 };
 
 export default function ProfileLayout() {
@@ -43,17 +25,21 @@ export default function ProfileLayout() {
     rankSummary?.currentLevel?.shortLabel ||
     rankSummary?.currentLevel?.label ||
     'VIP 0';
-  const normalizedBadgeColor = normalizeBadgeColor(rankSummary?.currentLevel?.badgeColor);
-  const rankBadgeVariant = normalizedBadgeColor
+  const badgeColor = pickBadgeColor(rankSummary?.currentLevel?.badgeColor);
+  const badgeTextColor = normalizeHexColor(
+    rankSummary?.currentLevel?.badgeTextColor,
+    resolveAutoTextColor(badgeColor ?? DEFAULT_BADGE_COLOR),
+  );
+  const rankBadgeVariant = badgeColor
     ? null
     : rankSummary?.currentLevel?.level >= 5
-    ? 'warning'
-    : 'secondary';
-  const rankBadgeStyle = normalizedBadgeColor
+      ? 'warning'
+      : 'secondary';
+  const rankBadgeStyle = badgeColor
     ? {
-        backgroundColor: normalizedBadgeColor,
-        color: resolveBadgeTextColor(normalizedBadgeColor),
-        border: '1px solid rgba(0,0,0,0.1)',
+        backgroundColor: badgeColor,
+        color: badgeTextColor,
+        border: '1px solid rgba(0, 0, 0, 0.1)',
       }
     : undefined;
 
