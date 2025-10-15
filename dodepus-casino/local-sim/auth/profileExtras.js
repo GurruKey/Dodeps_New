@@ -1,4 +1,4 @@
-import { PROFILE_KEY } from './constants';
+import { PROFILE_KEY } from './constants.js';
 import { getLocalDatabase } from '../database/engine.js';
 
 const GENDER_MALE_VALUES = Object.freeze([
