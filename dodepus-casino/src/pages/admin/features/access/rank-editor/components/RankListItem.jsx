@@ -305,16 +305,13 @@ export default function RankListItem({ rank, levelMeta, onSave, isSaving }) {
                     </Form.Group>
 
                     <div className="border rounded-4 p-3 bg-body-secondary">
-                      <div className="text-uppercase text-muted small mb-2">Блок для скриншота</div>
+                      <div className="text-muted fw-semibold small mb-2">Предпросмотр</div>
                       <div className="d-flex flex-column gap-2 align-items-start">
                         <Badge bg="secondary" className={`${preview.className} px-4 py-2`} style={preview.style}>
                           {rank.label}
                         </Badge>
                         <div className="fw-semibold" style={{ color: preview.textColor }}>
                           {rank.label} — {form.tagline || '…'}
-                        </div>
-                        <div className="small text-muted">
-                          Цвет фона и букв меняется в реальном времени. Сделайте скриншот этого блока.
                         </div>
                       </div>
                     </div>

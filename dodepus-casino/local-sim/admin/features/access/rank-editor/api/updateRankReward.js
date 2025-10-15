@@ -16,6 +16,21 @@ export const updateAdminRankReward = async (payload = {}) => {
   if (Object.prototype.hasOwnProperty.call(payload, 'badgeColor')) {
     request.badgeColor = payload.badgeColor;
   }
+  if (Object.prototype.hasOwnProperty.call(payload, 'badgeColorSecondary')) {
+    request.badgeColorSecondary = payload.badgeColorSecondary;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'badgeColorTertiary')) {
+    request.badgeColorTertiary = payload.badgeColorTertiary;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'badgeTextColor')) {
+    request.badgeTextColor = payload.badgeTextColor;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'badgeEffect')) {
+    request.badgeEffect = payload.badgeEffect;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'badgeEffectSpeed')) {
+    request.badgeEffectSpeed = payload.badgeEffectSpeed;
+  }
   if (Object.prototype.hasOwnProperty.call(payload, 'tagline')) {
     request.tagline = payload.tagline;
   }
