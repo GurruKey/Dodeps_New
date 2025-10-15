@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Badge, Button, Card, Col, Collapse, Form, Row, Stack } from 'react-bootstrap';
+import { Alert, Button, Card, Col, Collapse, Form, Row, Stack } from 'react-bootstrap';
 import {
   BADGE_EFFECT_OPTIONS,
   buildBadgePreview,
@@ -9,6 +9,7 @@ import {
   normalizeHexColor,
   resolveAutoTextColor,
 } from '../../../../../../shared/rank/badgeEffects.js';
+import RankBadge from '../../../../../../shared/rank/components/RankBadge.jsx';
 
 const EFFECT_HINTS = {
   solid: 'Статичный фон без анимации — используйте один цвет.',
@@ -174,9 +175,9 @@ export default function RankListItem({ rank, levelMeta, onSave, isSaving }) {
                 <span className="fs-4 lh-1 text-body">{isOpen ? '▾' : '▸'}</span>
                 <span className="fw-semibold fs-5 text-body">{rank.label}</span>
               </Button>
-              <Badge bg="secondary" className={`${savedPreview.className} px-3`} style={savedPreview.style}>
+              <RankBadge preview={savedPreview} className="px-3">
                 {rank.label}
-              </Badge>
+              </RankBadge>
             </div>
             <div className="text-muted small">{rank.title || rank.displayTitle || rank.label}</div>
           </div>
@@ -307,9 +308,9 @@ export default function RankListItem({ rank, levelMeta, onSave, isSaving }) {
                     <div className="border rounded-4 p-3 bg-body-secondary">
                       <div className="text-muted fw-semibold small mb-2">Предпросмотр</div>
                       <div className="d-flex flex-column gap-2 align-items-start">
-                        <Badge bg="secondary" className={`${preview.className} px-4 py-2`} style={preview.style}>
+                        <RankBadge preview={preview} className="px-4 py-2">
                           {rank.label}
-                        </Badge>
+                        </RankBadge>
                         <div className="fw-semibold" style={{ color: preview.textColor }}>
                           {rank.label} — {form.tagline || '…'}
                         </div>

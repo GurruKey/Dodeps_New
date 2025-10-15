@@ -1,5 +1,6 @@
-import { Badge, Card, ListGroup } from 'react-bootstrap';
+import { Card, ListGroup } from 'react-bootstrap';
 import { buildBadgePreview, getBadgeEffectMeta } from '../../../../shared/rank/badgeEffects.js';
+import RankBadge from '../../../../shared/rank/components/RankBadge.jsx';
 
 const composeTitle = (reward) => {
   const tagline = typeof reward?.tagline === 'string' ? reward.tagline.trim() : '';
@@ -33,9 +34,9 @@ export default function RankRewardsList({ rewards }) {
               <ListGroup.Item key={reward.level} className="py-3">
                 <div className="d-flex flex-column gap-2">
                   <div className="d-flex flex-wrap align-items-center gap-2">
-                    <Badge bg="secondary" className={`${preview.className} px-3`} style={preview.style}>
+                    <RankBadge preview={preview} className="px-3">
                       {reward.label}
-                    </Badge>
+                    </RankBadge>
                     <span className="fw-semibold" style={{ color: preview.textColor }}>{title}</span>
                   </div>
                   <div className="small text-muted">

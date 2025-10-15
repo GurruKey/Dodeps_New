@@ -112,6 +112,10 @@ export const buildBadgePreview = (config = {}) => {
     '--rank-badge-tertiary-color': tertiaryColor,
     '--rank-badge-text-color': textColor,
     '--rank-badge-speed': `${speed}s`,
+    '--bs-badge-bg': baseColor,
+    '--bs-badge-color': textColor,
+    '--bs-badge-border-color': baseColor,
+    '--bs-bg-opacity': 1,
     color: textColor,
   };
 
