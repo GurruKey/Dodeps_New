@@ -1,4 +1,5 @@
 import { Card, Table, ProgressBar, Badge } from 'react-bootstrap';
+import { buildBadgePreview, getBadgeEffectMeta } from '../../../../shared/rank/badgeEffects.js';
 
 const formatAmount = (value, currency) => {
   const numeric = Number(value);
@@ -18,15 +19,27 @@ export default function RankProgressBlock({ summary, levels }) {
     : 0;
   const nextLevel = summary?.nextLevel ?? null;
   const currentLabel = summary?.currentLevel?.label ?? 'VIP 0';
-  const badgeVariant = summary?.currentLevel?.level >= 5 ? 'warning' : 'secondary';
+
+  const currentPreview = buildBadgePreview(summary?.currentLevel ?? {});
+  const currentEffect = getBadgeEffectMeta(summary?.currentLevel?.badgeEffect);
+  const currentSpeed = Number.isFinite(summary?.currentLevel?.badgeEffectSpeed)
+    ? summary.currentLevel.badgeEffectSpeed
+    : 6;
 
   return (
     <Card className="mb-4">
       <Card.Body>
-        <Card.Title className="d-flex justify-content-between align-items-center">
+        <Card.Title className="d-flex justify-content-between align-items-center flex-wrap gap-2">
           <span>Ранг пополнения</span>
-          <Badge bg={badgeVariant}>{currentLabel}</Badge>
+          <Badge bg="secondary" className={`${currentPreview.className} px-3`} style={currentPreview.style}>
+            {currentLabel}
+          </Badge>
         </Card.Title>
+
+        <div className="text-muted mb-1">
+          Эффект бейджа: {currentEffect.label}
+          {currentEffect.value !== 'solid' && ` · ${currentSpeed}s`}
+        </div>
 
         <div className="text-muted mb-3">
           Сумма пополнений: {formatAmount(summary?.totalDeposits ?? 0, currency)}

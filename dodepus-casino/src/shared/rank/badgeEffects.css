@@ -1,0 +1,158 @@
+.rank-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rank-badge-text-color, #ffffff);
+  background: var(--rank-badge-base-color, #adb5bd);
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: background 0.4s ease, color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
+  overflow: hidden;
+}
+
+.rank-badge::after {
+  pointer-events: none;
+}
+
+.rank-badge--solid {
+  background: var(--rank-badge-base-color, #adb5bd);
+}
+
+.rank-badge--gradient {
+  background-image: linear-gradient(
+    135deg,
+    var(--rank-badge-base-color, #adb5bd),
+    var(--rank-badge-secondary-color, #ced4da),
+    var(--rank-badge-tertiary-color, #6c757d)
+  );
+  background-size: 200% 200%;
+  animation: rankBadgeGradientFlow var(--rank-badge-speed, 8s) ease-in-out infinite;
+}
+
+.rank-badge--rainbow {
+  background-image: linear-gradient(
+    90deg,
+    #ff4d4d,
+    #ffa64d,
+    #fff84d,
+    #5bff4d,
+    #4da6ff,
+    #a64dff,
+    #ff4df2,
+    #ff4d4d
+  );
+  background-size: 400% 400%;
+  animation: rankBadgeRainbow var(--rank-badge-speed, 10s) linear infinite;
+}
+
+.rank-badge--breathing {
+  animation: rankBadgeBreathing var(--rank-badge-speed, 7s) ease-in-out infinite;
+}
+
+.rank-badge--pulse {
+  animation: rankBadgePulse var(--rank-badge-speed, 5s) ease-in-out infinite;
+}
+
+.rank-badge--glow {
+  animation: rankBadgeGlow var(--rank-badge-speed, 6s) ease-in-out infinite;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.3), 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.rank-badge--shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 45%;
+  height: 220%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-20deg);
+  opacity: 0;
+  animation: rankBadgeShine var(--rank-badge-speed, 6s) ease-in-out infinite;
+}
+
+@keyframes rankBadgeGradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes rankBadgeRainbow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes rankBadgeBreathing {
+  0%,
+  100% {
+    filter: brightness(1);
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0.15);
+  }
+  50% {
+    filter: brightness(1.08);
+    box-shadow: 0 0 26px rgba(255, 255, 255, 0.35);
+  }
+}
+
+@keyframes rankBadgePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.07);
+  }
+}
+
+@keyframes rankBadgeGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.25), 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(255, 255, 255, 0.45), 0 6px 18px rgba(0, 0, 0, 0.28);
+  }
+}
+
+@keyframes rankBadgeShine {
+  0% {
+    transform: translateX(0) skewX(-20deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  40% {
+    transform: translateX(280%) skewX(-20deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(280%) skewX(-20deg);
+    opacity: 0;
+  }
+}
