@@ -26,14 +26,21 @@ export default function RankProgressBlock({ summary, levels }) {
     ? summary.currentLevel.badgeEffectSpeed
     : 6;
 
+  const renderBadge = () => (
+    <Badge bg="secondary" className={`${currentPreview.className} px-3`} style={currentPreview.style}>
+      {currentLabel}
+    </Badge>
+  );
+
   return (
     <Card className="mb-4">
       <Card.Body>
-        <Card.Title className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <span>Ранг пополнения</span>
-          <Badge bg="secondary" className={`${currentPreview.className} px-3`} style={currentPreview.style}>
-            {currentLabel}
-          </Badge>
+        <Card.Title className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <div className="d-flex align-items-center gap-2">
+            {renderBadge()}
+            <span>Ранг пополнения</span>
+          </div>
+          {renderBadge()}
         </Card.Title>
 
         <div className="text-muted mb-1">
