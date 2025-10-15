@@ -32,6 +32,7 @@ import Personal from '../../pages/profile/personal';
 import Wallet from '../../pages/profile/wallet';
 import Terminal from '../../pages/profile/terminal';
 import History from '../../pages/profile/history';
+import ProfileRank from '../../pages/profile/rank';
 import Promos from '../../pages/profile/promos';
 import Season from '../../pages/profile/season';
 import GamesHistory from '../../pages/profile/games-history';
@@ -111,6 +112,7 @@ export default function AppRoutes() {
         <Route path="terminal" element={<Terminal />} />
         <Route path="personal" element={<Personal />} />
         <Route path="verification" element={<ProfileVerification />} />
+        <Route path="rank" element={<ProfileRank />} />
         <Route path="promos" element={<Promos />} />
         <Route path="season" element={<Season />} />
         <Route path="games-history" element={<GamesHistory />} />

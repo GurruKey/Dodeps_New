@@ -2,12 +2,20 @@ import { Container, Row, Col, Nav, Badge } from 'react-bootstrap';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../../app/providers';
 import { useVerificationModules } from '../../../shared/verification/index.js';
+import { useProfileRankSummary } from '../rank/hooks/useProfileRankSummary.js';
 
 export default function ProfileLayout() {
   const { user } = useAuth();
   const currency = user?.currency || 'USD';
   const balance = user?.balance ?? 0;
   const { summary: verificationSummary = {} } = useVerificationModules(user);
+
+  const rankSummary = useProfileRankSummary();
+  const rankBadgeLabel =
+    rankSummary?.currentLevel?.shortLabel ||
+    rankSummary?.currentLevel?.label ||
+    'VIP 0';
+  const rankBadgeVariant = rankSummary?.currentLevel?.level >= 5 ? 'warning' : 'secondary';
 
   const verificationApproved = Number.isFinite(verificationSummary?.approved)
     ? verificationSummary.approved
@@ -82,6 +90,15 @@ export default function ProfileLayout() {
 
               {/* разделитель */}
               <div className="my-2 border-top border-secondary" style={{ opacity: 0.5 }} />
+
+              <Nav.Link
+                as={NavLink}
+                to="rank"
+                className="d-flex justify-content-between align-items-center"
+              >
+                <span>Ранг</span>
+                <Badge bg={rankBadgeVariant}>{rankBadgeLabel}</Badge>
+              </Nav.Link>
 
               {/* АКЦИИ / СЕЗОН */}
               <Nav.Link as={NavLink} to="promos">
