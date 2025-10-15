@@ -66,6 +66,11 @@ const mergeRewardMeta = (levelData, reward) => {
   return {
     ...levelData,
     badgeColor: reward.badgeColor,
+    badgeColorSecondary: reward.badgeColorSecondary,
+    badgeColorTertiary: reward.badgeColorTertiary,
+    badgeTextColor: reward.badgeTextColor,
+    badgeEffect: reward.badgeEffect,
+    badgeEffectSpeed: reward.badgeEffectSpeed,
     rewardTitle: reward.title,
     tagline: reward.tagline,
     purpose: reward.purpose,
