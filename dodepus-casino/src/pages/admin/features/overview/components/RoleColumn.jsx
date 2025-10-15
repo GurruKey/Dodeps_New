@@ -1,5 +1,5 @@
 import { Card, Stack } from 'react-bootstrap';
-import renderPlaceholderItems from './roleColumn/renderPlaceholderItems.js';
+import renderPlaceholderItems from './roleColumn/renderPlaceholderItems.jsx';
 import renderEntries from './roleColumn/renderEntries.jsx';
 
 export default function RoleColumn({ title, entries = [], isLoading }) {
