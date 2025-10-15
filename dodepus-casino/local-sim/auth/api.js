@@ -8,11 +8,7 @@ import {
 import { composeUser } from './composeUser';
 import { loadExtras, saveExtras } from './profileExtras';
 import { availableRoles } from '../../src/pages/admin/features/access/roles/data/roleConfigs.js';
-import {
-  availableRanks,
-  rankBenefitMatrix,
-  findRankById,
-} from '../../src/pages/admin/features/access/ranks/data/rankConfigs.js';
+import { getRankDefinitionById, getRankBenefitTemplate } from '../modules/rank/api.js';
 import { getLocalDatabase } from '../database/engine.js';
 
 const USERS_KEY = 'dodepus_local_users_v1';
@@ -125,20 +121,16 @@ const normalizeRankConfig = (rankConfig) => {
   };
 };
 
-const getRankConfigById = (rankId) => {
-  const normalizedId = String(rankId ?? '').trim();
-  if (!normalizedId) return null;
-  const match = findRankById(normalizedId) ?? availableRanks.find((rank) => rank.id === normalizedId);
-  return normalizeRankConfig(match);
-};
+const getRankConfigById = (rankId) => normalizeRankConfig(getRankDefinitionById(rankId));
 
 const getRankBenefitsTemplate = (rankId) => {
-  const template = rankBenefitMatrix.find((rank) => rank.rankId === rankId);
-  if (!template) {
+  const template = getRankBenefitTemplate(rankId);
+  if (!template || typeof template !== 'object') {
     return {};
   }
-  return Object.keys(template.benefits ?? {}).reduce((acc, key) => {
-    acc[key] = Boolean(template.benefits[key]);
+
+  return Object.entries(template).reduce((acc, [key, value]) => {
+    acc[key] = Boolean(value);
     return acc;
   }, {});
 };

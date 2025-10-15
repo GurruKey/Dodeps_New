@@ -1,9 +1,10 @@
 import { pickExtras } from './profileExtras';
 import { availableRoles } from '../../src/pages/admin/features/access/roles/data/roleConfigs.js';
 import {
-  availableRanks,
-  rankBenefitMatrix,
-} from '../../src/pages/admin/features/access/ranks/data/rankConfigs.js';
+  getRankDefinitions,
+  getRankDefinitionById,
+  getRankBenefitTemplate as loadRankBenefitTemplate,
+} from '../modules/rank/api.js';
 
 const collectRoles = (...sources) => {
   const normalized = [];
@@ -33,6 +34,8 @@ const collectRoles = (...sources) => {
 
   return normalized;
 };
+
+const listAvailableRanks = () => getRankDefinitions();
 
 export const isAdminUser = (user) =>
   Boolean(
@@ -101,7 +104,7 @@ const resolveRoleId = (record, extras) => {
 
 const getRankConfig = (rankId) => {
   if (!rankId) return null;
-  return availableRanks.find((rank) => rank.id === rankId) ?? null;
+  return getRankDefinitionById(rankId);
 };
 
 const resolveRankId = (record, extras) => {
@@ -122,16 +125,9 @@ const resolveRankId = (record, extras) => {
     }
   }
 
-  const hasPlayerGroup =
-    record?.role === 'player' ||
-    record?.user_metadata?.role === 'player' ||
-    record?.app_metadata?.role === 'player';
-
-  if (hasPlayerGroup) {
-    return 'user';
-  }
-
-  return 'user';
+  const ranks = listAvailableRanks();
+  const defaultRank = ranks.find((rank) => rank.level === 0) ?? ranks[0] ?? null;
+  return defaultRank?.id ?? 'user';
 };
 
 const resolveRankTier = (record, extras, rankId) => {
@@ -153,10 +149,13 @@ const resolveRankTier = (record, extras, rankId) => {
 };
 
 const getRankBenefitTemplate = (rankId) => {
-  const template = rankBenefitMatrix.find((rank) => rank.rankId === rankId);
-  if (!template) return {};
-  return Object.keys(template.benefits ?? {}).reduce((acc, key) => {
-    acc[key] = Boolean(template.benefits[key]);
+  const template = loadRankBenefitTemplate(rankId);
+  if (!template || typeof template !== 'object') {
+    return {};
+  }
+
+  return Object.entries(template).reduce((acc, [key, value]) => {
+    acc[key] = Boolean(value);
     return acc;
   }, {});
 };
@@ -230,6 +229,8 @@ export function composeUser(record, extras) {
     playerRankName: playerRankConfig?.name ?? playerRankId,
     playerRankTier: playerRankTier ?? undefined,
     playerRankBenefits,
+    playerRankBadgeColor: playerRankConfig?.badgeColor,
+    playerRankPurpose: playerRankConfig?.purpose,
     ...pickExtras({ ...extras, emailVerified, email: record.email, phone: record.phone }),
   };
 }

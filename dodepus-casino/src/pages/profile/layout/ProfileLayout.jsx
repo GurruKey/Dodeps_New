@@ -4,6 +4,34 @@ import { useAuth } from '../../../app/providers';
 import { useVerificationModules } from '../../../shared/verification/index.js';
 import { useProfileRankSummary } from '../rank/hooks/useProfileRankSummary.js';
 
+const DEFAULT_BADGE_COLOR = '#adb5bd';
+
+const normalizeBadgeColor = (value) => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim().toLowerCase();
+  if (!trimmed) {
+    return null;
+  }
+  const normalized = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+  return /^#([0-9a-f]{6})$/.test(normalized) ? normalized : null;
+};
+
+const resolveBadgeTextColor = (hexColor) => {
+  const hex = (hexColor || DEFAULT_BADGE_COLOR).replace('#', '');
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+
+  if ([r, g, b].some((value) => Number.isNaN(value))) {
+    return '#fff';
+  }
+
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.65 ? '#212529' : '#fff';
+};
+
 export default function ProfileLayout() {
   const { user } = useAuth();
   const currency = user?.currency || 'USD';
@@ -15,7 +43,19 @@ export default function ProfileLayout() {
     rankSummary?.currentLevel?.shortLabel ||
     rankSummary?.currentLevel?.label ||
     'VIP 0';
-  const rankBadgeVariant = rankSummary?.currentLevel?.level >= 5 ? 'warning' : 'secondary';
+  const normalizedBadgeColor = normalizeBadgeColor(rankSummary?.currentLevel?.badgeColor);
+  const rankBadgeVariant = normalizedBadgeColor
+    ? null
+    : rankSummary?.currentLevel?.level >= 5
+    ? 'warning'
+    : 'secondary';
+  const rankBadgeStyle = normalizedBadgeColor
+    ? {
+        backgroundColor: normalizedBadgeColor,
+        color: resolveBadgeTextColor(normalizedBadgeColor),
+        border: '1px solid rgba(0,0,0,0.1)',
+      }
+    : undefined;
 
   const verificationApproved = Number.isFinite(verificationSummary?.approved)
     ? verificationSummary.approved
@@ -97,7 +137,9 @@ export default function ProfileLayout() {
                 className="d-flex justify-content-between align-items-center"
               >
                 <span>Ранг</span>
-                <Badge bg={rankBadgeVariant}>{rankBadgeLabel}</Badge>
+                <Badge bg={rankBadgeVariant ?? 'secondary'} style={rankBadgeStyle}>
+                  {rankBadgeLabel}
+                </Badge>
               </Nav.Link>
 
               {/* АКЦИИ / СЕЗОН */}

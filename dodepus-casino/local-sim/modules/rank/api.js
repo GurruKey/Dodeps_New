@@ -1,6 +1,14 @@
 import { loadExtras } from '../../auth/profileExtras.js';
-import { RANK_LEVELS, RANK_REWARDS } from './constants.js';
+import { RANK_LEVELS } from './constants.js';
 import { resolveRankProgress } from './helpers.js';
+import {
+  loadRankRewards,
+  updateRankReward,
+  resetRankRewards,
+  listRankDefinitions,
+  findRankDefinitionById,
+  getRankBenefitTemplate as loadRankBenefitTemplate,
+} from './storage.js';
 
 
 const toTransactions = (source) => (Array.isArray(source) ? source : []);
@@ -29,9 +37,42 @@ const isSuccessfulDeposit = (txn) => {
 
 export const getRankLevels = () => RANK_LEVELS.map((level) => ({ ...level }));
 
-export const getRankRewards = () => RANK_REWARDS.map((reward) => ({ ...reward }));
+export const getRankRewards = () => loadRankRewards().map((reward) => ({ ...reward }));
 
-export const getProfileRankSummary = (userId) => {
+export const getRankDefinitions = () => listRankDefinitions().map((definition) => ({ ...definition }));
+
+export const getRankDefinitionById = (rankId) => {
+  const definition = findRankDefinitionById(rankId);
+  return definition ? { ...definition } : null;
+};
+
+export const getRankBenefitTemplate = (rankId) => {
+  const template = loadRankBenefitTemplate(rankId);
+  if (!template || typeof template !== 'object') {
+    return {};
+  }
+  return { ...template };
+};
+
+const mergeRewardMeta = (levelData, reward) => {
+  if (!levelData) {
+    return null;
+  }
+
+  if (!reward) {
+    return { ...levelData };
+  }
+
+  return {
+    ...levelData,
+    badgeColor: reward.badgeColor,
+    rewardTitle: reward.title,
+    tagline: reward.tagline,
+    purpose: reward.purpose,
+  };
+};
+
+export const getProfileRankSummary = (userId, rewardsCache) => {
   const extras = loadExtras(userId);
   const totalDeposits = toTransactions(extras?.transactions).reduce((sum, txn) => {
     if (!isSuccessfulDeposit(txn)) {
@@ -41,15 +82,29 @@ export const getProfileRankSummary = (userId) => {
   }, 0);
 
   const progress = resolveRankProgress(totalDeposits);
+  const rewards = Array.isArray(rewardsCache) ? rewardsCache : loadRankRewards();
+
+  const currentReward = rewards.find((reward) => reward.level === progress?.currentLevel?.level) ?? null;
+  const nextReward = rewards.find((reward) => reward.level === progress?.nextLevel?.level) ?? null;
 
   return {
     ...progress,
     currency: extras?.currency || 'USD',
+    currentLevel: mergeRewardMeta(progress?.currentLevel ?? null, currentReward),
+    nextLevel: mergeRewardMeta(progress?.nextLevel ?? null, nextReward),
   };
 };
 
-export const getProfileRankData = (userId) => ({
-  summary: getProfileRankSummary(userId),
-  levels: getRankLevels(),
-  rewards: getRankRewards(),
-});
+export const getProfileRankData = (userId) => {
+  const rewards = getRankRewards();
+
+  return {
+    rewards,
+    summary: getProfileRankSummary(userId, rewards),
+    levels: getRankLevels(),
+  };
+};
+
+export const adminUpdateRankReward = (payload) => updateRankReward(payload?.level, payload);
+
+export const adminResetRankRewards = () => resetRankRewards();
