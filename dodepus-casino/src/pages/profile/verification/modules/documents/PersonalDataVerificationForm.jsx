@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Form, Row, Col, Button, Alert } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/providers';
 import { useVerificationState } from '../../state/useVerificationState.js';
-import { VerificationFormLayout } from '../shared/VerificationFormLayout.jsx';
+import { VerificationFormLayout } from '../shared';
 
 const GENDER_OPTIONS = [
   { value: '', label: 'Выберите пол' },

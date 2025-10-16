@@ -1,3 +1,9 @@
+### 2025-10-16 17:35 — profile/verification barrels и rank/hooks
+- В подпапках modules/email|phone|address|documents добавил index.js, чтобы реэкспортировать модули и формы без глубоких путей.
+- Shared-папка получила index.js; формы теперь тянут VerificationFormLayout и DocumentUploader из одного места.
+- modules/index.js собирает PROFILE_VERIFICATION_MODULES из barrel-экспортов и реэкспортирует формы.
+- Импорты форм обновлены на короткий `'../shared'`, а layout и rank используют `../rank/hooks` с barrel.
+
 ### 2025-10-16 16:49 — profile/rank бейдж и лендинг
 - Добавил RankSummaryBlock: карточка с текущим VIP-бейджем, теглайном и описанием награды.
 - На странице профиля ранга теперь рендерится сводка перед прогрессом и наградами.

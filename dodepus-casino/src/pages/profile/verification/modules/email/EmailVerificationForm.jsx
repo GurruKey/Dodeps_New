@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/providers';
 import { useVerificationState } from '../../state/useVerificationState.js';
-import { VerificationFormLayout } from '../shared/VerificationFormLayout.jsx';
+import { VerificationFormLayout } from '../shared';
 
 export function EmailVerificationForm({
   layout = 'card',

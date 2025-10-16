@@ -1,6 +1,6 @@
 import { ProfileBlocksLayout } from '../layout/blocks';
 import { RankProgressBlock, RankRewardsBlock, RankSummaryBlock } from './blocks';
-import { useProfileRankData } from './hooks/useProfileRankData.js';
+import { useProfileRankData } from './hooks';
 
 const defaultSummary = Object.freeze({
   totalDeposits: 0,
