@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Card, Form, Button, Alert } from 'react-bootstrap';
+import { Form, Button, Alert } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/providers';
 import { useVerificationState } from '../../state/useVerificationState.js';
+import { VerificationFormLayout } from '../shared/VerificationFormLayout.jsx';
 
 export function EmailVerificationForm({
   layout = 'card',
@@ -97,22 +98,10 @@ export function EmailVerificationForm({
     </Form>
   );
 
-  if (layout === 'plain') {
-    return (
-      <div className="d-grid gap-3">
-        <div className="fw-semibold fs-5">Почта</div>
-        {formContent}
-      </div>
-    );
-  }
-
   return (
-    <Card className="w-100">
-      <Card.Body>
-        <Card.Title className="mb-3">Почта</Card.Title>
-        {formContent}
-      </Card.Body>
-    </Card>
+    <VerificationFormLayout title="Почта" layout={layout}>
+      {formContent}
+    </VerificationFormLayout>
   );
 }
 

@@ -1,28 +1,28 @@
+import { ProfileBlocksLayout } from '../layout/blocks';
 import {
   AccountIdBlock,
-  AddressBlock,
-  ContactsBlock,
-  GenderDobBlock,
   NameBlock,
-  NicknameBlock,
-  SavePersonalBlock,
+  GenderDobBlock,
   SocialStatusBlock,
-  // AuthenticatorBlock,
+  NicknameBlock,
+  ContactsBlock,
+  AddressBlock,
+  AuthenticatorBlock,
+  SavePersonalBlock,
 } from './blocks';
 
 export default function Personal() {
   return (
-    <div className="d-flex flex-column gap-3">
-      {/* Кнопка сверху, по центру */}
+    <ProfileBlocksLayout>
       <AccountIdBlock />
-      <NicknameBlock />
       <NameBlock />
       <GenderDobBlock />
       <SocialStatusBlock />
-      <AddressBlock />
+      <NicknameBlock />
       <ContactsBlock />
+      <AddressBlock />
+      <AuthenticatorBlock />
       <SavePersonalBlock />
-      {/* <AuthenticatorBlock /> */}
-    </div>
+    </ProfileBlocksLayout>
   );
 }

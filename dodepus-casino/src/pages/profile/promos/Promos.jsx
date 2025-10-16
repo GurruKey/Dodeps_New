@@ -1,12 +1,10 @@
-import { Card } from 'react-bootstrap';
+import { ProfileBlocksLayout } from '../layout/blocks';
+import { PromosPlaceholderBlock } from './blocks';
 
 export default function Promos() {
   return (
-    <Card>
-      <Card.Body>
-        <Card.Title>Акции для игры</Card.Title>
-        <div className="text-muted">Скоро здесь появятся актуальные акции и бонусы.</div>
-      </Card.Body>
-    </Card>
+    <ProfileBlocksLayout>
+      <PromosPlaceholderBlock />
+    </ProfileBlocksLayout>
   );
 }

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Card, Form, Row, Col, Button, Alert } from 'react-bootstrap';
+import { Form, Row, Col, Button, Alert } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/providers';
 import { useVerificationState } from '../../state/useVerificationState.js';
+import { VerificationFormLayout } from '../shared/VerificationFormLayout.jsx';
 
 const GENDER_OPTIONS = [
   { value: '', label: 'Выберите пол' },
@@ -181,22 +182,10 @@ export function PersonalDataVerificationForm({ layout = 'card' }) {
     </Form>
   );
 
-  if (layout === 'plain') {
-    return (
-      <div className="d-grid gap-3">
-        <div className="fw-semibold fs-5">Персональные данные</div>
-        {formContent}
-      </div>
-    );
-  }
-
   return (
-    <Card className="w-100">
-      <Card.Body>
-        <Card.Title className="mb-3">Персональные данные</Card.Title>
-        {formContent}
-      </Card.Body>
-    </Card>
+    <VerificationFormLayout title="Персональные данные" layout={layout}>
+      {formContent}
+    </VerificationFormLayout>
   );
 }
 

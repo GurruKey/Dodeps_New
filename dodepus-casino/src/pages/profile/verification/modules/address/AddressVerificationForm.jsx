@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Card, Form, Row, Col, Button, Alert } from 'react-bootstrap';
+import { Form, Row, Col, Button, Alert } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/providers';
 import { useVerificationState } from '../../state/useVerificationState.js';
+import { VerificationFormLayout } from '../shared/VerificationFormLayout.jsx';
 
 export function AddressVerificationForm({ layout = 'card' }) {
   const { user, updateProfile } = useAuth();
@@ -139,22 +140,10 @@ export function AddressVerificationForm({ layout = 'card' }) {
     </Form>
   );
 
-  if (layout === 'plain') {
-    return (
-      <div className="d-grid gap-3">
-        <div className="fw-semibold fs-5">Адрес проживания</div>
-        {formContent}
-      </div>
-    );
-  }
-
   return (
-    <Card className="w-100">
-      <Card.Body>
-        <Card.Title className="mb-3">Адрес проживания</Card.Title>
-        {formContent}
-      </Card.Body>
-    </Card>
+    <VerificationFormLayout title="Адрес проживания" layout={layout}>
+      {formContent}
+    </VerificationFormLayout>
   );
 }
 
