@@ -1,0 +1,279 @@
+[
+  {
+    "id": "promo_seed_welcome_2025",
+    "code": "WELCOME100",
+    "type_id": "deposit-welcome",
+    "title": "Welcome 100%",
+    "reward": "100% на первый депозит + 50 FS",
+    "status": "active",
+    "limit": 1000,
+    "used": 342,
+    "wager": 35,
+    "cashout_cap": 500,
+    "notes": "Автоприменение при первом депозите",
+    "params": {
+      "audience": {
+        "segments": ["newbies"],
+        "countries": ["UA", "PL"],
+        "newPlayersOnly": true
+      },
+      "limits": {
+        "minDeposit": 10,
+        "maxUsagePerClient": 1
+      },
+      "display": {
+        "highlight": true,
+        "showOnMain": true,
+        "badge": "🎁"
+      },
+      "repeat": {
+        "limit": 1
+      },
+      "schedule": {
+        "startsAt": "2025-01-01T00:00:00.000Z",
+        "endsAt": "2025-12-31T23:59:59.000Z"
+      }
+    },
+    "starts_at": "2025-01-01T00:00:00.000Z",
+    "ends_at": "2025-12-31T23:59:59.000Z",
+    "created_at": "2024-12-20T10:00:00.000Z",
+    "updated_at": "2025-10-10T09:00:00.000Z",
+    "activations": [
+      {
+        "id": "WELCOME100-activation-001",
+        "client_id": "client-1082",
+        "activated_at": "2025-10-14T18:42:00.000Z"
+      },
+      {
+        "id": "WELCOME100-activation-002",
+        "client_id": "client-2043",
+        "activated_at": "2025-10-12T09:15:00.000Z"
+      },
+      {
+        "id": "WELCOME100-activation-003",
+        "client_id": "client-1550",
+        "activated_at": "2025-10-05T14:21:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": "promo_seed_vip_boost",
+    "code": "VIPBOOST",
+    "type_id": "vip-personal",
+    "title": "VIP Boost 200%",
+    "reward": "200% + 100 FS для VIP",
+    "status": "active",
+    "limit": 250,
+    "used": 45,
+    "wager": 25,
+    "cashout_cap": 1000,
+    "notes": "Выдаётся вручную кураторами",
+    "params": {
+      "audience": {
+        "segments": ["vip"],
+        "levels": ["vip-2", "vip-3"],
+        "vipOnly": true
+      },
+      "limits": {
+        "minDeposit": 200,
+        "maxUsagePerClient": 2
+      },
+      "display": {
+        "highlight": true,
+        "showInStore": false,
+        "channels": ["direct", "vip"]
+      },
+      "repeat": {
+        "limit": 2,
+        "delayHours": 168
+      },
+      "schedule": {
+        "startsAt": "2025-02-01T09:00:00.000Z",
+        "endsAt": "2025-12-31T21:00:00.000Z"
+      }
+    },
+    "starts_at": "2025-02-01T09:00:00.000Z",
+    "ends_at": "2025-12-31T21:00:00.000Z",
+    "created_at": "2025-01-25T12:00:00.000Z",
+    "updated_at": "2025-10-11T17:30:00.000Z",
+    "activations": [
+      {
+        "id": "VIPBOOST-activation-001",
+        "client_id": "client-3001",
+        "activated_at": "2025-10-15T16:05:00.000Z"
+      },
+      {
+        "id": "VIPBOOST-activation-002",
+        "client_id": "client-2950",
+        "activated_at": "2025-10-13T11:40:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": "promo_seed_happy_hour",
+    "code": "HAPPYHOUR50",
+    "type_id": "happy-hour",
+    "title": "Happy Hour 50%",
+    "reward": "50% + x2 очки",
+    "status": "active",
+    "limit": 500,
+    "used": 210,
+    "wager": 20,
+    "cashout_cap": 400,
+    "notes": "Действует по будням с 18:00 до 21:00",
+    "params": {
+      "audience": {
+        "segments": ["sports", "slots"],
+        "countries": ["UA"],
+        "tags": ["evening"]
+      },
+      "limits": {
+        "minDeposit": 20,
+        "maxDeposit": 200,
+        "maxUsagePerClient": 4
+      },
+      "display": {
+        "highlight": false,
+        "showOnMain": true,
+        "channels": ["banner", "push"]
+      },
+      "repeat": {
+        "limit": 4,
+        "delayHours": 24
+      },
+      "schedule": {
+        "startsAt": "2025-03-01T16:00:00.000Z",
+        "endsAt": "2025-11-01T21:00:00.000Z"
+      }
+    },
+    "starts_at": "2025-03-01T16:00:00.000Z",
+    "ends_at": "2025-11-01T21:00:00.000Z",
+    "created_at": "2025-02-20T08:30:00.000Z",
+    "updated_at": "2025-10-15T18:00:00.000Z",
+    "activations": [
+      {
+        "id": "HAPPYHOUR50-activation-001",
+        "client_id": "client-1805",
+        "activated_at": "2025-10-15T18:15:00.000Z"
+      },
+      {
+        "id": "HAPPYHOUR50-activation-002",
+        "client_id": "client-2210",
+        "activated_at": "2025-10-14T18:45:00.000Z"
+      },
+      {
+        "id": "HAPPYHOUR50-activation-003",
+        "client_id": "client-1988",
+        "activated_at": "2025-10-13T19:10:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": "promo_seed_mystery",
+    "code": "MYSTERY50",
+    "type_id": "mystery",
+    "title": "Mystery Drop 50",
+    "reward": "Случайный приз до 50$",
+    "status": "paused",
+    "limit": 800,
+    "used": 620,
+    "wager": 15,
+    "cashout_cap": 200,
+    "notes": "На паузе до обновления каталога",
+    "params": {
+      "audience": {
+        "segments": ["casino"],
+        "tags": ["mystery"]
+      },
+      "limits": {
+        "minDeposit": 5,
+        "maxUsagePerClient": 6
+      },
+      "display": {
+        "highlight": true,
+        "showInStore": true,
+        "channels": ["store", "email"]
+      },
+      "repeat": {
+        "limit": 6,
+        "delayHours": 12
+      },
+      "schedule": {
+        "startsAt": "2025-01-15T10:00:00.000Z",
+        "endsAt": "2025-10-01T20:00:00.000Z"
+      }
+    },
+    "starts_at": "2025-01-15T10:00:00.000Z",
+    "ends_at": "2025-10-01T20:00:00.000Z",
+    "created_at": "2025-01-10T11:00:00.000Z",
+    "updated_at": "2025-10-08T07:30:00.000Z",
+    "activations": [
+      {
+        "id": "MYSTERY50-activation-001",
+        "client_id": "client-2501",
+        "activated_at": "2025-09-28T09:20:00.000Z"
+      },
+      {
+        "id": "MYSTERY50-activation-002",
+        "client_id": "client-2402",
+        "activated_at": "2025-09-25T13:05:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": "promo_seed_spring_archive",
+    "code": "SPRING23",
+    "type_id": "reload-bonus",
+    "title": "Spring Reload 75%",
+    "reward": "75% + 30 FS",
+    "status": "archived",
+    "limit": 600,
+    "used": 590,
+    "wager": 30,
+    "cashout_cap": 350,
+    "notes": "Акция завершена 2025-05-31",
+    "params": {
+      "audience": {
+        "segments": ["all"]
+      },
+      "limits": {
+        "minDeposit": 15,
+        "maxUsagePerClient": 3
+      },
+      "display": {
+        "highlight": false,
+        "showOnMain": false,
+        "channels": ["email"]
+      },
+      "repeat": {
+        "limit": 3,
+        "delayHours": 48
+      },
+      "schedule": {
+        "startsAt": "2025-03-01T08:00:00.000Z",
+        "endsAt": "2025-05-31T22:00:00.000Z"
+      }
+    },
+    "starts_at": "2025-03-01T08:00:00.000Z",
+    "ends_at": "2025-05-31T22:00:00.000Z",
+    "created_at": "2025-02-20T10:00:00.000Z",
+    "updated_at": "2025-06-01T09:00:00.000Z",
+    "activations": [
+      {
+        "id": "SPRING23-activation-001",
+        "client_id": "client-1750",
+        "activated_at": "2025-05-30T19:15:00.000Z"
+      },
+      {
+        "id": "SPRING23-activation-002",
+        "client_id": "client-1675",
+        "activated_at": "2025-05-29T17:45:00.000Z"
+      },
+      {
+        "id": "SPRING23-activation-003",
+        "client_id": "client-1899",
+        "activated_at": "2025-05-27T12:10:00.000Z"
+      }
+    ]
+  }
+]

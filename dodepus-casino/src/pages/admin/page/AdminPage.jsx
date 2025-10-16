@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import AdminLayout from '../layout/AdminLayout.jsx';
-import { listClients } from '../../../../local-sim/admin/features/clients/index.js';
+import { listClients } from '../../../../local-sim/modules/clients/index.js';
 
 export default function AdminPage() {
   const [clients, setClients] = useState([]);

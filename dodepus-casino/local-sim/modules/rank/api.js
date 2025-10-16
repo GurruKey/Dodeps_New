@@ -1,4 +1,4 @@
-import { loadExtras } from '../../auth/profileExtras.js';
+import { loadExtras } from '../auth/profileExtras.js';
 import { RANK_LEVELS } from './constants.js';
 import { resolveRankProgress } from './helpers.js';
 import {

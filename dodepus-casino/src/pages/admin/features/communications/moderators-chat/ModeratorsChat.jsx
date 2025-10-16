@@ -1,5 +1,7 @@
 import ChatPanel from '../../../shared/ChatPanel.jsx';
-import { moderatorsChatThreads } from '../../access/roles/data/roleConfigs.js';
+import { listModeratorsChatThreads } from '../../../../../../local-sim/modules/communications/index.js';
+
+const moderatorsChatThreads = listModeratorsChatThreads();
 
 export default function ModeratorsChat() {
   const activeThread = moderatorsChatThreads[0];

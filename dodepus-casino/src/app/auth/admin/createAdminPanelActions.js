@@ -1,1 +1,1 @@
-export { createAdminPanelActions } from '../../../../local-sim/auth/admin/createAdminPanelActions';
+export { createAdminPanelActions } from '../../../../local-sim/modules/auth/admin/createAdminPanelActions';

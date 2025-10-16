@@ -1,0 +1,92 @@
+[
+  {
+    "id": "vrf_req_owner_20240312",
+    "user_id": "owner-local-0001",
+    "status": "pending",
+    "submitted_at": "2024-03-12T09:25:00.000Z",
+    "updated_at": "2024-03-12T10:15:00.000Z",
+    "reviewed_at": null,
+    "reviewer_id": null,
+    "reviewer_name": null,
+    "reviewer_role": null,
+    "notes": "Ожидаем загрузку документа",
+    "completed_fields": {
+      "email": true,
+      "phone": true,
+      "address": false,
+      "doc": false
+    },
+    "requested_fields": {
+      "email": true,
+      "phone": true,
+      "address": true,
+      "doc": true
+    },
+    "cleared_fields": {
+      "email": false,
+      "phone": false,
+      "address": false,
+      "doc": false
+    }
+  },
+  {
+    "id": "vrf_req_owner_20240310",
+    "user_id": "owner-local-0001",
+    "status": "approved",
+    "submitted_at": "2024-03-10T14:05:00.000Z",
+    "updated_at": "2024-03-10T16:42:00.000Z",
+    "reviewed_at": "2024-03-10T16:42:00.000Z",
+    "reviewer_id": "admin-kyc-0002",
+    "reviewer_name": "Олена Коваль",
+    "reviewer_role": "kyc_manager",
+    "notes": "Документы проверены, профиль подтверждён",
+    "completed_fields": {
+      "email": true,
+      "phone": true,
+      "address": true,
+      "doc": true
+    },
+    "requested_fields": {
+      "email": true,
+      "phone": true,
+      "address": true,
+      "doc": true
+    },
+    "cleared_fields": {
+      "email": false,
+      "phone": false,
+      "address": false,
+      "doc": false
+    }
+  },
+  {
+    "id": "vrf_req_owner_20240305",
+    "user_id": "owner-local-0001",
+    "status": "rejected",
+    "submitted_at": "2024-03-05T08:40:00.000Z",
+    "updated_at": "2024-03-05T11:10:00.000Z",
+    "reviewed_at": "2024-03-05T11:10:00.000Z",
+    "reviewer_id": "admin-kyc-0003",
+    "reviewer_name": "Ігор Бондар",
+    "reviewer_role": "kyc_specialist",
+    "notes": "Нечёткое фото паспорта, запросили повторную загрузку",
+    "completed_fields": {
+      "email": true,
+      "phone": true,
+      "address": true,
+      "doc": false
+    },
+    "requested_fields": {
+      "email": true,
+      "phone": true,
+      "address": true,
+      "doc": true
+    },
+    "cleared_fields": {
+      "email": false,
+      "phone": false,
+      "address": false,
+      "doc": false
+    }
+  }
+]

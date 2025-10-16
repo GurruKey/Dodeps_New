@@ -7,7 +7,7 @@ import PromoDetailsPanel from '../list/blocks/PromoDetailsPanel.jsx';
 import {
   listAdminArchivedPromocodes,
   subscribeToAdminPromocodes,
-} from '../../../../../../local-sim/admin/features/promo/index.js';
+} from '../../../../../../local-sim/modules/promo/index.js';
 
 export default function PromoArchive() {
   const [promocodes, setPromocodes] = useState([]);

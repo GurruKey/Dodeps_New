@@ -1,4 +1,4 @@
 # hooks/useAuthState.js
 
-Пользовательский хук, который поднимает состояния `session`, `user` и `loading` и делегирует инициализацию `initAuthEffect` из каталога `local-sim/auth/session`.
+Пользовательский хук, который поднимает состояния `session`, `user` и `loading` и делегирует инициализацию `initAuthEffect` из каталога `local-sim/modules/auth/session`.
 Хук возвращает ссылки на стейты и сеттеры, чтобы другие фабрики действий могли обновлять авторизацию.

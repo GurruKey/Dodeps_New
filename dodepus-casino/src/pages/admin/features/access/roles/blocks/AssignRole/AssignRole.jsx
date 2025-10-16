@@ -10,9 +10,10 @@ import {
   Row,
   Stack,
 } from 'react-bootstrap';
-import { availableRoles } from '../../data/roleConfigs.js';
+import { listAvailableAdminRoles } from '../../../../../../local-sim/modules/access/index.js';
 import { assignUserRole } from '../../../../../../../features/auth/api.js';
 
+const availableRoles = listAvailableAdminRoles();
 const idPlaceholderExamples = ['ID-10192', 'ID-20204', 'ID-30881'];
 
 export default function AssignRole({ statusMessage = '' }) {

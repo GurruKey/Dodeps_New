@@ -1,5 +1,5 @@
 import { Col, Row } from 'react-bootstrap';
-import { promoTypeDefinitions } from '../../../../../../../local-sim/admin/features/promo/definitions/index.js';
+import { promoTypeDefinitions } from '../../../../../../../local-sim/modules/promo/definitions/index.js';
 import PromoTypeCard from './PromoTypeCard.jsx';
 
 export default function PromoTypesGrid({ selectedTypeId, onSelect }) {

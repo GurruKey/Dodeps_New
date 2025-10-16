@@ -1,5 +1,5 @@
-import { createProfileActions as createSimProfileActions } from '../../../../local-sim/auth/profileActions';
-import { updateUserContacts } from '../../../../local-sim/auth/api';
+import { createProfileActions as createSimProfileActions } from '../../../../local-sim/modules/auth/profileActions';
+import { updateUserContacts } from '../../../../local-sim/modules/auth/api';
 
 const ensureAuthed = (user) => {
   if (!user?.id) {

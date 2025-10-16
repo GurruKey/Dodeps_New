@@ -1,0 +1,866 @@
+[
+  {
+    "id": "arp_intern-l1_admin_panel",
+    "role_id": "intern-l1",
+    "permission_id": "admin_panel",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l1_overview",
+    "role_id": "intern-l1",
+    "permission_id": "overview",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l1_clients",
+    "role_id": "intern-l1",
+    "permission_id": "clients",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l1_promocodes",
+    "role_id": "intern-l1",
+    "permission_id": "promocodes",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l1_roles",
+    "role_id": "intern-l1",
+    "permission_id": "roles",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l1_ranks",
+    "role_id": "intern-l1",
+    "permission_id": "ranks",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l1_transactions",
+    "role_id": "intern-l1",
+    "permission_id": "transactions",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l1_verification",
+    "role_id": "intern-l1",
+    "permission_id": "verification",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l1_chat",
+    "role_id": "intern-l1",
+    "permission_id": "chat",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l2_admin_panel",
+    "role_id": "intern-l2",
+    "permission_id": "admin_panel",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l2_overview",
+    "role_id": "intern-l2",
+    "permission_id": "overview",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l2_clients",
+    "role_id": "intern-l2",
+    "permission_id": "clients",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l2_promocodes",
+    "role_id": "intern-l2",
+    "permission_id": "promocodes",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l2_roles",
+    "role_id": "intern-l2",
+    "permission_id": "roles",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l2_ranks",
+    "role_id": "intern-l2",
+    "permission_id": "ranks",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l2_transactions",
+    "role_id": "intern-l2",
+    "permission_id": "transactions",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l2_verification",
+    "role_id": "intern-l2",
+    "permission_id": "verification",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_intern-l2_chat",
+    "role_id": "intern-l2",
+    "permission_id": "chat",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l1_admin_panel",
+    "role_id": "moderator-l1",
+    "permission_id": "admin_panel",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l1_overview",
+    "role_id": "moderator-l1",
+    "permission_id": "overview",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l1_clients",
+    "role_id": "moderator-l1",
+    "permission_id": "clients",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l1_promocodes",
+    "role_id": "moderator-l1",
+    "permission_id": "promocodes",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l1_roles",
+    "role_id": "moderator-l1",
+    "permission_id": "roles",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l1_ranks",
+    "role_id": "moderator-l1",
+    "permission_id": "ranks",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l1_transactions",
+    "role_id": "moderator-l1",
+    "permission_id": "transactions",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l1_verification",
+    "role_id": "moderator-l1",
+    "permission_id": "verification",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l1_chat",
+    "role_id": "moderator-l1",
+    "permission_id": "chat",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l2_admin_panel",
+    "role_id": "moderator-l2",
+    "permission_id": "admin_panel",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l2_overview",
+    "role_id": "moderator-l2",
+    "permission_id": "overview",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l2_clients",
+    "role_id": "moderator-l2",
+    "permission_id": "clients",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l2_promocodes",
+    "role_id": "moderator-l2",
+    "permission_id": "promocodes",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l2_roles",
+    "role_id": "moderator-l2",
+    "permission_id": "roles",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l2_ranks",
+    "role_id": "moderator-l2",
+    "permission_id": "ranks",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l2_transactions",
+    "role_id": "moderator-l2",
+    "permission_id": "transactions",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l2_verification",
+    "role_id": "moderator-l2",
+    "permission_id": "verification",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l2_chat",
+    "role_id": "moderator-l2",
+    "permission_id": "chat",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l3_admin_panel",
+    "role_id": "moderator-l3",
+    "permission_id": "admin_panel",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l3_overview",
+    "role_id": "moderator-l3",
+    "permission_id": "overview",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l3_clients",
+    "role_id": "moderator-l3",
+    "permission_id": "clients",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l3_promocodes",
+    "role_id": "moderator-l3",
+    "permission_id": "promocodes",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l3_roles",
+    "role_id": "moderator-l3",
+    "permission_id": "roles",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l3_ranks",
+    "role_id": "moderator-l3",
+    "permission_id": "ranks",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l3_transactions",
+    "role_id": "moderator-l3",
+    "permission_id": "transactions",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l3_verification",
+    "role_id": "moderator-l3",
+    "permission_id": "verification",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l3_chat",
+    "role_id": "moderator-l3",
+    "permission_id": "chat",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l4_admin_panel",
+    "role_id": "moderator-l4",
+    "permission_id": "admin_panel",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l4_overview",
+    "role_id": "moderator-l4",
+    "permission_id": "overview",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l4_clients",
+    "role_id": "moderator-l4",
+    "permission_id": "clients",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l4_promocodes",
+    "role_id": "moderator-l4",
+    "permission_id": "promocodes",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l4_roles",
+    "role_id": "moderator-l4",
+    "permission_id": "roles",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l4_ranks",
+    "role_id": "moderator-l4",
+    "permission_id": "ranks",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l4_transactions",
+    "role_id": "moderator-l4",
+    "permission_id": "transactions",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l4_verification",
+    "role_id": "moderator-l4",
+    "permission_id": "verification",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_moderator-l4_chat",
+    "role_id": "moderator-l4",
+    "permission_id": "chat",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l1_admin_panel",
+    "role_id": "admin-l1",
+    "permission_id": "admin_panel",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l1_overview",
+    "role_id": "admin-l1",
+    "permission_id": "overview",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l1_clients",
+    "role_id": "admin-l1",
+    "permission_id": "clients",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l1_promocodes",
+    "role_id": "admin-l1",
+    "permission_id": "promocodes",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l1_roles",
+    "role_id": "admin-l1",
+    "permission_id": "roles",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l1_ranks",
+    "role_id": "admin-l1",
+    "permission_id": "ranks",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l1_transactions",
+    "role_id": "admin-l1",
+    "permission_id": "transactions",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l1_verification",
+    "role_id": "admin-l1",
+    "permission_id": "verification",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l1_chat",
+    "role_id": "admin-l1",
+    "permission_id": "chat",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l2_admin_panel",
+    "role_id": "admin-l2",
+    "permission_id": "admin_panel",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l2_overview",
+    "role_id": "admin-l2",
+    "permission_id": "overview",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l2_clients",
+    "role_id": "admin-l2",
+    "permission_id": "clients",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l2_promocodes",
+    "role_id": "admin-l2",
+    "permission_id": "promocodes",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l2_roles",
+    "role_id": "admin-l2",
+    "permission_id": "roles",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l2_ranks",
+    "role_id": "admin-l2",
+    "permission_id": "ranks",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l2_transactions",
+    "role_id": "admin-l2",
+    "permission_id": "transactions",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l2_verification",
+    "role_id": "admin-l2",
+    "permission_id": "verification",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l2_chat",
+    "role_id": "admin-l2",
+    "permission_id": "chat",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l3_admin_panel",
+    "role_id": "admin-l3",
+    "permission_id": "admin_panel",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l3_overview",
+    "role_id": "admin-l3",
+    "permission_id": "overview",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l3_clients",
+    "role_id": "admin-l3",
+    "permission_id": "clients",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l3_promocodes",
+    "role_id": "admin-l3",
+    "permission_id": "promocodes",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l3_roles",
+    "role_id": "admin-l3",
+    "permission_id": "roles",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l3_ranks",
+    "role_id": "admin-l3",
+    "permission_id": "ranks",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l3_transactions",
+    "role_id": "admin-l3",
+    "permission_id": "transactions",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l3_verification",
+    "role_id": "admin-l3",
+    "permission_id": "verification",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l3_chat",
+    "role_id": "admin-l3",
+    "permission_id": "chat",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l4_admin_panel",
+    "role_id": "admin-l4",
+    "permission_id": "admin_panel",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l4_overview",
+    "role_id": "admin-l4",
+    "permission_id": "overview",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l4_clients",
+    "role_id": "admin-l4",
+    "permission_id": "clients",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l4_promocodes",
+    "role_id": "admin-l4",
+    "permission_id": "promocodes",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l4_roles",
+    "role_id": "admin-l4",
+    "permission_id": "roles",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l4_ranks",
+    "role_id": "admin-l4",
+    "permission_id": "ranks",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l4_transactions",
+    "role_id": "admin-l4",
+    "permission_id": "transactions",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l4_verification",
+    "role_id": "admin-l4",
+    "permission_id": "verification",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_admin-l4_chat",
+    "role_id": "admin-l4",
+    "permission_id": "chat",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_op_admin_panel",
+    "role_id": "op",
+    "permission_id": "admin_panel",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_op_overview",
+    "role_id": "op",
+    "permission_id": "overview",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_op_clients",
+    "role_id": "op",
+    "permission_id": "clients",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_op_promocodes",
+    "role_id": "op",
+    "permission_id": "promocodes",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_op_roles",
+    "role_id": "op",
+    "permission_id": "roles",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_op_ranks",
+    "role_id": "op",
+    "permission_id": "ranks",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_op_transactions",
+    "role_id": "op",
+    "permission_id": "transactions",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_op_verification",
+    "role_id": "op",
+    "permission_id": "verification",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_op_chat",
+    "role_id": "op",
+    "permission_id": "chat",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_owner_admin_panel",
+    "role_id": "owner",
+    "permission_id": "admin_panel",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_owner_overview",
+    "role_id": "owner",
+    "permission_id": "overview",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_owner_clients",
+    "role_id": "owner",
+    "permission_id": "clients",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_owner_promocodes",
+    "role_id": "owner",
+    "permission_id": "promocodes",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_owner_roles",
+    "role_id": "owner",
+    "permission_id": "roles",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_owner_ranks",
+    "role_id": "owner",
+    "permission_id": "ranks",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_owner_transactions",
+    "role_id": "owner",
+    "permission_id": "transactions",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_owner_verification",
+    "role_id": "owner",
+    "permission_id": "verification",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "arp_owner_chat",
+    "role_id": "owner",
+    "permission_id": "chat",
+    "allowed": true,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  }
+]

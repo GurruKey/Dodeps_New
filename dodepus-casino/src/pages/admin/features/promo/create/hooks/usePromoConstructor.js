@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { createAdminPromocode } from '../../../../../../../local-sim/admin/features/promo/index.js';
-import { promoTypeDefinitions } from '../../../../../../../local-sim/admin/features/promo/definitions/index.js';
+import { createAdminPromocode } from '../../../../../../../local-sim/modules/promo/index.js';
+import { promoTypeDefinitions } from '../../../../../../../local-sim/modules/promo/definitions/index.js';
 import {
   BALANCE_OPTIONS,
   DEFAULT_HIGHLIGHT_COLOR,

@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Badge, Button, Card, Form, Modal, Stack } from 'react-bootstrap';
 import {
-  availableRoles,
-  rolePermissionMatrix,
-  roleMatrixLegend,
-} from '../../data/roleConfigs.js';
+  listAvailableAdminRoles,
+  listRolePermissionMatrix,
+  getRolePermissionLegend,
+} from '../../../../../../../../local-sim/modules/access/index.js';
 import {
   resolveCategoryKey,
   roleGroups,
@@ -14,9 +14,12 @@ import {
   ADMIN_PANEL_VISIBILITY_EVENT,
   loadAdminPanelVisibility,
   setAdminPanelVisibilityForRole,
-} from '../../../../../../../../local-sim/auth/admin/adminPanelVisibility.js';
-import { appendRolePermissionLog } from '../../../../../../../../local-sim/admin/features/access/rolePermissionLogs.js';
+} from '../../../../../../../../local-sim/modules/auth/admin/adminPanelVisibility.js';
+import { appendRolePermissionLog } from '../../../../../../../../local-sim/modules/access/rolePermissionLogs.js';
 
+const availableRoles = listAvailableAdminRoles();
+const roleMatrixLegend = getRolePermissionLegend();
+const rolePermissionMatrix = listRolePermissionMatrix();
 const permissionKeys = Object.keys(roleMatrixLegend);
 
 export default function EditRolePermissions() {

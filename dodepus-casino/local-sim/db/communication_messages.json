@@ -1,0 +1,65 @@
+[
+  {
+    "id": "6d828a12-5705-4d69-9a0d-39aea8153e25",
+    "thread_id": "e4a0f87e-0d52-4d8e-8b15-3f6df75fbc21",
+    "participant_id": "9e8a4f93-0182-40fa-8cb2-0f5ebb394d1f",
+    "body": "Проверила жалобу 403, выдала предупреждение.",
+    "created_at": "2024-03-12T15:20:00+02:00"
+  },
+  {
+    "id": "d8f78361-57a4-4f8b-b337-56b42199d9f1",
+    "thread_id": "e4a0f87e-0d52-4d8e-8b15-3f6df75fbc21",
+    "participant_id": "37f7c5f0-82be-4a77-a58d-b4b2662b80c7",
+    "body": "Есть спорный кейс по ID-10111, гляньте историю.",
+    "created_at": "2024-03-12T15:11:00+02:00"
+  },
+  {
+    "id": "9e42a1d1-0485-414f-aa53-24f1525c5e88",
+    "thread_id": "e4a0f87e-0d52-4d8e-8b15-3f6df75fbc21",
+    "participant_id": "eea6f892-108d-4eac-a6dd-18e3f1ab9a80",
+    "body": "Заберу проверку!",
+    "created_at": "2024-03-12T15:05:00+02:00"
+  },
+  {
+    "id": "7aef0b33-0e08-4b9d-920e-3f4fa210fe0e",
+    "thread_id": "d42b7a1c-39b4-4df7-81ab-1f4287c0fd13",
+    "participant_id": "ad42b5fb-6c8f-4ab9-b635-243e7e85a763",
+    "body": "Обновила лимиты по VIP-клиентам, проверьте отчёт.",
+    "created_at": "2024-03-12T14:45:00+02:00"
+  },
+  {
+    "id": "e3da49f5-5270-455a-93c8-5b3d4ab71c3f",
+    "thread_id": "d42b7a1c-39b4-4df7-81ab-1f4287c0fd13",
+    "participant_id": "3128b659-1c33-4b43-8bdf-d5f9899235cb",
+    "body": "Нужно обсудить новую акцию, соберёмся в 17:00.",
+    "created_at": "2024-03-12T13:58:00+02:00"
+  },
+  {
+    "id": "f01952f6-ef52-4d3f-bc2f-59093ef21fde",
+    "thread_id": "d42b7a1c-39b4-4df7-81ab-1f4287c0fd13",
+    "participant_id": "27cd1ff2-4e48-40aa-9f0d-2eb37f93fcd9",
+    "body": "Проверила отчёт по безопасности — без инцидентов.",
+    "created_at": "2024-03-12T13:12:00+02:00"
+  },
+  {
+    "id": "8efc95d9-2d77-4b77-a1c1-fba9b0ce3f4a",
+    "thread_id": "b22c8cdd-1ff0-467d-a1fb-fc43b0b2666f",
+    "participant_id": "3d20d527-64d2-47d7-8965-d5241e7a1c93",
+    "body": "Проверил ночную смену — всё спокойно.",
+    "created_at": "2024-03-12T09:45:00+02:00"
+  },
+  {
+    "id": "4d25f6dd-2cf7-4fa1-b81e-48c3b6a5aaf2",
+    "thread_id": "b22c8cdd-1ff0-467d-a1fb-fc43b0b2666f",
+    "participant_id": "4b6c2917-9a23-4e07-8dbf-33f56f0e2f1a",
+    "body": "Обновила инструкции по приёму VIP-клиентов.",
+    "created_at": "2024-03-12T09:12:00+02:00"
+  },
+  {
+    "id": "1ae05f84-29f7-467b-91d7-e09a0c1f5e29",
+    "thread_id": "b22c8cdd-1ff0-467d-a1fb-fc43b0b2666f",
+    "participant_id": "02cdd2c8-9660-46ae-9a0e-e66b2f1c8b50",
+    "body": "Напоминаю про созвон в 18:00 по новому турниру.",
+    "created_at": "2024-03-12T08:59:00+02:00"
+  }
+]

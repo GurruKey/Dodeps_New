@@ -4,8 +4,13 @@ export {
   updateVerificationRequestStatus,
   resetVerificationRequestModules,
   listAdminVerificationIdleAccounts,
-} from '../../admin/features/verification/index.js';
+} from './admin.js';
 
 export {
   createProfileActions as createClientVerificationActions,
-} from '../../auth/profileActions.js';
+} from '../auth/profileActions.js';
+
+export {
+  verificationQueue,
+  listAdminVerificationQueue,
+} from './queue.js';

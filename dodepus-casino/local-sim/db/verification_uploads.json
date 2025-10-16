@@ -1,0 +1,32 @@
+[
+  {
+    "id": "vrf_upload_owner_passport_front",
+    "user_id": "owner-local-0001",
+    "request_id": "vrf_req_owner_20240312",
+    "file_name": "passport_front.jpg",
+    "file_type": "document",
+    "file_url": "https://cdn.local-sim.dev/verification/passport_front.jpg",
+    "status": "processing",
+    "uploaded_at": "2024-03-12T09:40:00.000Z"
+  },
+  {
+    "id": "vrf_upload_owner_selfie",
+    "user_id": "owner-local-0001",
+    "request_id": "vrf_req_owner_20240312",
+    "file_name": "selfie_check.jpg",
+    "file_type": "selfie",
+    "file_url": "https://cdn.local-sim.dev/verification/selfie_check.jpg",
+    "status": "pending",
+    "uploaded_at": "2024-03-12T09:45:00.000Z"
+  },
+  {
+    "id": "vrf_upload_owner_utility_bill",
+    "user_id": "owner-local-0001",
+    "request_id": "vrf_req_owner_20240305",
+    "file_name": "utility_bill.pdf",
+    "file_type": "document",
+    "file_url": "https://cdn.local-sim.dev/verification/utility_bill.pdf",
+    "status": "approved",
+    "uploaded_at": "2024-03-05T09:05:00.000Z"
+  }
+]

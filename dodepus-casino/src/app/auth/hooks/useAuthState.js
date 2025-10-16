@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { initAuthEffect } from '../../../../local-sim/auth/session/initAuthEffect';
+import { initAuthEffect } from '../../../../local-sim/modules/auth/session/initAuthEffect';
 
 export function useAuthState() {
   const [session, setSession] = useState(null);

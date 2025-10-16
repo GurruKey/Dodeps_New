@@ -10,7 +10,7 @@ import {
   pauseAdminPromocode,
   resumeAdminPromocode,
   subscribeToAdminPromocodes,
-} from '../../../../../../local-sim/admin/features/promo/index.js';
+} from '../../../../../../local-sim/modules/promo/index.js';
 import './promocodes.css';
 
 export default function PromoCodes() {

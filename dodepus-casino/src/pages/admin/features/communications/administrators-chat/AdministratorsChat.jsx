@@ -1,5 +1,7 @@
 import ChatPanel from '../../../shared/ChatPanel.jsx';
-import { administratorsChatThreads } from '../../access/roles/data/roleConfigs.js';
+import { listAdministratorsChatThreads } from '../../../../../../local-sim/modules/communications/index.js';
+
+const administratorsChatThreads = listAdministratorsChatThreads();
 
 export default function AdministratorsChat() {
   const activeThread = administratorsChatThreads[0];
