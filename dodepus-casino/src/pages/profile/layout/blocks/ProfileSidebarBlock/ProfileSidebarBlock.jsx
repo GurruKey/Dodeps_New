@@ -1,5 +1,5 @@
 import { Nav } from 'react-bootstrap';
-import { createNavItems } from './createNavItems.js';
+import { createNavItems } from './createNavItems.jsx';
 import { SidebarNavLink } from './SidebarNavLink.jsx';
 import { formatBalance, pickRankBadgeMeta, pickVerificationMeta } from './meta.js';
 

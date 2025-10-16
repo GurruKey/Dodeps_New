@@ -1,12 +1,28 @@
 import { ProfileBlocksLayout } from '../layout/blocks';
-import { PersonalDataBlock, PersonalContactsBlock, PersonalPasswordBlock } from './blocks';
+import {
+  AccountIdBlock,
+  NameBlock,
+  GenderDobBlock,
+  SocialStatusBlock,
+  NicknameBlock,
+  ContactsBlock,
+  AddressBlock,
+  AuthenticatorBlock,
+  SavePersonalBlock,
+} from './blocks';
 
 export default function Personal() {
   return (
     <ProfileBlocksLayout>
-      <PersonalDataBlock />
-      <PersonalContactsBlock />
-      <PersonalPasswordBlock />
+      <AccountIdBlock />
+      <NameBlock />
+      <GenderDobBlock />
+      <SocialStatusBlock />
+      <NicknameBlock />
+      <ContactsBlock />
+      <AddressBlock />
+      <AuthenticatorBlock />
+      <SavePersonalBlock />
     </ProfileBlocksLayout>
   );
 }
