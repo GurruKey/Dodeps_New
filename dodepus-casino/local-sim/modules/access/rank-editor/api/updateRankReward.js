@@ -1,0 +1,49 @@
+import { adminUpdateRankReward } from '../../../rank/api.js';
+
+const ensureLevel = (value) => {
+  const level = Number(value);
+  if (!Number.isInteger(level)) {
+    throw new Error('Укажите корректный уровень ранга');
+  }
+  return level;
+};
+
+export const updateAdminRankReward = async (payload = {}) => {
+  const level = ensureLevel(payload.level);
+
+  const request = { level };
+
+  if (Object.prototype.hasOwnProperty.call(payload, 'badgeColor')) {
+    request.badgeColor = payload.badgeColor;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'badgeColorSecondary')) {
+    request.badgeColorSecondary = payload.badgeColorSecondary;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'badgeColorTertiary')) {
+    request.badgeColorTertiary = payload.badgeColorTertiary;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'badgeTextColor')) {
+    request.badgeTextColor = payload.badgeTextColor;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'badgeEffect')) {
+    request.badgeEffect = payload.badgeEffect;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'badgeEffectSpeed')) {
+    request.badgeEffectSpeed = payload.badgeEffectSpeed;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'tagline')) {
+    request.tagline = payload.tagline;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'description')) {
+    request.description = payload.description;
+  }
+  if (Object.prototype.hasOwnProperty.call(payload, 'purpose')) {
+    request.purpose = payload.purpose;
+  }
+
+  const result = adminUpdateRankReward(request);
+  return {
+    record: { ...result.record },
+    records: result.records.map((item) => ({ ...item })),
+  };
+};

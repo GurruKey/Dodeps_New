@@ -3,7 +3,7 @@ import {
   listAdminRankRewards,
   updateAdminRankReward,
   resetAdminRankRewards,
-} from '../../../../../../../local-sim/admin/features/access/rank-editor/index.js';
+} from '../../../../../../../local-sim/modules/access/rank-editor/index.js';
 
 const toError = (error, fallbackMessage) => {
   if (error instanceof Error) {

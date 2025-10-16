@@ -1,11 +1,13 @@
 import { Badge, Card, ListGroup } from 'react-bootstrap';
-import { verificationQueue } from '../../data/roleConfigs.js';
+import { listAdminVerificationQueue } from '../../../../../../local-sim/modules/verification/api.js';
 
 const statusLabels = {
   idle: { label: 'Ожидает', variant: 'secondary' },
   pending: { label: 'Проверяется', variant: 'warning' },
   approved: { label: 'Подтверждено', variant: 'success' },
 };
+
+const verificationQueue = listAdminVerificationQueue();
 
 export default function VerificationQueue() {
   return (

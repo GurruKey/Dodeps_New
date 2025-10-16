@@ -1,0 +1,134 @@
+[
+  {
+    "id": "intern-l1",
+    "role_group": "intern",
+    "level": 1,
+    "is_admin": false,
+    "name": "Стажёр 1 lvl",
+    "description": "Доступ только к базовому обзору панели под присмотром.",
+    "sort_order": 10,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "intern-l2",
+    "role_group": "intern",
+    "level": 2,
+    "is_admin": false,
+    "name": "Стажёр 2 lvl",
+    "description": "Видит обзор и может просматривать клиентов без действий.",
+    "sort_order": 20,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "moderator-l1",
+    "role_group": "moderator",
+    "level": 1,
+    "is_admin": false,
+    "name": "Модератор 1 lvl",
+    "description": "Следит за чатом и базовой верификацией.",
+    "sort_order": 30,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "moderator-l2",
+    "role_group": "moderator",
+    "level": 2,
+    "is_admin": false,
+    "name": "Модератор 2 lvl",
+    "description": "Контролирует чат и обработку клиентов.",
+    "sort_order": 40,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "moderator-l3",
+    "role_group": "moderator",
+    "level": 3,
+    "is_admin": false,
+    "name": "Модератор 3 lvl",
+    "description": "Расширенные права модерации, включая транзакции.",
+    "sort_order": 50,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "moderator-l4",
+    "role_group": "moderator",
+    "level": 4,
+    "is_admin": false,
+    "name": "Модератор 4 lvl",
+    "description": "Полный контроль модерации, включая управление ролями.",
+    "sort_order": 60,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "admin-l1",
+    "role_group": "admin",
+    "level": 1,
+    "is_admin": true,
+    "name": "Админ 1 lvl",
+    "description": "Начальный уровень администраторов с управлением промокодами.",
+    "sort_order": 70,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "admin-l2",
+    "role_group": "admin",
+    "level": 2,
+    "is_admin": true,
+    "name": "Админ 2 lvl",
+    "description": "Управление клиентами и промокодами, доступ к транзакциям.",
+    "sort_order": 80,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "admin-l3",
+    "role_group": "admin",
+    "level": 3,
+    "is_admin": true,
+    "name": "Админ 3 lvl",
+    "description": "Расширенное управление, включая выдачу ролей.",
+    "sort_order": 90,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "admin-l4",
+    "role_group": "admin",
+    "level": 4,
+    "is_admin": true,
+    "name": "Админ 4 lvl",
+    "description": "Полный административный доступ к панели.",
+    "sort_order": 100,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "op",
+    "role_group": "op",
+    "level": null,
+    "is_admin": true,
+    "name": "OP",
+    "description": "Операционный директор с максимальными правами по операциям.",
+    "sort_order": 110,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  },
+  {
+    "id": "owner",
+    "role_group": "owner",
+    "level": null,
+    "is_admin": true,
+    "name": "Owner",
+    "description": "Владелец платформы, имеет абсолютный доступ.",
+    "sort_order": 120,
+    "created_at": "2024-10-10T12:00:00.000Z",
+    "updated_at": "2024-10-10T12:00:00.000Z"
+  }
+]

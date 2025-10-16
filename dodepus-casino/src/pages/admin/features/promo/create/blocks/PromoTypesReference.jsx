@@ -1,5 +1,5 @@
 import { Accordion, Badge, Card } from 'react-bootstrap';
-import { promoTypeDefinitions } from '../../../../../../../local-sim/admin/features/promo/definitions/index.js';
+import { promoTypeDefinitions } from '../../../../../../../local-sim/modules/promo/definitions/index.js';
 
 export default function PromoTypesReference({ selectedTypeId }) {
   const defaultActiveKey = selectedTypeId

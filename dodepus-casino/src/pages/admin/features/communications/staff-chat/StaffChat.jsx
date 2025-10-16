@@ -1,5 +1,7 @@
 import ChatPanel from '../../../shared/ChatPanel.jsx';
-import { staffChatThreads } from '../../access/roles/data/roleConfigs.js';
+import { listStaffChatThreads } from '../../../../../../local-sim/modules/communications/index.js';
+
+const staffChatThreads = listStaffChatThreads();
 
 export default function StaffChat() {
   const activeThread = staffChatThreads[0];

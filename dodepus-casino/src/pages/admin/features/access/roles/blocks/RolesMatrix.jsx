@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Badge, Card, Table } from 'react-bootstrap';
 import {
-  rolePermissionMatrix,
-  roleMatrixLegend,
-} from '../data/roleConfigs.js';
+  listRolePermissionMatrix,
+  getRolePermissionLegend,
+} from '../../../../../../local-sim/modules/access/index.js';
 import {
   ADMIN_PANEL_VISIBILITY_EVENT,
   loadAdminPanelVisibility,
-} from '../../../../../../../local-sim/auth/admin/adminPanelVisibility.js';
+} from '../../../../../../../local-sim/modules/auth/admin/adminPanelVisibility.js';
+
+const roleMatrixLegend = getRolePermissionLegend();
+const rolePermissionMatrix = listRolePermissionMatrix();
 
 export default function RolesMatrix() {
   const permissionKeys = Object.keys(roleMatrixLegend);
