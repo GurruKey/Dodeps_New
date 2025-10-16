@@ -1,4 +1,4 @@
-import { DocumentUploader } from '../shared/DocumentUploader.jsx';
+import { DocumentUploader } from '../shared';
 
 const IDENTITY_CONFIG = {
   category: 'identity',

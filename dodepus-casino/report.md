@@ -1,4 +1,47 @@
 <!-- DO NOT REMOVE:TAKES_START -->
+## TAKE-20251016-021 — Профиль barrels верификации и ранга
+- Автор, Время: gpt-5-codex, 2025-10-16 17:35 (Europe/Kyiv)
+- Резюме: Добавил barrel-индексы для модулей верификации и общих компонентов, обновил агрегатор и привёл импорты к коротким путям вместе с barrel для rank/hooks.
+- Объём работ:
+  - src/pages/profile/verification/modules/index.js
+  - src/pages/profile/verification/modules/email/index.js
+  - src/pages/profile/verification/modules/phone/index.js
+  - src/pages/profile/verification/modules/address/index.js
+  - src/pages/profile/verification/modules/documents/index.js
+  - src/pages/profile/verification/modules/shared/index.js
+  - src/pages/profile/verification/modules/email/EmailVerificationForm.jsx
+  - src/pages/profile/verification/modules/phone/PhoneVerificationForm.jsx
+  - src/pages/profile/verification/modules/address/AddressVerificationForm.jsx
+  - src/pages/profile/verification/modules/address/AddressDocumentUploadForm.jsx
+  - src/pages/profile/verification/modules/documents/PersonalDataVerificationForm.jsx
+  - src/pages/profile/verification/modules/documents/IdentityDocumentUploadForm.jsx
+  - src/pages/profile/rank/hooks/index.js
+  - src/pages/profile/rank/ProfileRank.jsx
+  - src/pages/profile/layout/ProfileLayout.jsx
+  - report_info.md
+  - report.md
+- Чеклист выполнения:
+  - [x] Создать index.js в подпапках модулей верификации для реэкспорта форм и конфигов.
+  - [x] Добавить index.js в shared и обновить импорты форм на единый путь.
+  - [x] Переписать modules/index.js на использование barrel-экспортов и собрать карту модулей.
+  - [x] Создать barrel hooks для ранга и перевести ProfileRank/ProfileLayout на короткие импорты.
+  - [x] Обновить документацию (report_info.md, report.md).
+  - [x] Local-sim: маршрут/эндпоинты готовы (UI-структура, не требуется).
+  - [x] Local-sim: подтверждено Владиславом (UI-структура, не требуется).
+  - [x] SQL-миграции применены (не требуются).
+- Критерии приёмки:
+  - [x] Все модули верификации импортируются из barrel-индексов без прямых ссылок на файлы компонентов.
+  - [x] Формы используют общий импорт из shared без повторяющихся относительных путей.
+  - [x] Профиль ранга использует barrel hooks, и Layout получает сводку ранга через тот же barrel.
+- Понятным языком: что сделано/что поменял
+  - Я добавил index.js в папки модулей и shared.
+  - Я обновил aggregator modules на новые экспорты.
+  - Я сократил импорты форм до '../shared'.
+  - Я сделал barrel для hooks ранга и обновил импорты.
+  - Я описал изменения в отчётах.
+- Блокеры: —
+- Итоги выполнения: Статус: ✅ Выполнено; Что сделано: barrels для модулей верификации и hooks ранга внедрены, импорты упрощены; Что осталось: —; Коммиты/PR: текущая ветка (будет в PR); Список затронутых файлов: см. объём работ; Замечания: —
+ 
 ## TAKE-20251016-020 — Профиль ранг бейдж
 - Автор, Время: gpt-5-codex, 2025-10-16 16:49 (Europe/Kyiv)
 - Резюме: Добавил карточку сводки ранга с бейджем, подсветил текущую награду и заменил бейдж в сайдбаре на настоящий RankBadge.
