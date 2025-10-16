@@ -1,3 +1,5 @@
+export const ADMIN_PROMOCODES_TABLE = 'admin_promocodes';
+
 export const ADMIN_PROMOCODES_STORAGE_KEY = 'dodepus.admin.promocodes';
 
 export const ADMIN_PROMOCODES_EVENT = 'dodepus:admin-promocodes-change';

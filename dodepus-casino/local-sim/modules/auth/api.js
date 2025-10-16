@@ -9,7 +9,7 @@ import { composeUser } from './composeUser';
 import { loadExtras, saveExtras } from './profileExtras';
 import { findAdminRoleById } from '../access/index.js';
 import { getRankDefinitionById, getRankBenefitTemplate } from '../rank/api.js';
-import { getLocalDatabase } from '../../database/engine.js';
+import { listAuthUserRecords, updateAuthUsersDataset } from './dataset.js';
 
 const USERS_KEY = 'dodepus_local_users_v1';
 const SESSION_KEY = 'dodepus_local_session_v1';
@@ -39,37 +39,39 @@ const requireStorage = () => {
 };
 
 const readUsers = (storage = tryGetStorage()) => {
-  const db = getLocalDatabase();
-  const dbUsers = db.select('auth_users');
-  if (dbUsers.length) {
-    return dbUsers;
+  const records = listAuthUserRecords();
+  if (records.length) {
+    return records;
   }
 
   if (!storage) {
     const fallback = buildSeedUserRecords();
-    db.replaceWhere('auth_users', () => true, fallback);
-    return fallback;
+    updateAuthUsersDataset(fallback);
+    return listAuthUserRecords();
   }
 
-  ensureSeededAuthStorage({ storage, usersKey: USERS_KEY });
-  return db.select('auth_users');
+  const seeded = ensureSeededAuthStorage({ storage, usersKey: USERS_KEY });
+  updateAuthUsersDataset(seeded);
+  return listAuthUserRecords();
 };
 
 const writeUsers = (users, storage = requireStorage()) => {
+  const normalized = Array.isArray(users)
+    ? users.filter((user) => user && typeof user === 'object')
+    : [];
+
+  let persisted = normalized;
+
   try {
-    storage.setItem(USERS_KEY, JSON.stringify(users));
-  } catch {
-    // ignore quota errors
+    persisted = updateAuthUsersDataset(normalized);
+  } catch (err) {
+    console.warn('[local-sim] Не удалось обновить таблицу auth_users в локальной БД', err);
   }
 
   try {
-    const db = getLocalDatabase();
-    const normalized = Array.isArray(users)
-      ? users.filter((user) => user && typeof user === 'object')
-      : [];
-    db.replaceWhere('auth_users', () => true, normalized);
-  } catch (err) {
-    console.warn('[local-sim] Не удалось обновить таблицу auth_users в локальной БД', err);
+    storage.setItem(USERS_KEY, JSON.stringify(persisted));
+  } catch {
+    // ignore quota errors
   }
 };
 

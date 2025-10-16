@@ -1,34 +1,7 @@
-import { getLocalDatabase } from '../../database/engine.js';
-
-const normalizeText = (value) => {
-  if (typeof value !== 'string') {
-    return '';
-  }
-  const trimmed = value.trim();
-  return trimmed;
-};
-
-const normalizeStatus = (value) => {
-  const normalized = normalizeText(value).toLowerCase();
-  if (!normalized) {
-    return 'idle';
-  }
-  if (['pending', 'idle', 'approved', 'rejected'].includes(normalized)) {
-    return normalized;
-  }
-  return 'idle';
-};
-
-const normalizePriority = (value) => {
-  const normalized = normalizeText(value).toLowerCase();
-  if (!normalized) {
-    return 'normal';
-  }
-  if (['low', 'normal', 'high'].includes(normalized)) {
-    return normalized;
-  }
-  return 'normal';
-};
+import {
+  getVerificationQueueSnapshot,
+  listVerificationQueueRecords,
+} from './dataset.js';
 
 const formatSubmittedAt = (value) => {
   if (!value) {
@@ -55,46 +28,28 @@ const formatSubmittedAt = (value) => {
   }
 };
 
-const cloneQueueItem = (item) => JSON.parse(JSON.stringify(item));
+const formatQueueRecord = (record) => ({
+  id: record.id,
+  requestId: record.requestId,
+  userId: record.userId,
+  documentType: record.documentType,
+  status: record.status,
+  priority: record.priority,
+  submittedAt: formatSubmittedAt(record.submittedAt),
+});
 
-const mapQueueRow = (row) => {
-  if (!row || typeof row !== 'object') {
-    return null;
-  }
+const freezeFormattedRecords = (records) =>
+  records.map((record) => Object.freeze(formatQueueRecord(record)));
 
-  const id = normalizeText(row.id);
-  if (!id) {
-    return null;
-  }
+export const verificationQueue = Object.freeze(
+  freezeFormattedRecords(getVerificationQueueSnapshot().records),
+);
 
-  const userId = normalizeText(row.user_id ?? row.userId);
-  const documentType =
-    normalizeText(row.document_type ?? row.documentType) || 'Документ';
-  const submittedAtRaw = row.submitted_at ?? row.submittedAt ?? null;
+export const listAdminVerificationQueue = () =>
+  listVerificationQueueRecords().map((record) => ({ ...formatQueueRecord(record) }));
 
-  return {
-    id,
-    requestId: normalizeText(row.request_id ?? row.requestId),
-    userId: userId || 'unknown',
-    documentType,
-    status: normalizeStatus(row.status),
-    priority: normalizePriority(row.priority),
-    submittedAt: formatSubmittedAt(submittedAtRaw),
-  };
-};
-
-const readQueueSnapshot = () => {
-  const db = getLocalDatabase();
-  const rows = db.select('verification_queue');
-
-  return rows
-    .map(mapQueueRow)
-    .filter(Boolean)
-    .map((item) => Object.freeze({ ...item }));
-};
-
-export const listAdminVerificationQueue = () => readQueueSnapshot().map(cloneQueueItem);
-
-export const verificationQueue = Object.freeze(readQueueSnapshot());
-
-export const __internals = Object.freeze({ readQueueSnapshot, mapQueueRow });
+export const __internals = Object.freeze({
+  formatSubmittedAt,
+  formatQueueRecord,
+  freezeFormattedRecords,
+});

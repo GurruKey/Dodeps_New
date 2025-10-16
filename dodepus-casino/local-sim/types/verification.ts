@@ -57,3 +57,21 @@ export interface VerificationQueueRow {
   submitted_at: string | null;
   priority: 'low' | 'normal' | 'high';
 }
+
+export interface VerificationQueueEntry {
+  id: string;
+  requestId: string | null;
+  userId: string;
+  documentType: string;
+  status: string;
+  submittedAt: string | null;
+  priority: 'low' | 'normal' | 'high';
+  raw?: VerificationQueueRow;
+}
+
+export interface VerificationQueueSnapshot {
+  records: ReadonlyArray<VerificationQueueEntry>;
+  byId: Map<string, VerificationQueueEntry>;
+  byRequestId: Map<string, ReadonlyArray<VerificationQueueEntry>>;
+  byUserId: Map<string, ReadonlyArray<VerificationQueueEntry>>;
+}

@@ -1,11 +1,19 @@
-export interface AdminLogRow {
+export interface AdminLogRecord {
   id: string;
-  admin_id: string;
-  admin_name: string;
+  adminId: string;
+  adminName: string;
   role: string;
   section: string;
   action: string;
-  created_at: string | null;
+  createdAt: string | null;
   context?: string;
   metadata?: Record<string, unknown>;
+  raw: Record<string, unknown> | null;
+}
+
+export interface AdminLogSnapshot {
+  records: ReadonlyArray<AdminLogRecord>;
+  byId: ReadonlyMap<string, AdminLogRecord>;
+  byAdminId: ReadonlyMap<string, ReadonlyArray<AdminLogRecord>>;
+  bySection: ReadonlyMap<string, ReadonlyArray<AdminLogRecord>>;
 }

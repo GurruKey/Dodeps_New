@@ -8,6 +8,8 @@ export const DEFAULT_LOCAL_DB_SCHEMA = Object.freeze({
     admin_role_permissions: { primaryKey: 'id' },
     admin_promocodes: { primaryKey: 'id' },
     profile_transactions: { primaryKey: 'id' },
+    rank_levels: { primaryKey: 'id' },
+    rank_rewards: { primaryKey: 'id' },
     verification_requests: { primaryKey: 'id' },
     verification_uploads: { primaryKey: 'id' },
     verification_queue: { primaryKey: 'id' },

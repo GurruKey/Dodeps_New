@@ -8,6 +8,541 @@
 
 <!-- DO NOT REMOVE:TAKES_START -->
 
+## TAKE-20251017-005 — Dataset для auth api
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 01:18
+
+**Резюме:** Переношу модуль авторизации на canonical dataset. Создаю `modules/auth/dataset`, чтобы snapshot `auth_users`
+использовался в auth/api и клиентов, синхронизирую localStorage через dataset и фиксирую типы/миграционные заметки.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/auth/dataset.js`
+- `local-sim/modules/auth/api.js`
+- `local-sim/modules/auth/constants.js`
+- `local-sim/modules/clients/dataset.js`
+- `local-sim/modules/clients/constants.js`
+- `local-sim/types/auth.ts`
+- `local-sim/migration-notes.md`
+- журнал `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (dataset auth_users возвращает snapshot)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Auth/api читает и сохраняет пользователей только через dataset
+- [x] Клиентский dataset переиспользует snapshot auth вместо прямого чтения БД
+- [x] Типы и migration-notes дополнены описанием auth dataset
+
+**Критерии приёмки:**
+- [x] `getAuthUsersSnapshot` возвращает индексированные записи без прямого чтения JSON
+- [x] `readUsers`/`writeUsers` в `modules/auth/api` синхронизируют localStorage через dataset
+- [x] `modules/clients/dataset` больше не обращается к `__localAuthInternals`, а берёт snapshot auth
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил dataset, который нормализует auth_users и строит индексы
+- Я переписал auth/api на чтение и запись через dataset вместо прямого доступа к БД
+- Я обновил dataset клиентов, чтобы использовать snapshot auth и убрал дублированную нормализацию
+- Я дополнил миграционные заметки и типы новой схемой auth
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Dataset auth готов, auth/api и клиенты читают snapshot, документация обновлена
+- **Что осталось:** Получить подтверждение и затем готовить SQL-миграции
+- **Коммиты/PR:** будет оформлено в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/modules/auth/dataset.js`
+  - `local-sim/modules/auth/api.js`
+  - `local-sim/modules/auth/constants.js`
+  - `local-sim/modules/clients/dataset.js`
+  - `local-sim/modules/clients/constants.js`
+  - `local-sim/types/auth.ts`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251017-004 — Dataset для verification queue
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 01:03
+
+**Резюме:** Продолжаю унификацию local-sim. Нужно вынести таблицу `verification_queue` в canonical dataset, а API очереди
+переписать на snapshot с индексами и форматированием поверх данных датасета.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/verification/dataset.js`
+- `local-sim/modules/verification/queue.js`
+- `local-sim/modules/verification/api.js`
+- `local-sim/types/verification.ts`
+- `local-sim/migration-notes.md`
+- журнал `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (dataset выдаёт snapshot очереди)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Dataset нормализует строки `verification_queue` и строит индексы по id/request/user
+- [x] API очереди читает данные только через dataset snapshot
+- [x] Типы и migration-notes дополнены описанием очереди
+
+**Критерии приёмки:**
+- [x] Экспорт `verificationQueue` формируется из snapshot dataset
+- [x] `listAdminVerificationQueue` возвращает отформатированные элементы, основанные на canonical данных
+- [x] В migration-notes зафиксирована схема `verification_queue` и индексы
+
+**Понятным языком: что сделано/что поменял:**
+- Я вынес очередь верификации в dataset с индексами
+- Я переписал модуль очереди на чтение snapshot и форматирование дат
+- Я обновил типы и migration-notes под новую схему
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Dataset очереди готов, snapshot строит индексы, API и типы обновлены
+- **Что осталось:** Получить подтверждение и затем переносить схему в SQL
+- **Коммиты/PR:** будет оформлено в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/modules/verification/dataset.js`
+  - `local-sim/modules/verification/queue.js`
+  - `local-sim/modules/verification/api.js`
+  - `local-sim/types/verification.ts`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251017-003 — Dataset для auth users
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 00:50
+
+**Резюме:** Продолжаю унификацию local-sim. Нужен canonical dataset для `auth_users` и `profiles`, чтобы админские клиенты
+читались через snapshot и готовили схему к будущим SQL-таблицам.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/clients/dataset.js`
+- `local-sim/modules/clients/constants.js`
+- `local-sim/modules/clients/api.js`
+- `local-sim/modules/clients/index.js`
+- `local-sim/types/clients.ts`
+- `local-sim/migration-notes.md`
+- журнал `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (dataset возвращает snapshot клиентов)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Dataset нормализует `auth_users`/`profiles` и строит индексы по id/email/phone
+- [x] Клиентский API читает данные только через canonical dataset
+- [x] Типы и migration-notes обновлены под новые таблицы
+
+**Критерии приёмки:**
+- [x] `readAdminClients` использует dataset `modules/clients/dataset`
+- [x] Snapshot содержит индексы `byId`, `byEmail`, `byPhone`, `profilesById`
+- [x] В migration-notes описаны структуры `auth_users` и `profiles`
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил dataset, который собирает `auth_users` и профили в один snapshot
+- Я переписал `readAdminClients`, чтобы брать данные только через dataset
+- Я задокументировал таблицы и типы, добавил новый файл `types/clients.ts`
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** dataset клиентов готов, API переведён на snapshot, документация и типы обновлены
+- **Что осталось:** дождаться подтверждения и затем готовить SQL-миграции
+- **Коммиты/PR:** будет оформлено в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/modules/clients/dataset.js`
+  - `local-sim/modules/clients/constants.js`
+  - `local-sim/modules/clients/api.js`
+  - `local-sim/modules/clients/index.js`
+  - `local-sim/types/clients.ts`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251017-002 — Dataset для admin logs
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 00:36
+
+**Резюме:** Продолжаю унификацию local-sim. Нужен canonical dataset для `admin_logs`, чтобы API админских логов работало поверх snapshot и готовило схему для будущих SQL-таблиц.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/logs/dataset.js`
+- `local-sim/modules/logs/api.js`
+- `local-sim/modules/logs/index.js`
+- `local-sim/modules/logs/constants.js`
+- `local-sim/migration-notes.md`
+- `local-sim/types/logs.ts`
+- журнал `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (dataset строит snapshot логов)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Dataset нормализует строки `admin_logs` и возвращает snapshot индексы
+- [x] API читает canonical логи только через dataset
+- [x] Паритет схемы local-sim ↔ SQL отражён в migration-notes
+
+**Критерии приёмки:**
+- [x] `readAdminLogs` использует dataset как основной источник логов
+- [x] Snapshot содержит индексы по `id`, `adminId`, `section`
+- [x] migration-notes описывают структуру `admin_logs` и использование dataset
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил dataset, который читает `admin_logs` из локальной БД и строит индексы
+- Я переписал API логов, чтобы брать данные через snapshot
+- Я обновил заметки миграций и типы под новые структуры
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** dataset логов готов, API читает snapshot, документация и типы обновлены
+- **Что осталось:** дождаться подтверждения и затем готовить SQL-миграции
+- **Коммиты/PR:** будет в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/modules/logs/dataset.js`
+  - `local-sim/modules/logs/api.js`
+  - `local-sim/modules/logs/index.js`
+  - `local-sim/modules/logs/constants.js`
+  - `local-sim/migration-notes.md`
+  - `local-sim/types/logs.ts`
+  - `report.md`
+
+## TAKE-20251017-001 — Dataset для transactions
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 00:25
+
+**Резюме:** Хочу вынести админские транзакции в отдельный dataset local-sim. План: нормализовать таблицу `profile_transactions`, добавить snapshot и переподключить API.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/transactions/dataset.js`
+- `local-sim/modules/transactions/api.js`
+- `local-sim/modules/transactions/constants.js`
+- `local-sim/migration-notes.md`
+- журнал `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (dataset собирает и сортирует транзакции)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Dataset нормализует строки `profile_transactions`
+- [x] API читает транзакции только через dataset snapshot
+- [x] В dataset есть индекс по `userId`
+
+**Критерии приёмки:**
+- [x] `readAdminTransactions` использует canonical dataset и возвращает те же поля
+- [x] Транзакции сортируются по `createdAt` по убыванию
+- [x] В migration-notes зафиксированы структура и индексы `profile_transactions`
+
+**Понятным языком: что сделано/что поменял:**
+- Я вынес нормализацию транзакций в dataset
+- Я подключил API к snapshot из dataset и добавил индексы по пользователям
+- Я обновил заметки по миграциям и отчёт
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ✅ Выполнено (жду подтверждения local-sim)
+- **Что сделано:** dataset транзакций готов, API читает snapshot, заметки обновлены
+- **Что осталось:** дождаться подтверждения и перейти к SQL-миграциям
+- **Коммиты/PR:** будет в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/modules/transactions/dataset.js`
+  - `local-sim/modules/transactions/api.js`
+  - `local-sim/modules/transactions/constants.js`
+  - `local-sim/types/transactions.ts`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251016-022 — Dataset для admin access
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-16 23:40
+
+**Резюме:** Выношу роли и разрешения админки в единый dataset local-sim. Нормализую JSON таблицы доступа и подключаю модуль ролей к новому snapshot.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/access/dataset.js`
+- `local-sim/modules/access/roles/index.js`
+- `local-sim/modules/access/index.js`
+- `local-sim/modules/access/constants.js`
+- `local-sim/migration-notes.md`
+- журнал `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (dataset собирает роли/права из локальной БД)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Dataset нормализует `admin_roles`/`admin_permissions`/`admin_role_permissions`
+- [x] Модуль `modules/access/roles` читает данные только через dataset snapshot
+- [x] Экспорт access-модуля расширен функциями dataset для будущих миграций
+
+**Критерии приёмки:**
+- [x] `availableRoles` и `rolePermissionMatrix` собираются из canonical JSON через dataset
+- [x] `listRolePermissionMatrix` и `getRolePermissionLegend` возвращают копии данных без побочных эффектов
+- [x] В migration-notes зафиксировано использование dataset для admin access
+
+**Понятным языком: что сделано/что поменял:**
+- Я создал dataset, который нормализует роли и права из локальной БД
+- Я переписал модуль ролей, чтобы брать snapshot только из dataset
+- Я добавил экспорт вспомогательных функций access-датаcета
+- Я обновил migration-notes и журнал по тейку
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** dataset для admin access готов, модуль ролей переведён на snapshot, документация обновлена
+- **Что осталось:** дождаться подтверждения и затем переходить к SQL-миграциям
+- **Коммиты/PR:** будет оформлено в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/modules/access/dataset.js`
+  - `local-sim/modules/access/roles/index.js`
+  - `local-sim/modules/access/index.js`
+  - `local-sim/modules/access/constants.js`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251016-021 — Dataset для communications
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-16 23:25
+
+**Резюме:** Планирую вынести переписку сотрудников в dataset local-sim. Нужно нормализовать таблицы коммуникаций и подключить модуль чатов к каноническому источнику.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/communications/dataset.js`
+- `local-sim/modules/communications/threads.js`
+- `local-sim/modules/communications/index.js`
+- `local-sim/migration-notes.md`
+- журнал `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (dataset строит чаты из локальной БД)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Dataset нормализует таблицы `communication_threads`, `communication_thread_participants`, `communication_messages`
+- [x] Модуль `threads` читает данные чатов через dataset
+- [x] migration-notes обновлены описанием dataset по communications
+
+**Критерии приёмки:**
+- [x] `listModeratorsChatThreads` возвращает данные из локальной БД через dataset
+- [x] Сообщения сортируются по времени отправки в порядке убывания
+- [x] В migration-notes зафиксированы таблицы communications и использование dataset
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил dataset, который читает таблицы коммуникаций из локальной БД
+- Я переписал модуль чатов, чтобы брать данные только из dataset
+- Я обновил заметки по миграциям и отчёт
+
+**Блокеры (если есть):**
+- Нет
+
+- **Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** добавлен dataset коммуникаций, переписан модуль чатов на работу через него, обновлены миграционные заметки и отчёт
+- **Что осталось:** дождаться подтверждения local-sim и после этого переходить к SQL-миграциям
+- **Коммиты/PR:** будет оформлено в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/modules/communications/dataset.js`
+  - `local-sim/modules/communications/threads.js`
+  - `local-sim/modules/communications/index.js`
+  - `local-sim/modules/communications/constants.js`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251016-020 — Dataset для verification
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-16 23:25
+
+**Резюме:** Вынес нормализацию запросов верификации в отдельный dataset local-sim. Переподключил профильные экстры и админский модуль к единому источнику данных.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/verification/dataset.js`
+- `local-sim/modules/auth/profileExtras.js`
+- `local-sim/modules/verification/admin.js`
+- `local-sim/migration-notes.md`
+- журнал `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (dataset отдаёт canonical requests/uploads)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Dataset нормализует таблицы `verification_requests`/`verification_uploads`
+- [x] Профильные экстры используют dataset вместо ручного маппинга
+- [x] Админский список верификации читает данные через dataset
+
+**Критерии приёмки:**
+- [x] `readAdminVerificationRequests` поднимает записи из canonical dataset
+- [x] `profileExtras.loadExtras` возвращает запросы/загрузки из dataset
+- [x] `migration-notes` содержит пометку про verification dataset
+
+**Понятным языком: что сделано/что поменял:**
+- Я создал файл dataset для запросов и загрузок верификации
+- Я переписал profileExtras, чтобы брать запросы из dataset и писать их обратно
+- Я обновил админские функции, чтобы использовать новые данные
+- Я дополнил migration-notes и отчёт
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** выделен dataset верификации, переподключены profileExtras и админский модуль, обновлены заметки
+- **Что осталось:** дождаться подтверждения и затем двигаться к SQL
+- **Коммиты/PR:** будет оформлено в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/modules/verification/dataset.js`
+  - `local-sim/modules/auth/profileExtras.js`
+  - `local-sim/modules/verification/admin.js`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251016-019 — Canonical промокоды через local-sim
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-16 22:59
+
+**Резюме:** Привожу модуль промокодов к каноническим данным из local-sim. Хочу добавить dataset-слой, который читает `admin_promocodes` из локальной БД и использовать его вместо генерации из definitions.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/promo/dataset.js`
+- `local-sim/modules/promo/{core/repository.js,storage.js,constants.js}`
+- `local-sim/types/promo.ts`
+- `local-sim/migration-notes.md`
+- журнал `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (list/create/update промокодов на основе canonical dataset)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Dataset для `admin_promocodes` читает JSON и отдаёт канонический набор
+- [x] Repository promo использует dataset из локальной БД вместо генерации через definitions
+- [x] migration-notes обновлены под новую схему доступа к промокодам
+
+**Критерии приёмки:**
+- [x] `listAdminPromocodes` возвращает данные из `admin_promocodes.json`
+- [x] При обновлении промокода изменения сохраняются в локальную БД и возвращаются через dataset
+- [x] migration-notes содержит описание канонического источника данных промокодов
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил слой dataset, который читает промокоды из локальной БД
+- Я подключил этот dataset в репозиторий промокодов вместо генератора из definitions
+- Я обновил заметки по миграциям и интерфейсы типов
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** добавил dataset для промокодов, переписал core/storage на canonical данные, обновил migration-notes и типы
+- **Что осталось:** дождаться подтверждения и затем готовить SQL-миграции
+- **Коммиты/PR:** будет оформлено в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/modules/promo/dataset.js`
+  - `local-sim/modules/promo/storage.js`
+  - `local-sim/modules/promo/core/repository.js`
+  - `local-sim/modules/promo/constants.js`
+  - `local-sim/types/promo.ts`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251016-018 — Очистка демо аккаунтов и чатов
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-16 22:54
+
+**Резюме:** Удаляю демо-аккаунт owner и связанные с ним данные в local-sim, а также вычищаю демо-чаты и коммуникации.
+Привожу canonical JSON к пустому состоянию, чтобы дальше наполнять его только подтверждёнными данными.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/auth/accounts/seedAccounts.js`
+- `local-sim/db/{profile_transactions.json,verification_requests.json,verification_queue.json,verification_uploads.json}`
+- `local-sim/db/{communication_threads.json,communication_thread_participants.json,communication_messages.json}`
+- `local-sim/migration-notes.md`
+- журнал `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (canonical данные очищены от демо-записей)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Демо-аккаунты удалены из сидера local-sim
+- [x] Демо-чаты и сообщения удалены из canonical JSON
+- [x] migration-notes обновлены, чтобы зафиксировать отсутствие демо-данных
+
+**Критерии приёмки:**
+- [x] PRESET_ACCOUNTS не содержит демо-пользователей
+- [x] Коммуникационные таблицы local-sim пусты и не содержат фиктивных записей
+- [x] Таблицы валидации и транзакций не содержат ссылок на демо-аккаунт
+
+**Понятным языком: что сделано/что поменял:**
+- Я убрал owner-профиль и все связанные с ним транзакции и заявки валидации
+- Я очистил JSONы с чатами, участниками и сообщениями, чтобы не было демо-переписок
+- Я дополнил migration-notes пометкой, что теперь массивы пустые и ждут реальных данных
+- Я обновил отчёт об этом тейке
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** демо-аккаунты и чаты удалены, canonical JSON очищен, заметки обновлены
+- **Что осталось:** дождаться подтверждения и затем переходить к SQL-миграциям
+- **Коммиты/PR:** будет оформлено в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/modules/auth/accounts/seedAccounts.js`
+  - `local-sim/db/profile_transactions.json`
+  - `local-sim/db/verification_requests.json`
+  - `local-sim/db/verification_queue.json`
+  - `local-sim/db/verification_uploads.json`
+  - `local-sim/db/communication_threads.json`
+  - `local-sim/db/communication_thread_participants.json`
+  - `local-sim/db/communication_messages.json`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251016-017 — Canonical ранги через local-sim
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-16 22:33
+
+**Резюме:** Планирую перенести данные VIP-рангов в canonical JSON local-sim, чтобы ранговый модуль читал уровни и награды через локальную БД.
+Нужно подготовить таблицы `rank_levels` и `rank_rewards`, обновить сидер, типы и модуль `modules/rank` под новую схему.
+
+**Объём работ (файлы/модули):**
+- `local-sim/db/rank_levels.json`
+- `local-sim/db/rank_rewards.json`
+- `local-sim/database/{schema.js,seed.js}`
+- `local-sim/modules/rank/*`
+- `local-sim/types/rank.ts`
+- `local-sim/migration-notes.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (ранговый API читает таблицы `rank_levels`/`rank_rewards`)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Canonical JSON таблицы рангов созданы и подключены в сидер
+- [x] Модуль `modules/rank` читает данные из локальной БД и сохраняет оверрайды
+- [x] Типы и `migration-notes` обновлены под ранговую схему
+
+**Критерии приёмки:**
+- [x] Таблицы `rank_levels` и `rank_rewards` инициализируются из `local-sim/db/*.json`
+- [x] `getProfileRankData`/`getProfileRankSummary` читают уровни и награды из БД
+- [x] Описание схемы рангов отражено в `migration-notes.md`
+
+**Понятным языком: что сделано/что поменял:**
+- Я завёл canonical JSON с уровнями и наградами рангов и подключил их в сидер local-sim
+- Я добавил таблицы `rank_levels` и `rank_rewards` в схему локальной БД
+- Я переписал модуль рангов на чтение из базы, сохранил поддержку пользовательских оверрайдов
+- Я создал типы и дополнил migration-notes для будущей SQL-миграции рангов
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** canonical таблицы рангов заведены, сидер и модуль `modules/rank` работают через локальную БД, типы и заметки обновлены
+- **Что осталось:** Получить подтверждение Гринч и затем подготовить/применить SQL-миграцию
+- **Коммиты/PR:** будет оформлено в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/db/rank_levels.json`
+  - `local-sim/db/rank_rewards.json`
+  - `local-sim/database/schema.js`
+  - `local-sim/database/seed.js`
+  - `local-sim/modules/rank/{api.js,constants.js,dataset.js,helpers.js,index.js,storage.js}`
+  - `local-sim/types/rank.ts`
+  - `local-sim/migration-notes.md`
+
 ## TAKE-20251016-016 — Canonical роли доступа
 **Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-16 23:05
 

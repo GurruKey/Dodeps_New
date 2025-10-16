@@ -14,3 +14,9 @@ export {
   verificationQueue,
   listAdminVerificationQueue,
 } from './queue.js';
+
+export {
+  getVerificationQueueSnapshot,
+  listVerificationQueueRecords,
+  findVerificationQueueRecordById,
+} from './dataset.js';

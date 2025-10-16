@@ -1,6 +1,11 @@
 import { PROFILE_KEY } from './constants.js';
 import { getLocalDatabase } from '../../database/engine.js';
 import { normalizeBooleanMap } from '../verification/helpers.js';
+import {
+  prepareVerificationRequestRows,
+  prepareVerificationUploadRows,
+  readVerificationDatasetForUser,
+} from '../verification/dataset.js';
 
 const GENDER_MALE_VALUES = Object.freeze([
   'male',
@@ -97,27 +102,6 @@ const writeLegacyExtras = (uid, extras) => {
   }
 };
 
-const toStringId = (value) => {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number') {
-    return String(value);
-  }
-  return '';
-};
-
-const safeClone = (value) => {
-  if (!value || typeof value !== 'object') {
-    return undefined;
-  }
-  try {
-    return JSON.parse(JSON.stringify(value));
-  } catch {
-    return undefined;
-  }
-};
-
 const matchUserRow = (row, uid) => {
   if (!row || !uid) {
     return false;
@@ -125,197 +109,6 @@ const matchUserRow = (row, uid) => {
   const candidate = row.userId ?? row.user_id;
   return candidate === uid;
 };
-
-const fromVerificationHistoryRow = (entry, requestId) => {
-  if (!entry || typeof entry !== 'object') {
-    return null;
-  }
-
-  const id = toStringId(entry.id);
-  if (!id) {
-    return null;
-  }
-
-  return {
-    id,
-    requestId: toStringId(entry.request_id ?? entry.requestId) || requestId,
-    status: toStringId(entry.status) || 'pending',
-    reviewer: {
-      id: toStringId(entry.reviewer_id ?? entry.reviewerId ?? entry.reviewer?.id) || null,
-      name: toStringId(entry.reviewer_name ?? entry.reviewerName ?? entry.reviewer?.name) || '',
-      role: toStringId(entry.reviewer_role ?? entry.reviewerRole ?? entry.reviewer?.role) || '',
-    },
-    notes: typeof entry.notes === 'string' ? entry.notes : '',
-    updatedAt: entry.updated_at ?? entry.updatedAt ?? null,
-    completedFields: normalizeBooleanMap(
-      entry.completed_fields ?? entry.completedFields,
-    ),
-    requestedFields: normalizeBooleanMap(
-      entry.requested_fields ?? entry.requestedFields ?? entry.completed_fields ?? entry.completedFields,
-    ),
-    clearedFields: normalizeBooleanMap(entry.cleared_fields ?? entry.clearedFields),
-  };
-};
-
-const fromVerificationRequestRow = (row) => {
-  if (!row || typeof row !== 'object') {
-    return null;
-  }
-
-  const id = toStringId(row.id);
-  if (!id) {
-    return null;
-  }
-
-  const history = Array.isArray(row.history)
-    ? row.history.map((entry) => fromVerificationHistoryRow(entry, id)).filter(Boolean)
-    : [];
-
-  const metadata = safeClone(row.metadata);
-
-  return {
-    id,
-    userId: row.user_id ?? row.userId ?? null,
-    status: toStringId(row.status) || 'pending',
-    submittedAt: row.submitted_at ?? row.submittedAt ?? null,
-    updatedAt: row.updated_at ?? row.updatedAt ?? null,
-    reviewedAt: row.reviewed_at ?? row.reviewedAt ?? null,
-    reviewerId: row.reviewer_id ?? row.reviewerId ?? null,
-    reviewerName: toStringId(row.reviewer_name ?? row.reviewerName),
-    reviewerRole: toStringId(row.reviewer_role ?? row.reviewerRole),
-    notes: typeof row.notes === 'string' ? row.notes : '',
-    completedFields: normalizeBooleanMap(row.completed_fields ?? row.completedFields),
-    requestedFields: normalizeBooleanMap(
-      row.requested_fields ?? row.requestedFields ?? row.completed_fields ?? row.completedFields,
-    ),
-    clearedFields: normalizeBooleanMap(row.cleared_fields ?? row.clearedFields),
-    history,
-    ...(metadata ? { metadata } : {}),
-  };
-};
-
-const fromVerificationUploadRow = (row) => {
-  if (!row || typeof row !== 'object') {
-    return null;
-  }
-
-  const id = toStringId(row.id);
-  if (!id) {
-    return null;
-  }
-
-  return {
-    id,
-    userId: row.user_id ?? row.userId ?? null,
-    requestId: toStringId(row.request_id ?? row.requestId) || null,
-    fileName: toStringId(row.file_name ?? row.fileName),
-    fileType: toStringId(row.file_type ?? row.fileType) || 'document',
-    fileUrl: toStringId(row.file_url ?? row.fileUrl),
-    status: toStringId(row.status) || 'pending',
-    uploadedAt: row.uploaded_at ?? row.uploadedAt ?? null,
-  };
-};
-
-const toVerificationRequestRows = (rows, uid) =>
-  (Array.isArray(rows) ? rows : [])
-    .filter((row) => row && typeof row === 'object')
-    .map((row) => {
-      const id = toStringId(row.id);
-      if (!id) {
-        return null;
-      }
-
-      const completed = normalizeBooleanMap(row.completedFields ?? row.completed_fields);
-      const requested = normalizeBooleanMap(
-        row.requestedFields ?? row.requested_fields ?? row.completedFields ?? row.completed_fields,
-      );
-      const cleared = normalizeBooleanMap(row.clearedFields ?? row.cleared_fields);
-
-      const history = Array.isArray(row.history)
-        ? row.history
-            .map((entry) => {
-              if (!entry || typeof entry !== 'object') {
-                return null;
-              }
-              const entryId = toStringId(entry.id);
-              if (!entryId) {
-                return null;
-              }
-
-              const reviewer =
-                entry.reviewer && typeof entry.reviewer === 'object' ? entry.reviewer : {};
-
-              return {
-                id: entryId,
-                request_id: toStringId(entry.requestId ?? entry.request_id) || id,
-                status: toStringId(entry.status) || 'pending',
-                notes: typeof entry.notes === 'string' ? entry.notes : '',
-                updated_at: entry.updated_at ?? entry.updatedAt ?? null,
-                reviewer_id: toStringId(entry.reviewerId ?? entry.reviewer_id ?? reviewer.id) || null,
-                reviewer_name: toStringId(entry.reviewerName ?? entry.reviewer_name ?? reviewer.name) || null,
-                reviewer_role: toStringId(entry.reviewerRole ?? entry.reviewer_role ?? reviewer.role) || null,
-                completed_fields: normalizeBooleanMap(
-                  entry.completedFields ?? entry.completed_fields,
-                ),
-                requested_fields: normalizeBooleanMap(
-                  entry.requestedFields ??
-                    entry.requested_fields ??
-                    entry.completedFields ??
-                    entry.completed_fields,
-                ),
-                cleared_fields: normalizeBooleanMap(entry.clearedFields ?? entry.cleared_fields),
-              };
-            })
-            .filter(Boolean)
-        : [];
-
-      const metadata = safeClone(row.metadata);
-
-      const submittedAt = row.submittedAt ?? row.submitted_at ?? null;
-      const updatedAt = row.updatedAt ?? row.updated_at ?? submittedAt;
-      const reviewedAt = row.reviewedAt ?? row.reviewed_at ?? null;
-
-      return {
-        id,
-        user_id: row.userId ?? row.user_id ?? uid,
-        status: toStringId(row.status) || 'pending',
-        submitted_at: submittedAt,
-        updated_at: updatedAt,
-        reviewed_at: reviewedAt,
-        reviewer_id: toStringId(row.reviewerId ?? row.reviewer_id) || null,
-        reviewer_name: toStringId(row.reviewerName ?? row.reviewer_name) || null,
-        reviewer_role: toStringId(row.reviewerRole ?? row.reviewer_role) || null,
-        notes: typeof row.notes === 'string' ? row.notes : '',
-        completed_fields: completed,
-        requested_fields: requested,
-        cleared_fields: cleared,
-        ...(metadata ? { metadata } : {}),
-        ...(history.length ? { history } : {}),
-      };
-    })
-    .filter(Boolean);
-
-const toVerificationUploadRows = (rows, uid) =>
-  (Array.isArray(rows) ? rows : [])
-    .filter((row) => row && typeof row === 'object')
-    .map((row) => {
-      const id = toStringId(row.id);
-      if (!id) {
-        return null;
-      }
-
-      return {
-        id,
-        user_id: row.userId ?? row.user_id ?? uid,
-        request_id: toStringId(row.requestId ?? row.request_id) || null,
-        file_name: toStringId(row.fileName ?? row.file_name) || null,
-        file_type: toStringId(row.fileType ?? row.file_type) || 'document',
-        file_url: toStringId(row.fileUrl ?? row.file_url) || null,
-        status: toStringId(row.status) || 'pending',
-        uploaded_at: row.uploadedAt ?? row.uploaded_at ?? null,
-      };
-    })
-    .filter(Boolean);
 
 const mergeProfileRelations = (profile, verificationRequests, verificationUploads, transactions) => ({
   ...profile,
@@ -348,12 +141,12 @@ const persistExtras = (uid, extras) => {
   db.replaceWhere(
     'verification_requests',
     (row) => matchUserRow(row, uid),
-    toVerificationRequestRows(verificationRequests, uid),
+    prepareVerificationRequestRows(verificationRequests, uid),
   );
   db.replaceWhere(
     'verification_uploads',
     (row) => matchUserRow(row, uid),
-    toVerificationUploadRows(verificationUploads, uid),
+    prepareVerificationUploadRows(verificationUploads, uid),
   );
   db.replaceWhere(
     'profile_transactions',
@@ -391,14 +184,8 @@ export const loadExtras = (uid) => {
 
   const db = getLocalDatabase();
   const profileRow = db.findById('profiles', uid);
-  const verificationRequestRows = db
-    .select('verification_requests', (row) => matchUserRow(row, uid))
-    .map(fromVerificationRequestRow)
-    .filter(Boolean);
-  const verificationUploadRows = db
-    .select('verification_uploads', (row) => matchUserRow(row, uid))
-    .map(fromVerificationUploadRow)
-    .filter(Boolean);
+  const { requests: verificationRequestRows, uploads: verificationUploadRows } =
+    readVerificationDatasetForUser(uid);
   const transactionRows = db.select('profile_transactions', (row) => row.userId === uid);
 
   if (

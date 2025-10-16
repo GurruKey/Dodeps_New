@@ -1,5 +1,5 @@
 import { loadExtras } from '../auth/profileExtras.js';
-import { RANK_LEVELS } from './constants.js';
+import { listDefaultRankLevels } from './dataset.js';
 import { resolveRankProgress } from './helpers.js';
 import {
   loadRankRewards,
@@ -35,7 +35,7 @@ const isSuccessfulDeposit = (txn) => {
   return true;
 };
 
-export const getRankLevels = () => RANK_LEVELS.map((level) => ({ ...level }));
+export const getRankLevels = () => listDefaultRankLevels().map((level) => ({ ...level }));
 
 export const getRankRewards = () => loadRankRewards().map((reward) => ({ ...reward }));
 

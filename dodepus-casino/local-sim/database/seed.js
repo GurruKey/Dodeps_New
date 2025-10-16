@@ -10,6 +10,8 @@ import communicationMessages from '../db/communication_messages.json' assert { t
 import communicationThreadParticipants from '../db/communication_thread_participants.json' assert { type: 'json' };
 import communicationThreads from '../db/communication_threads.json' assert { type: 'json' };
 import profileTransactionsDataset from '../db/profile_transactions.json' assert { type: 'json' };
+import rankLevelsDataset from '../db/rank_levels.json' assert { type: 'json' };
+import rankRewardsDataset from '../db/rank_rewards.json' assert { type: 'json' };
 import verificationQueueDataset from '../db/verification_queue.json' assert { type: 'json' };
 import verificationRequestsDataset from '../db/verification_requests.json' assert { type: 'json' };
 import verificationUploadsDataset from '../db/verification_uploads.json' assert { type: 'json' };
@@ -38,6 +40,176 @@ const normalizeText = (value) => {
 const normalizeOptionalText = (value) => {
   const text = normalizeText(value);
   return text || null;
+};
+
+const normalizeMultilineText = (value) => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+  return value.replace(/\r\n/g, '\n').trim();
+};
+
+const normalizeOptionalMultiline = (value) => {
+  const text = normalizeMultilineText(value);
+  return text || null;
+};
+
+const normalizeRankSlug = (value, level) => {
+  const base = normalizeText(value).toLowerCase();
+  if (base) {
+    const slug = base
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/-{2,}/g, '-')
+      .replace(/^-+|-+$/g, '');
+    if (slug) {
+      return slug === 'vip' && Number.isInteger(level) ? `vip-${level}` : slug;
+    }
+  }
+  if (Number.isInteger(level)) {
+    return level === 0 ? 'user' : `vip-${level}`;
+  }
+  return 'vip';
+};
+
+const normalizeHexColor = (value, fallback = null) => {
+  if (typeof value !== 'string') {
+    return fallback;
+  }
+  const trimmed = value.trim().toLowerCase();
+  if (!trimmed) {
+    return fallback;
+  }
+  const prefixed = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+  if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/.test(prefixed)) {
+    return fallback;
+  }
+  if (prefixed.length === 4) {
+    const [, r, g, b] = prefixed;
+    return `#${r}${r}${g}${g}${b}${b}`;
+  }
+  return prefixed;
+};
+
+const normalizeBadgeEffectSeed = (value, fallback = 'solid') => {
+  if (typeof value !== 'string') {
+    return fallback;
+  }
+  const normalized = value.trim().toLowerCase();
+  return normalized || fallback;
+};
+
+const normalizeBadgeSpeedSeed = (value, fallback = 6) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return fallback;
+  }
+  const clamped = Math.min(Math.max(numeric, 2), 12);
+  return Math.round(clamped * 10) / 10;
+};
+
+const normalizeRankLevelRow = (row, index = 0) => {
+  if (!row || typeof row !== 'object') {
+    return null;
+  }
+
+  const level = normalizeNonNegativeInt(row.level ?? row.tier ?? index, index);
+  const id = normalizeText(row.id) || `rank_level_seed_${String(level).padStart(3, '0')}`;
+  const slug = normalizeRankSlug(row.slug ?? row.name ?? row.label, level);
+  const label = normalizeText(row.label) || (Number.isInteger(level) ? `VIP ${level}` : 'VIP');
+  const shortLabel =
+    normalizeText(row.short_label ?? row.shortLabel ?? '') || label;
+  const group = (normalizeText(row.group ?? row.rank_group ?? '') || 'vip').toLowerCase();
+  const tier = normalizeNonNegativeInt(row.tier ?? level, level);
+  const depositStep = normalizeNonNegativeInt(row.deposit_step ?? row.depositStep ?? 0, 0);
+  const totalDeposit = normalizeNonNegativeInt(
+    row.total_deposit ?? row.totalDeposit ?? depositStep,
+    depositStep,
+  );
+  const sortOrder = normalizeNonNegativeInt(
+    row.sort_order ?? row.sortOrder ?? tier ?? level,
+    tier ?? level,
+  );
+  const createdAt =
+    normalizeDateTime(row.created_at ?? row.createdAt ?? DEFAULT_RANK_SEED_TIMESTAMP) ??
+    DEFAULT_RANK_SEED_TIMESTAMP;
+  const updatedAt = normalizeDateTime(row.updated_at ?? row.updatedAt ?? createdAt) ?? createdAt;
+
+  return {
+    id,
+    level,
+    slug,
+    label,
+    short_label: shortLabel,
+    group,
+    tier,
+    deposit_step: depositStep,
+    total_deposit: totalDeposit,
+    sort_order: sortOrder,
+    created_at: createdAt,
+    updated_at: updatedAt,
+  };
+};
+
+const normalizeRankRewardRow = (row, index = 0, { byId, byLevel } = {}) => {
+  if (!row || typeof row !== 'object') {
+    return null;
+  }
+
+  const rawLevel = row.level ?? row.rank_level ?? row.tier;
+  const level = normalizeNonNegativeInt(rawLevel, null);
+  const fallbackLevel = normalizeNonNegativeInt(index, null);
+  const resolvedLevel = Number.isInteger(level) ? level : fallbackLevel;
+  if (!Number.isInteger(resolvedLevel)) {
+    return null;
+  }
+
+  const resolvedRankLevelId = normalizeText(row.rank_level_id ?? row.rankLevelId ?? '');
+  const relatedLevelByLevel = byLevel && byLevel.get(resolvedLevel);
+  const relatedLevelById = resolvedRankLevelId && byId ? byId.get(resolvedRankLevelId) : null;
+  const finalRankLevelId = resolvedRankLevelId || relatedLevelByLevel?.id || null;
+  if (!finalRankLevelId) {
+    return null;
+  }
+
+  const id = normalizeText(row.id) || `rank_reward_seed_${String(resolvedLevel).padStart(3, '0')}`;
+  const label = normalizeText(row.label) || `VIP ${resolvedLevel}`;
+  const badgeColor = normalizeHexColor(row.badge_color ?? row.badgeColor, '#adb5bd');
+  const badgeColorSecondary = normalizeHexColor(
+    row.badge_color_secondary ?? row.badgeColorSecondary,
+    badgeColor,
+  );
+  const badgeColorTertiary = normalizeHexColor(
+    row.badge_color_tertiary ?? row.badgeColorTertiary,
+    badgeColorSecondary,
+  );
+  const badgeTextColor = normalizeHexColor(row.badge_text_color ?? row.badgeTextColor, '#212529');
+  const badgeEffect = normalizeBadgeEffectSeed(row.badge_effect ?? row.badgeEffect, 'solid');
+  const badgeEffectSpeed = normalizeBadgeSpeedSeed(row.badge_effect_speed ?? row.badgeEffectSpeed, 6);
+  const tagline = normalizeOptionalMultiline(row.tagline) ?? '';
+  const description = normalizeOptionalMultiline(row.description) ?? '';
+  const purpose = normalizeOptionalMultiline(row.purpose) ?? '';
+  const createdAt =
+    normalizeDateTime(row.created_at ?? row.createdAt ?? DEFAULT_RANK_SEED_TIMESTAMP) ??
+    DEFAULT_RANK_SEED_TIMESTAMP;
+  const updatedAt = normalizeDateTime(row.updated_at ?? row.updatedAt ?? createdAt) ?? createdAt;
+
+  return {
+    id,
+    rank_level_id: finalRankLevelId,
+    level: resolvedLevel,
+    label,
+    badge_color: badgeColor,
+    badge_color_secondary: badgeColorSecondary,
+    badge_color_tertiary: badgeColorTertiary,
+    badge_text_color: badgeTextColor,
+    badge_effect: badgeEffect,
+    badge_effect_speed: badgeEffectSpeed,
+    tagline,
+    description,
+    purpose,
+    created_at: createdAt,
+    updated_at: updatedAt,
+  };
 };
 
 const normalizePositiveIntOrNull = (value) => {
@@ -175,6 +347,7 @@ const normalizePromocodeStatus = (value) => {
 };
 
 const DEFAULT_ACCESS_SEED_TIMESTAMP = '2024-10-10T12:00:00.000Z';
+const DEFAULT_RANK_SEED_TIMESTAMP = DEFAULT_ACCESS_SEED_TIMESTAMP;
 
 const resolveRoleLevel = (value) => {
   const numeric = normalizeNullableNumber(value);
@@ -619,6 +792,26 @@ export const buildLocalDatabaseSeedState = () => {
   const communicationMessageRows = ensureArray(communicationMessages).map(clone);
   const profileTransactionRows = ensureArray(profileTransactionsDataset).map(clone);
 
+  const rankLevelMap = new Map();
+  const rankLevelByLevel = new Map();
+  ensureArray(rankLevelsDataset)
+    .map((row, index) => normalizeRankLevelRow(row, index))
+    .filter(Boolean)
+    .forEach((row) => {
+      rankLevelMap.set(row.id, row);
+      if (!rankLevelByLevel.has(row.level)) {
+        rankLevelByLevel.set(row.level, row);
+      }
+    });
+
+  const rankRewardMap = new Map();
+  ensureArray(rankRewardsDataset)
+    .map((row, index) => normalizeRankRewardRow(row, index, { byId: rankLevelMap, byLevel: rankLevelByLevel }))
+    .filter(Boolean)
+    .forEach((row) => {
+      rankRewardMap.set(row.id, row);
+    });
+
   const adminRoleRows = ensureArray(adminRolesDataset)
     .map((row, index) => normalizeAdminRoleRow(row, index))
     .filter(Boolean);
@@ -744,6 +937,14 @@ export const buildLocalDatabaseSeedState = () => {
       admin_roles: { primaryKey: 'id', rows: adminRoleRows },
       admin_permissions: { primaryKey: 'id', rows: adminPermissionRows },
       admin_role_permissions: { primaryKey: 'id', rows: adminRolePermissionRows },
+      rank_levels: {
+        primaryKey: 'id',
+        rows: Array.from(rankLevelMap.values()).sort((a, b) => a.level - b.level || a.sort_order - b.sort_order),
+      },
+      rank_rewards: {
+        primaryKey: 'id',
+        rows: Array.from(rankRewardMap.values()).sort((a, b) => a.level - b.level || a.id.localeCompare(b.id)),
+      },
       profile_transactions: {
         primaryKey: 'id',
         rows: Array.from(profileTransactionsMap.values()),

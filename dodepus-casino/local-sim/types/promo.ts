@@ -23,3 +23,29 @@ export interface AdminPromocodeRow {
   updated_at: string | null;
   activations: AdminPromocodeActivationRow[];
 }
+
+export interface AdminPromocodeActivationRecord {
+  id: string;
+  activatedAt: string;
+  clientId?: string;
+}
+
+export interface AdminPromocodeRecord {
+  id: string;
+  code: string;
+  typeId: string;
+  title: string;
+  reward: string;
+  status: string;
+  limit: number | null;
+  used: number;
+  wager: number | null;
+  cashoutCap: number | null;
+  notes: string;
+  params: Record<string, unknown>;
+  startsAt: string | null;
+  endsAt: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  activations: AdminPromocodeActivationRecord[];
+}
