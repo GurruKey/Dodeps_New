@@ -13,7 +13,10 @@ const composeTitle = (reward) => {
   return reward?.label ?? 'VIP';
 };
 
-export default function RankRewardsBlock({ rewards }) {
+export default function RankRewardsBlock({ rewards, currentLevel, nextLevel }) {
+  const currentLevelValue = currentLevel?.level ?? null;
+  const nextLevelValue = nextLevel?.level ?? null;
+
   return (
     <Card>
       <Card.Body>
@@ -29,15 +32,34 @@ export default function RankRewardsBlock({ rewards }) {
             const speed = Number.isFinite(reward?.badgeEffectSpeed)
               ? reward.badgeEffectSpeed
               : 6;
+            const isCurrent = reward.level === currentLevelValue;
+            const isNext = reward.level === nextLevelValue;
+            const itemClasses = [
+              'py-3',
+              isCurrent && 'border border-success rounded bg-success-subtle',
+              !isCurrent && isNext && 'border border-warning rounded bg-warning-subtle',
+            ]
+              .filter(Boolean)
+              .join(' ');
 
             return (
-              <ListGroup.Item key={reward.level} className="py-3">
+              <ListGroup.Item key={reward.level} className={itemClasses}>
                 <div className="d-flex flex-column gap-2">
                   <div className="d-flex flex-wrap align-items-center gap-2">
                     <RankBadge preview={preview} className="px-3">
                       {reward.label}
                     </RankBadge>
                     <span className="fw-semibold" style={{ color: preview.textColor }}>{title}</span>
+                    {isCurrent && (
+                      <span className="badge text-success-emphasis bg-success-subtle border border-success-subtle">
+                        Ваш уровень
+                      </span>
+                    )}
+                    {!isCurrent && isNext && (
+                      <span className="badge text-warning-emphasis bg-warning-subtle border border-warning-subtle">
+                        Следующая цель
+                      </span>
+                    )}
                   </div>
                   <div className="small text-muted">
                     Эффект: {effectMeta.label}

@@ -1,4 +1,5 @@
 import { Badge } from 'react-bootstrap';
+import RankBadge from '../../../../../shared/rank/components/RankBadge.jsx';
 
 export const createNavItems = ({ balanceLabel, verificationMeta, rankMeta }) => [
   {
@@ -28,9 +29,9 @@ export const createNavItems = ({ balanceLabel, verificationMeta, rankMeta }) => 
     to: 'rank',
     label: 'Ранг',
     right: () => (
-      <Badge bg={rankMeta.variant} style={rankMeta.style}>
+      <RankBadge preview={rankMeta.preview} className="px-3 py-1">
         {rankMeta.label}
-      </Badge>
+      </RankBadge>
     ),
   },
   { key: 'promos', to: 'promos', label: 'Акции для игры' },

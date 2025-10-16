@@ -26,16 +26,18 @@ import NotFound from '../../pages/not-found';
 import Login from '../../pages/auth/login';
 import Register from '../../pages/auth/register';
 
-import ProfileLayout from '../../pages/profile/layout';
-import Personal from '../../pages/profile/personal';
-import Wallet from '../../pages/profile/wallet';
-import Terminal from '../../pages/profile/terminal';
-import History from '../../pages/profile/history';
-import ProfileRank from '../../pages/profile/rank';
-import Promos from '../../pages/profile/promos';
-import Season from '../../pages/profile/season';
-import GamesHistory from '../../pages/profile/games-history';
-import ProfileVerification from '../../pages/profile/verification';
+import {
+  ProfileLayout,
+  ProfilePersonalPage,
+  ProfileWalletPage,
+  ProfileTerminalPage,
+  ProfileHistoryPage,
+  ProfileRankPage,
+  ProfilePromosPage,
+  ProfileSeasonPage,
+  ProfileGamesHistoryPage,
+  ProfileVerificationPage,
+} from '../../pages/profile';
 
 import { RequireAdmin, RequireAuth } from './guards';
 
@@ -105,15 +107,15 @@ export default function AppRoutes() {
       >
         {/* redirect /profile -> /profile/personal */}
         <Route index element={<Navigate to="personal" replace />} />
-        <Route path="wallet" element={<Wallet />} />
-        <Route path="history" element={<History />} />
-        <Route path="terminal" element={<Terminal />} />
-        <Route path="personal" element={<Personal />} />
-        <Route path="verification" element={<ProfileVerification />} />
-        <Route path="rank" element={<ProfileRank />} />
-        <Route path="promos" element={<Promos />} />
-        <Route path="season" element={<Season />} />
-        <Route path="games-history" element={<GamesHistory />} />
+        <Route path="wallet" element={<ProfileWalletPage />} />
+        <Route path="history" element={<ProfileHistoryPage />} />
+        <Route path="terminal" element={<ProfileTerminalPage />} />
+        <Route path="personal" element={<ProfilePersonalPage />} />
+        <Route path="verification" element={<ProfileVerificationPage />} />
+        <Route path="rank" element={<ProfileRankPage />} />
+        <Route path="promos" element={<ProfilePromosPage />} />
+        <Route path="season" element={<ProfileSeasonPage />} />
+        <Route path="games-history" element={<ProfileGamesHistoryPage />} />
         {/* будущее: security, notifications и т.п. */}
       </Route>
 
