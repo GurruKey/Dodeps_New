@@ -2,6 +2,7 @@ import {
   DEFAULT_PROMOCODE_CASHOUT_CAP,
   DEFAULT_PROMOCODE_WAGER,
 } from '../constants.js';
+import { listCanonicalPromocodeRecords, clonePromocodeRecord } from '../dataset.js';
 import { promoTypeDefinitions, getPromoTypeById } from '../definitions/index.js';
 import { storageAdapter } from '../storage.js';
 import { emitPromocodesChanged } from './events.js';
@@ -25,18 +26,20 @@ import {
 
 const memory = {
   isSeeded: false,
+  records: [],
 };
 
-const cloneRecord = (record) => {
-  if (!record || typeof record !== 'object') {
-    return null;
-  }
-  const params = record.params && typeof record.params === 'object' ? { ...record.params } : {};
-  const activations = Array.isArray(record.activations)
-    ? record.activations.map((entry) => ({ ...entry }))
+const captureRecordsInMemory = (records) => {
+  memory.records = Array.isArray(records)
+    ? records.map((record) => clonePromocodeRecord(record)).filter(Boolean)
     : [];
-  return { ...record, params, activations };
+  memory.isSeeded = true;
 };
+
+const cloneFromMemory = () =>
+  Array.isArray(memory.records)
+    ? memory.records.map((record) => clonePromocodeRecord(record)).filter(Boolean)
+    : [];
 
 const generateRecordsFromDefinitions = () =>
   promoTypeDefinitions.map((type, index) => {
@@ -128,16 +131,20 @@ const generateRecordsFromDefinitions = () =>
   });
 
 export const seedRecords = () => {
-  const stored = storageAdapter.readFromStorage();
-  if (stored.length > 0) {
-    memory.isSeeded = true;
-    return stored.map((record) => cloneRecord(record)).filter(Boolean);
+  if (memory.isSeeded) {
+    return cloneFromMemory();
+  }
+
+  const canonical = listCanonicalPromocodeRecords();
+  if (canonical.length > 0) {
+    captureRecordsInMemory(canonical);
+    return cloneFromMemory();
   }
 
   const generated = generateRecordsFromDefinitions();
   storageAdapter.writeToStorage(generated);
-  memory.isSeeded = true;
-  return generated.map((record) => cloneRecord(record)).filter(Boolean);
+  captureRecordsInMemory(generated);
+  return cloneFromMemory();
 };
 
 export const ensureSeededRecords = () => seedRecords();
@@ -245,6 +252,7 @@ export const updatePromocodeRecord = (idOrCode, mutator) => {
 
   records[index] = nextRecord;
   storageAdapter.writeToStorage(records);
+  captureRecordsInMemory(records);
   const composed = composePromocode(nextRecord);
   emitPromocodesChanged({ action: 'update', promocode: composed });
   return composed;

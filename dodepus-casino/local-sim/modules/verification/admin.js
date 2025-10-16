@@ -12,6 +12,7 @@ import {
   readVerificationSnapshot,
   updateVerificationSnapshot,
 } from './storage.js';
+import { readVerificationDatasetByUser } from './dataset.js';
 
 export const ADMIN_VERIFICATION_EVENT = 'dodepus:admin-verification-change';
 
@@ -244,7 +245,7 @@ const emitVerificationChange = (detail) => {
 
 export const notifyAdminVerificationRequestsChanged = (detail) => emitVerificationChange(detail);
 
-const buildRequestEntry = (client, request) => {
+const buildRequestEntry = (client, request, uploads = []) => {
   if (!client || !request || typeof request !== 'object') return null;
 
   const id = normalizeString(request.id);
@@ -265,9 +266,12 @@ const buildRequestEntry = (client, request) => {
   const updatedAt = normalizeString(request.updatedAt || submittedAt, submittedAt);
   const reviewedAt = normalizeString(request.reviewedAt || updatedAt, updatedAt);
 
-  const attachments = Array.isArray(client?.profile?.verificationUploads)
-    ? client.profile.verificationUploads.map((upload) => clone(upload))
-    : [];
+  const uploadSource = Array.isArray(uploads) && uploads.length
+    ? uploads
+    : Array.isArray(client?.profile?.verificationUploads)
+      ? client.profile.verificationUploads
+      : [];
+  const attachments = uploadSource.map((upload) => clone(upload));
 
   const profile = buildProfileSnapshot(client, client?.profile);
   const history = sanitizeHistoryEntries(request.history, request);
@@ -301,15 +305,22 @@ const buildRequestEntry = (client, request) => {
 
 export const readAdminVerificationRequests = () => {
   const clients = readAdminClients();
+  const datasetByUser = readVerificationDatasetByUser();
   const entries = [];
 
   clients.forEach((client) => {
-    const requests = Array.isArray(client?.profile?.verificationRequests)
-      ? client.profile.verificationRequests
-      : [];
+    const userId = normalizeString(client?.id);
+    const dataset = userId ? datasetByUser.get(userId) : null;
+    const datasetRequests = Array.isArray(dataset?.requests) ? dataset.requests : [];
+    const datasetUploads = Array.isArray(dataset?.uploads) ? dataset.uploads : [];
+    const requests = datasetRequests.length
+      ? datasetRequests
+      : Array.isArray(client?.profile?.verificationRequests)
+        ? client.profile.verificationRequests
+        : [];
 
     requests.forEach((request) => {
-      const entry = buildRequestEntry(client, request);
+      const entry = buildRequestEntry(client, request, datasetUploads);
       if (entry) {
         entries.push(entry);
       }
@@ -327,19 +338,23 @@ const toFiniteNumber = (value) => {
 
 export const readAdminVerificationIdleAccounts = () => {
   const clients = readAdminClients();
+  const datasetByUser = readVerificationDatasetByUser();
   const entries = [];
 
   clients.forEach((client) => {
-    const requests = Array.isArray(client?.profile?.verificationRequests)
+    const userId = normalizeString(client?.id);
+    const dataset = userId ? datasetByUser.get(userId) : null;
+    const datasetRequests = Array.isArray(dataset?.requests) ? dataset.requests : [];
+    const profileRequests = Array.isArray(client?.profile?.verificationRequests)
       ? client.profile.verificationRequests
       : [];
 
-    if (requests.length > 0) {
+    if (datasetRequests.length > 0 || profileRequests.length > 0) {
       return;
     }
 
-    const userId = normalizeString(client?.id, 'UNKNOWN');
-    if (!userId) {
+    const normalizedUserId = userId || 'UNKNOWN';
+    if (!normalizedUserId) {
       return;
     }
 
@@ -348,7 +363,7 @@ export const readAdminVerificationIdleAccounts = () => {
     const currency = normalizeString(client?.profile?.currency) || 'USD';
 
     entries.push({
-      userId,
+      userId: normalizedUserId,
       email: normalizeString(client?.email),
       phone: normalizeString(client?.phone),
       totalBalance: toFiniteNumber(client?.totalBalance),

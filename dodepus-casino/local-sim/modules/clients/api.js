@@ -1,20 +1,8 @@
-import { __localAuthInternals } from '../auth/api.js';
-import { ensureSeededAuthStorage } from '../auth/accounts/seedLocalAuth.js';
-import { loadExtras } from '../auth/profileExtras.js';
 import { composeUser } from '../auth/composeUser.js';
-
-const { readUsers, USERS_KEY } = __localAuthInternals;
+import { loadExtras } from '../auth/profileExtras.js';
+import { listClientRecords } from './dataset.js';
 
 const cloneClient = (client) => JSON.parse(JSON.stringify(client));
-
-const tryGetLocalStorage = () => {
-  try {
-    if (typeof globalThis === 'undefined') return null;
-    return globalThis.localStorage ?? null;
-  } catch {
-    return null;
-  }
-};
 
 const toNumber = (value, fallback = 0) => {
   const num = Number(value);
@@ -35,16 +23,6 @@ const normalizeString = (value) => {
 const normalizeStatus = (value) => {
   const normalized = normalizeString(value);
   return normalized ? normalized.toLowerCase() : '';
-};
-
-const resolveAuthRecords = () => {
-  const storage = tryGetLocalStorage();
-
-  if (storage) {
-    return ensureSeededAuthStorage({ storage, usersKey: USERS_KEY });
-  }
-
-  return readUsers();
 };
 
 const dedupeRoles = (roles) => {
@@ -170,8 +148,7 @@ export const composeAdminClient = (record) => {
 };
 
 export const readAdminClients = () => {
-  const records = resolveAuthRecords();
-  return records.map(composeAdminClient).filter(Boolean);
+  return listClientRecords().map(composeAdminClient).filter(Boolean);
 };
 
 const createAbortError = (reason) => {

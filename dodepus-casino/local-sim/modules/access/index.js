@@ -20,3 +20,13 @@ export {
   listRolePermissionMatrix,
   getRolePermissionLegend,
 } from './roles/index.js';
+
+export {
+  loadAccessDatasetSnapshot,
+  refreshAccessDatasetSnapshot,
+  listAccessRoles,
+  listAccessPermissions,
+  listAccessAssignments,
+  getAccessPermissionLegend,
+  listAccessRolePermissionMatrix,
+} from './dataset.js';

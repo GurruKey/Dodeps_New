@@ -4,7 +4,11 @@ import {
   appendTransactionLog,
   readTransactionLogs,
 } from '../transactions/logs.js';
-import { getLocalDatabase } from '../../database/engine.js';
+import {
+  getAdminLogSnapshot,
+  listAdminLogRecords,
+  readAdminLogRecords,
+} from './dataset.js';
 
 const ADMIN_LOG_SECTIONS = Object.freeze([
   { value: 'overview', label: 'Обзор' },
@@ -32,102 +36,12 @@ const ADMIN_LOG_ROLE_LABELS = Object.freeze({
   owner: 'Владелец',
 });
 
-const ADMIN_LOGS_TABLE = 'admin_logs';
-
-const OVERVIEW_LOGS = Object.freeze([]);
-
-const STATIC_SECTION_LOGS = Object.freeze([...OVERVIEW_LOGS]);
-
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
-const toTrimmedString = (value) => {
-  if (typeof value === 'string') {
-    const trimmed = value.trim();
-    return trimmed;
-  }
-
-  if (typeof value === 'number' || typeof value === 'boolean') {
-    return String(value).trim();
-  }
-
-  return '';
-};
-
-const toOptionalString = (value) => {
-  const text = toTrimmedString(value);
-  return text || undefined;
-};
-
-const toIsoDate = (value) => {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
-};
-
-const mapAdminLogRow = (row) => {
-  if (!row || typeof row !== 'object') {
-    return null;
-  }
-
-  const id = toTrimmedString(row.id);
-  if (!id) {
-    return null;
-  }
-
-  const adminId = toTrimmedString(row.admin_id ?? row.adminId) || 'UNKNOWN';
-  const adminName = toTrimmedString(row.admin_name ?? row.adminName) || 'Неизвестный админ';
-  const role = (toTrimmedString(row.role) || 'admin').toLowerCase();
-  const section = (toTrimmedString(row.section) || 'overview').toLowerCase();
-  const action = toTrimmedString(row.action) || 'Выполнил действие';
-  const createdAt = toIsoDate(row.created_at ?? row.createdAt ?? row.timestamp);
-  const context = toOptionalString(row.context ?? row.details);
-  const metadata =
-    row.metadata && typeof row.metadata === 'object' ? clone(row.metadata) : undefined;
-
-  const entry = {
-    id,
-    adminId,
-    adminName,
-    role,
-    section,
-    action,
-    createdAt,
-  };
-
-  if (context) {
-    entry.context = context;
-  }
-
-  if (metadata) {
-    entry.metadata = metadata;
-  }
-
-  return entry;
-};
-
-const getTimestamp = (value) => {
-  if (!value) {
-    return 0;
-  }
-  const timestamp = Date.parse(value);
-  return Number.isNaN(timestamp) ? 0 : timestamp;
-};
-
-const sortByCreatedAtDesc = (a, b) => getTimestamp(b.createdAt) - getTimestamp(a.createdAt);
-
-const readStaticLogs = () => {
-  const db = getLocalDatabase();
-  const tableRows = db.select(ADMIN_LOGS_TABLE).map((row) => mapAdminLogRow(row)).filter(Boolean);
-  const legacyStaticLogs = STATIC_SECTION_LOGS.map((entry) => clone(entry));
-  const merged = [...tableRows, ...legacyStaticLogs];
-  return merged.sort(sortByCreatedAtDesc);
-};
+const readStaticLogs = () => listAdminLogRecords();
 
 const readTransactionsLogs = (options) =>
-  readTransactionLogs(options).map((entry) => clone(entry));
+  readTransactionLogs(options).map((entry) => ({ ...entry }));
 
 export const getAdminLogSections = () => ADMIN_LOG_SECTIONS.map((entry) => clone(entry));
 
@@ -200,11 +114,8 @@ export function listAdminLogs({ signal, delay = 200 } = {}) {
 export const __internals = Object.freeze({
   ADMIN_LOG_SECTIONS,
   ADMIN_LOG_ROLE_LABELS,
-  OVERVIEW_LOGS,
-  STATIC_SECTION_LOGS,
-  ADMIN_LOGS_TABLE,
-  mapAdminLogRow,
-  sortByCreatedAtDesc,
+  readAdminLogRecords,
+  getAdminLogSnapshot,
   TRANSACTIONS_LOG_STORAGE_KEY,
   TRANSACTIONS_STATIC_LOGS,
   readStaticLogs,

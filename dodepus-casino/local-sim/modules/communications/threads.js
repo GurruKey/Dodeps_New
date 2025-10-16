@@ -1,6 +1,4 @@
-import threadRecords from '../../db/communication_threads.json' assert { type: 'json' };
-import participantRecords from '../../db/communication_thread_participants.json' assert { type: 'json' };
-import messageRecords from '../../db/communication_messages.json' assert { type: 'json' };
+import { getCommunicationSnapshot } from './dataset.js';
 
 const formatTimestamp = (value) => {
   if (!value) {
@@ -48,49 +46,18 @@ const cloneThread = (thread) => ({
 
 const cloneThreads = (threads) => threads.map((thread) => cloneThread(thread));
 
-const ensureArray = (value) => (Array.isArray(value) ? value : []);
+const buildThread = (record, snapshot) => {
+  const rawParticipants = snapshot.participantsByThread.get(record.id) ?? [];
+  const participantNames = rawParticipants.map((participant) => participant.displayName);
 
-const participantMap = new Map(
-  ensureArray(participantRecords).map((participant) => [participant.id, participant]),
-);
-
-const participantsByThread = ensureArray(participantRecords).reduce((acc, participant) => {
-  if (!acc.has(participant.thread_id)) {
-    acc.set(participant.thread_id, []);
-  }
-  acc.get(participant.thread_id).push(participant);
-  return acc;
-}, new Map());
-
-const messagesByThread = ensureArray(messageRecords).reduce((acc, message) => {
-  if (!acc.has(message.thread_id)) {
-    acc.set(message.thread_id, []);
-  }
-  acc.get(message.thread_id).push(message);
-  return acc;
-}, new Map());
-
-const compareByCreatedAtDesc = (a, b) => {
-  const timeA = Date.parse(a.created_at || 0);
-  const timeB = Date.parse(b.created_at || 0);
-  if (Number.isNaN(timeA) || Number.isNaN(timeB)) {
-    return 0;
-  }
-  return timeB - timeA;
-};
-
-const buildThread = (record) => {
-  const rawParticipants = participantsByThread.get(record.id) ?? [];
-  const participantNames = rawParticipants.map((participant) => participant.display_name);
-
-  const rawMessages = (messagesByThread.get(record.id) ?? []).slice().sort(compareByCreatedAtDesc);
+  const rawMessages = snapshot.messagesByThread.get(record.id) ?? [];
   const threadMessages = rawMessages.map((message) => {
-    const author = participantMap.get(message.participant_id);
+    const author = message.participantId ? snapshot.participantsById.get(message.participantId) : null;
     return {
       id: message.id,
-      author: author?.display_name ?? '—',
+      author: author?.displayName ?? '—',
       text: message.body,
-      createdAt: formatTimestamp(message.created_at),
+      createdAt: formatTimestamp(message.createdAt),
     };
   });
 
@@ -103,24 +70,25 @@ const buildThread = (record) => {
   });
 };
 
-const THREADS = freezeThreadList(
-  ensureArray(threadRecords).map((record) => buildThread(record)),
-);
+const buildThreadsByChannel = (channel) => {
+  const snapshot = getCommunicationSnapshot();
+  return snapshot.threads
+    .filter((thread) => thread.channel === channel)
+    .map((thread) => buildThread(thread, snapshot));
+};
 
-const filterThreadsByChannel = (channel) =>
-  THREADS.filter((thread) => thread.channel === channel);
+const loadThreadList = (channel) => freezeThreadList(buildThreadsByChannel(channel));
 
-export const moderatorsChatThreads = freezeThreadList(filterThreadsByChannel('moderators'));
-export const administratorsChatThreads = freezeThreadList(filterThreadsByChannel('administrators'));
-export const staffChatThreads = freezeThreadList(filterThreadsByChannel('staff'));
+export const moderatorsChatThreads = loadThreadList('moderators');
+export const administratorsChatThreads = loadThreadList('administrators');
+export const staffChatThreads = loadThreadList('staff');
 
-export const listModeratorsChatThreads = () => cloneThreads(filterThreadsByChannel('moderators'));
-export const listAdministratorsChatThreads = () => cloneThreads(filterThreadsByChannel('administrators'));
-export const listStaffChatThreads = () => cloneThreads(filterThreadsByChannel('staff'));
+export const listModeratorsChatThreads = () => cloneThreads(buildThreadsByChannel('moderators'));
+export const listAdministratorsChatThreads = () => cloneThreads(buildThreadsByChannel('administrators'));
+export const listStaffChatThreads = () => cloneThreads(buildThreadsByChannel('staff'));
 
 export const __internals = Object.freeze({
-  THREADS,
-  participantMap,
-  participantsByThread,
-  messagesByThread,
+  buildThread,
+  buildThreadsByChannel,
+  loadThreadList,
 });

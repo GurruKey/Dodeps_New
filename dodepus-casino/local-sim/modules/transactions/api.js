@@ -1,5 +1,5 @@
 import { readAdminClients } from '../clients/api.js';
-import { getLocalDatabase } from '../../database/engine.js';
+import { getTransactionSnapshot } from './dataset.js';
 
 export const ADMIN_TRANSACTIONS_EVENT = 'dodepus:admin-transactions-change';
 
@@ -21,93 +21,40 @@ const createAbortError = (reason) => {
   return error;
 };
 
-const toNumber = (value) => {
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : 0;
-};
-
-const toIsoDate = (value) => {
-  if (!value) return null;
-  try {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return null;
-    return date.toISOString();
-  } catch {
-    return null;
-  }
-};
-
-const normalizeType = (value) => {
-  const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  if (normalized === 'deposit') return 'deposit';
-  if (normalized === 'withdraw') return 'withdraw';
-  return normalized || 'other';
-};
-
-const normalizeStatus = (value) => {
-  const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  if (normalized === 'pending') return 'pending';
-  if (normalized === 'failed') return 'failed';
-  return 'success';
-};
-
-const resolveCurrency = (transaction, client) => {
-  const currency = transaction?.currency || client?.profile?.currency || 'USD';
-  if (typeof currency !== 'string') return 'USD';
-  const trimmed = currency.trim();
-  return trimmed ? trimmed.toUpperCase() : 'USD';
-};
-
-const normalizeTransaction = (transaction, client) => {
-  if (!transaction) return null;
-
-  const createdAt = toIsoDate(
-    transaction.date ??
-      transaction.createdAt ??
-      transaction.timestamp ??
-      transaction.created_at ??
-      transaction.updated_at,
-  );
-  const baseId = transaction.id || createdAt || `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
-  const userId = transaction.userId || transaction.user_id || client?.id;
-  if (!userId) {
-    return null;
-  }
-  const entryId = `${userId}:${baseId}`;
-
-  return {
-    id: transaction.id || baseId,
-    entryId,
-    userId,
-    userEmail: typeof client?.email === 'string' ? client.email : '',
-    userNickname:
-      typeof client?.profile?.nickname === 'string' ? client.profile.nickname : '',
-    amount: toNumber(transaction.amount),
-    currency: resolveCurrency(transaction, client),
-    type: normalizeType(transaction.type ?? transaction.transaction_type),
-    method:
-      typeof transaction.method === 'string' && transaction.method.trim()
-        ? transaction.method.trim()
-        : typeof transaction.payment_method === 'string' && transaction.payment_method.trim()
-          ? transaction.payment_method.trim()
-        : 'other',
-    status: normalizeStatus(transaction.status ?? transaction.transaction_status),
-    createdAt,
-  };
-};
-
 export const readAdminTransactions = () => {
   const clients = readAdminClients();
   const clientMap = new Map(clients.map((client) => [client.id, client]));
-  const db = getLocalDatabase();
-  const rows = db.select('profile_transactions');
+  const snapshot = getTransactionSnapshot();
 
-  const transactions = rows
-    .map((transaction) => {
-      const userId = transaction.userId ?? transaction.user_id;
-      return normalizeTransaction(transaction, clientMap.get(userId));
-    })
-    .filter(Boolean);
+  const transactions = snapshot.records.map((record) => {
+    const client = clientMap.get(record.userId);
+    const userEmail = typeof client?.email === 'string' ? client.email : '';
+    const userNickname =
+      typeof client?.profile?.nickname === 'string' ? client.profile.nickname : '';
+    const clientCurrency =
+      typeof client?.profile?.currency === 'string' ? client.profile.currency.trim() : '';
+    const rowCurrency =
+      record?.raw && typeof record.raw.currency === 'string' ? record.raw.currency.trim() : '';
+    const currency = rowCurrency
+      ? record.currency
+      : clientCurrency
+        ? clientCurrency.toUpperCase()
+        : record.currency;
+
+    return {
+      id: record.id,
+      entryId: `${record.userId}:${record.id}`,
+      userId: record.userId,
+      userEmail,
+      userNickname,
+      amount: record.amount,
+      currency,
+      type: record.type,
+      method: record.method,
+      status: record.status,
+      createdAt: record.createdAt,
+    };
+  });
 
   transactions.sort((a, b) => {
     const timeA = a.createdAt ? Date.parse(a.createdAt) : 0;
@@ -189,10 +136,6 @@ export const subscribeToAdminTransactions = (callback) => {
 };
 
 export const __internals = Object.freeze({
-  toNumber,
-  toIsoDate,
-  normalizeType,
-  normalizeStatus,
-  resolveCurrency,
-  normalizeTransaction,
+  createAbortError,
+  getEventTarget,
 });

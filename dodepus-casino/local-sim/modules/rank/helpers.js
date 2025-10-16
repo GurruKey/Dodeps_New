@@ -1,4 +1,4 @@
-import { RANK_LEVELS } from './constants.js';
+import { listDefaultRankLevels } from './dataset.js';
 
 const ensureNumber = (value) => {
   const numeric = Number(value);
@@ -16,9 +16,11 @@ const cloneLevel = (level) => ({
 export const resolveRankProgress = (totalDepositsInput = 0) => {
   const totalDeposits = Math.max(0, ensureNumber(totalDepositsInput));
 
-  const orderedLevels = RANK_LEVELS.map(cloneLevel).sort(
-    (a, b) => a.totalDeposit - b.totalDeposit
-  );
+  const orderedLevels = listDefaultRankLevels()
+    .map(cloneLevel)
+    .sort(
+      (a, b) => a.totalDeposit - b.totalDeposit
+    );
 
   let current = orderedLevels[0];
   let next = null;

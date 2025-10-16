@@ -1,4 +1,11 @@
-import { RANK_LEVELS, RANK_REWARDS } from './constants.js';
+import {
+  DEFAULT_RANK_BADGE_COLOR,
+  DEFAULT_RANK_BADGE_EFFECT,
+  DEFAULT_RANK_BADGE_EFFECT_SPEED,
+  DEFAULT_RANK_BADGE_TEXT_DARK,
+  DEFAULT_RANK_BADGE_TEXT_LIGHT,
+} from './constants.js';
+import { listDefaultRankLevels, listDefaultRankRewards } from './dataset.js';
 
 const STORAGE_KEY = 'dodepus.rankRewards';
 
@@ -6,18 +13,23 @@ const memoryStore = {
   overrides: null,
 };
 
-const defaultRewardMap = new Map(RANK_REWARDS.map((reward) => [reward.level, reward]));
-const levelMetaMap = new Map(RANK_LEVELS.map((level) => [level.level, level]));
-
-const DEFAULT_BADGE_COLOR = '#adb5bd';
-const DEFAULT_TEXT_LIGHT = '#ffffff';
-const DEFAULT_TEXT_DARK = '#212529';
-const DEFAULT_EFFECT = 'solid';
-const DEFAULT_EFFECT_SPEED = 6;
+const DEFAULT_BADGE_COLOR = DEFAULT_RANK_BADGE_COLOR;
+const DEFAULT_TEXT_LIGHT = DEFAULT_RANK_BADGE_TEXT_LIGHT;
+const DEFAULT_TEXT_DARK = DEFAULT_RANK_BADGE_TEXT_DARK;
+const DEFAULT_EFFECT = DEFAULT_RANK_BADGE_EFFECT;
+const DEFAULT_EFFECT_SPEED = DEFAULT_RANK_BADGE_EFFECT_SPEED;
 
 const BADGE_EFFECTS = new Set(['solid', 'gradient', 'rainbow', 'breathing', 'pulse', 'glow', 'shine']);
 
 const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object ?? {}, key);
+
+const buildRewardDataset = () => {
+  const levels = listDefaultRankLevels();
+  const rewards = listDefaultRankRewards({ levels });
+  const rewardMap = new Map(rewards.map((reward) => [reward.level, reward]));
+  const levelMetaMap = new Map(levels.map((level) => [level.level, level]));
+  return { levels, rewards, rewardMap, levelMetaMap };
+};
 
 const tryGetLocalStorage = () => {
   try {
@@ -105,9 +117,12 @@ const sanitizeStoredOverrides = (records) => {
     return [];
   }
 
+  const dataset = buildRewardDataset();
+  const validLevels = new Set(dataset.rewardMap.keys());
+
   return records.reduce((acc, record) => {
     const level = Number(record?.level);
-    if (!Number.isInteger(level) || !defaultRewardMap.has(level)) {
+    if (!Number.isInteger(level) || !validLevels.has(level)) {
       return acc;
     }
 
@@ -262,6 +277,14 @@ const enrichReward = (reward) => ({
   displayTitle: composeTitle(reward),
 });
 
+const applyOverrides = (defaults, overrides) =>
+  defaults
+    .map((defaultReward) => {
+      const override = overrides.find((record) => record.level === defaultReward.level) ?? {};
+      return enrichReward(composeReward(defaultReward, override));
+    })
+    .sort(sortByLevel);
+
 const extractOverridePayload = (reward, defaultReward) => {
   const payload = { level: reward.level };
 
@@ -323,8 +346,8 @@ const normalizeRankId = (value) => {
 
 const buildRankId = (level) => (level === 0 ? 'user' : `vip-${level}`);
 
-const composeRankDefinition = (reward) => {
-  const meta = levelMetaMap.get(reward.level) ?? null;
+const composeRankDefinition = (reward, levelMetaMap) => {
+  const meta = levelMetaMap?.get(reward.level) ?? null;
   const id = buildRankId(reward.level);
 
   return {
@@ -349,24 +372,20 @@ const composeRankDefinition = (reward) => {
 };
 
 export const loadRankRewards = () => {
+  const dataset = buildRewardDataset();
   const overrides = readOverrides();
-
-  const result = RANK_REWARDS.map((defaultReward) => {
-    const override = overrides.find((record) => record.level === defaultReward.level) ?? {};
-    return enrichReward(composeReward(defaultReward, override));
-  }).sort(sortByLevel);
-
-  return result;
+  return applyOverrides(dataset.rewards, overrides);
 };
 
 export const updateRankReward = (levelInput, patch = {}) => {
+  const dataset = buildRewardDataset();
   const level = Number(levelInput);
-  if (!Number.isInteger(level) || !defaultRewardMap.has(level)) {
+  if (!Number.isInteger(level) || !dataset.rewardMap.has(level)) {
     throw new Error('Указан неизвестный уровень ранга');
   }
 
   const overrides = readOverrides();
-  const defaultReward = defaultRewardMap.get(level);
+  const defaultReward = dataset.rewardMap.get(level);
 
   const existingOverrideIndex = overrides.findIndex((record) => record.level === level);
   const existingOverride = existingOverrideIndex >= 0 ? overrides[existingOverrideIndex] : {};
@@ -412,8 +431,9 @@ export const updateRankReward = (levelInput, patch = {}) => {
 
   writeOverrides(nextOverrides);
 
-  const records = loadRankRewards();
-  const record = records.find((item) => item.level === level) ?? enrichReward(composeReward(defaultReward, {}));
+  const records = applyOverrides(dataset.rewards, readOverrides());
+  const record =
+    records.find((item) => item.level === level) ?? enrichReward(composeReward(defaultReward, {}));
 
   return { record, records };
 };
@@ -423,7 +443,12 @@ export const resetRankRewards = () => {
   return loadRankRewards();
 };
 
-export const listRankDefinitions = () => loadRankRewards().map(composeRankDefinition);
+export const listRankDefinitions = () => {
+  const dataset = buildRewardDataset();
+  const overrides = readOverrides();
+  const records = applyOverrides(dataset.rewards, overrides);
+  return records.map((reward) => composeRankDefinition(reward, dataset.levelMetaMap));
+};
 
 export const findRankDefinitionById = (rankId) => {
   const normalizedId = normalizeRankId(rankId);
