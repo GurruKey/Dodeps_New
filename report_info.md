@@ -1,3 +1,8 @@
+### 2025-10-16 18:40 — profile/index barrel и очистка заглушки
+- Удалил устаревший `src/pages/Profile.jsx`, так как роут `/profile` теперь покрывает layout + вложенные вкладки.
+- Создал `src/pages/profile/index.js` с именованными экспортами всех страниц и layout профиля.
+- Обновил `AppRoutes.jsx`, чтобы тянуть компоненты профиля из нового barrel.
+
 ### 2025-10-16 18:20 — profile/layout/blocks/createNavItems JSX
 - Переименовал createNavItems в .jsx, чтобы JSX корректно собирался Vite.
 - Обновил импорт в ProfileSidebarBlock.jsx на новый путь.

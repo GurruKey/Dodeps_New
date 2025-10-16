@@ -1,0 +1,10 @@
+export { default as ProfileLayout } from './layout/index.js';
+export { default as ProfilePersonalPage } from './personal/index.js';
+export { default as ProfileWalletPage } from './wallet/index.js';
+export { default as ProfileTerminalPage } from './terminal/index.js';
+export { default as ProfileHistoryPage } from './history/index.js';
+export { default as ProfileRankPage } from './rank/index.js';
+export { default as ProfilePromosPage } from './promos/index.js';
+export { default as ProfileSeasonPage } from './season/index.js';
+export { default as ProfileGamesHistoryPage } from './games-history/index.js';
+export { default as ProfileVerificationPage } from './verification/index.js';
