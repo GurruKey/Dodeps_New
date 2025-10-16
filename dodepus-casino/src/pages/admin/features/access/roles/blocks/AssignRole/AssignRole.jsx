@@ -1,16 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import {
-  Alert,
-  Button,
-  Card,
-  Col,
-  Form,
-  InputGroup,
-  Row,
-  Stack,
-} from 'react-bootstrap';
-import { listAvailableAdminRoles } from '../../../../../../local-sim/modules/access/index.js';
+import { Alert, Button, Card, Col, Form, InputGroup, Row, Stack, } from 'react-bootstrap';
+import { listAvailableAdminRoles } from '../../../../../../../../local-sim/modules/access/index.js';
 import { assignUserRole } from '../../../../../../../features/auth/api.js';
 
 const availableRoles = listAvailableAdminRoles();
