@@ -1,5 +1,5 @@
 import { Card, Table } from 'react-bootstrap';
-import { useVerificationState } from '../state/useVerificationState.js';
+import { useVerificationState } from '../../state/useVerificationState.js';
 
 const DOCUMENT_TYPE_LABELS = Object.freeze({
   internet_statement: 'Интернет-выписка',
@@ -19,7 +19,7 @@ const getDocumentLabel = (upload) => {
   return label || 'Документ';
 };
 
-export function VerificationHistory() {
+export function VerificationHistoryBlock() {
   const { user } = useVerificationState();
   const uploads = Array.isArray(user?.verificationUploads) ? user.verificationUploads : [];
 
@@ -54,4 +54,4 @@ export function VerificationHistory() {
   );
 }
 
-export default VerificationHistory;
+export default VerificationHistoryBlock;

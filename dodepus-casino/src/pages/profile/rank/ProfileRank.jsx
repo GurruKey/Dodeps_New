@@ -1,5 +1,5 @@
-import RankProgressBlock from './components/RankProgressBlock.jsx';
-import RankRewardsList from './components/RankRewardsList.jsx';
+import { ProfileBlocksLayout } from '../layout/blocks';
+import { RankProgressBlock, RankRewardsBlock } from './blocks';
 import { useProfileRankData } from './hooks/useProfileRankData.js';
 
 const defaultSummary = Object.freeze({
@@ -14,9 +14,9 @@ export default function ProfileRank() {
   const { summary, levels, rewards } = useProfileRankData();
 
   return (
-    <>
+    <ProfileBlocksLayout>
       <RankProgressBlock summary={summary ?? defaultSummary} levels={levels ?? []} />
-      <RankRewardsList rewards={rewards ?? []} />
-    </>
+      <RankRewardsBlock rewards={rewards ?? []} />
+    </ProfileBlocksLayout>
   );
 }

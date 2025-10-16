@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Card, Row, Col, Button, Toast, ToastContainer, Alert, Modal } from 'react-bootstrap';
 import { Circle, CheckCircle, CircleHelp, CircleX, RotateCcw } from 'lucide-react';
-import { useVerificationState } from '../state/useVerificationState.js';
-import { useVerificationActions } from '../actions/useVerificationActions.js';
+import { useVerificationState } from '../../state/useVerificationState.js';
+import { useVerificationActions } from '../../actions/useVerificationActions.js';
 import {
   PROFILE_VERIFICATION_MODULES,
   PROFILE_VERIFICATION_MODULE_MAP,
   createModuleContext,
-} from '../modules/index.js';
+} from '../../modules/index.js';
 
 const ICON_LABELS = Object.freeze({
   idle: 'требуется подтверждение',
@@ -37,7 +37,7 @@ const MODULE_LABELS = PROFILE_VERIFICATION_MODULES.reduce((acc, module) => {
   return acc;
 }, {});
 
-export function ModuleStatusWidget() {
+export function ModuleStatusBlock() {
   const { user, modules, summary } = useVerificationState();
   const { submitVerificationRequest, cancelVerificationRequest } = useVerificationActions();
 
@@ -405,4 +405,4 @@ export function ModuleStatusWidget() {
   );
 }
 
-export default ModuleStatusWidget;
+export default ModuleStatusBlock;

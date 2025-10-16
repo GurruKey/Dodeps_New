@@ -1,8 +1,9 @@
 import { useMemo, useRef, useState } from 'react';
-import { Card, Form, Alert } from 'react-bootstrap';
+import { Form, Alert } from 'react-bootstrap';
 import { Upload, Lock } from 'lucide-react';
 import { useVerificationState } from '../../state/useVerificationState.js';
 import { useVerificationActions } from '../../actions/useVerificationActions.js';
+import { VerificationFormLayout } from './VerificationFormLayout.jsx';
 
 const readFileAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
@@ -180,22 +181,10 @@ export function DocumentUploader({ layout = 'card', config }) {
     </>
   );
 
-  if (layout === 'plain') {
-    return (
-      <div className="d-grid gap-3">
-        <div className="fw-semibold fs-5">{heading}</div>
-        {formContent}
-      </div>
-    );
-  }
-
   return (
-    <Card>
-      <Card.Body>
-        <Card.Title className="mb-3">{heading}</Card.Title>
-        {formContent}
-      </Card.Body>
-    </Card>
+    <VerificationFormLayout title={heading} layout={layout}>
+      {formContent}
+    </VerificationFormLayout>
   );
 }
 

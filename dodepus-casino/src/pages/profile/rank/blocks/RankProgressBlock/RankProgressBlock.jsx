@@ -1,6 +1,6 @@
 import { Card, Table, ProgressBar } from 'react-bootstrap';
-import { buildBadgePreview, getBadgeEffectMeta } from '../../../../shared/rank/badgeEffects.js';
-import RankBadge from '../../../../shared/rank/components/RankBadge.jsx';
+import { buildBadgePreview, getBadgeEffectMeta } from '../../../../../shared/rank/badgeEffects.js';
+import RankBadge from '../../../../../shared/rank/components/RankBadge.jsx';
 
 const formatAmount = (value, currency) => {
   const numeric = Number(value);
@@ -34,7 +34,7 @@ export default function RankProgressBlock({ summary, levels }) {
   );
 
   return (
-    <Card className="mb-4">
+    <Card>
       <Card.Body>
         <Card.Title className="d-flex justify-content-between align-items-center flex-wrap gap-3">
           <div className="d-flex align-items-center gap-2">

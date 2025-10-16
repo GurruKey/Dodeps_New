@@ -1,12 +1,10 @@
-import { Card } from 'react-bootstrap';
+import { ProfileBlocksLayout } from '../layout/blocks';
+import { GamesHistoryPlaceholderBlock } from './blocks';
 
 export default function GamesHistory() {
   return (
-    <Card>
-      <Card.Body>
-        <Card.Title>История игр</Card.Title>
-        <div className="text-muted">История игр пока пуста.</div>
-      </Card.Body>
-    </Card>
+    <ProfileBlocksLayout>
+      <GamesHistoryPlaceholderBlock />
+    </ProfileBlocksLayout>
   );
 }

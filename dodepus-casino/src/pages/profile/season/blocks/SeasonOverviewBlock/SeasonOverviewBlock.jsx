@@ -1,14 +1,10 @@
-import { Card } from 'react-bootstrap';
+import { ProfilePlaceholderBlock } from '../../../layout/blocks';
 
 export default function SeasonOverviewBlock() {
   return (
-    <Card>
-      <Card.Body>
-        <Card.Title>Сезон</Card.Title>
-        <div className="text-muted">
-          Сезонные события и прогресс появятся позже. Следите за обновлениями!
-        </div>
-      </Card.Body>
-    </Card>
+    <ProfilePlaceholderBlock
+      title="Сезон"
+      description="Сезонные события и прогресс появятся позже. Следите за обновлениями!"
+    />
   );
 }

@@ -1,5 +1,4 @@
 import { Card, Table, Badge } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/providers';
 
 function fmtCurrency(v, curr) {
   try {
@@ -34,58 +33,56 @@ function statusBadge(status) {
   return map[status] || map.success;
 }
 
-export default function TransactionsBlock() {
-  const { user } = useAuth();
-  const rows = Array.isArray(user?.transactions) ? [...user.transactions] : [];
-  const currency = user?.currency || 'USD';
+export default function TransactionsBlock({ transactions, currency }) {
+  const rows = Array.isArray(transactions) ? [...transactions] : [];
+  const currentCurrency = currency || 'USD';
 
   // сортируем по дате (новые сверху)
   rows.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+  if (rows.length === 0) {
+    return null;
+  }
 
   return (
     <Card>
       <Card.Body>
         <Card.Title className="mb-3">История транзакций</Card.Title>
 
-        {rows.length === 0 ? (
-          <div className="text-secondary">Пока нет транзакций.</div>
-        ) : (
-          <Table responsive hover className="mb-0 align-middle">
-            <thead>
-              <tr>
-                <th style={{ width: 170 }}>Когда</th>
-                <th style={{ width: 120 }}>Тип</th>
-                <th style={{ width: 140 }}>Метод</th>
-                <th style={{ width: 140 }} className="text-end">Сумма</th>
-                <th style={{ width: 130 }}>Статус</th>
-                <th>ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((t) => {
-                const isWithdraw = t.type === 'withdraw';
-                const sign = isWithdraw ? -1 : 1;
-                const badge = statusBadge(t.status);
-                return (
-                  <tr key={t.id}>
-                    <td className="text-nowrap">{fmtDate(t.date)}</td>
-                    <td>{typeLabel(t.type)}</td>
-                    <td className="text-muted">{t.method || '—'}</td>
-                    <td className={`text-end ${isWithdraw ? 'text-danger' : 'text-success'}`}>
-                      {isWithdraw ? '−' : '+'}{fmtCurrency(Math.abs(Number(t.amount || 0)), currency)}
-                    </td>
-                    <td>
-                      <Badge bg={badge.bg}>{badge.text}</Badge>
-                    </td>
-                    <td className="text-muted text-truncate" title={t.id} style={{ maxWidth: 220 }}>
-                      <code>{t.id}</code>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </Table>
-        )}
+        <Table responsive hover className="mb-0 align-middle">
+          <thead>
+            <tr>
+              <th style={{ width: 170 }}>Когда</th>
+              <th style={{ width: 120 }}>Тип</th>
+              <th style={{ width: 140 }}>Метод</th>
+              <th style={{ width: 140 }} className="text-end">Сумма</th>
+              <th style={{ width: 130 }}>Статус</th>
+              <th>ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((t) => {
+              const isWithdraw = t.type === 'withdraw';
+              const badge = statusBadge(t.status);
+              return (
+                <tr key={t.id}>
+                  <td className="text-nowrap">{fmtDate(t.date)}</td>
+                  <td>{typeLabel(t.type)}</td>
+                  <td className="text-muted">{t.method || '—'}</td>
+                  <td className={`text-end ${isWithdraw ? 'text-danger' : 'text-success'}`}>
+                    {isWithdraw ? '−' : '+'}{fmtCurrency(Math.abs(Number(t.amount || 0)), currentCurrency)}
+                  </td>
+                  <td>
+                    <Badge bg={badge.bg}>{badge.text}</Badge>
+                  </td>
+                  <td className="text-muted text-truncate" title={t.id} style={{ maxWidth: 220 }}>
+                    <code>{t.id}</code>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
       </Card.Body>
     </Card>
   );

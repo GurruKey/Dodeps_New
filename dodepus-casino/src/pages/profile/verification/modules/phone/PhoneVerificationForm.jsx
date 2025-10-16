@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Card, Form, Button, Alert, InputGroup, Dropdown } from 'react-bootstrap';
+import { Form, Button, Alert, InputGroup, Dropdown } from 'react-bootstrap';
 import { useAuth } from '../../../../../app/providers';
 import { useVerificationState } from '../../state/useVerificationState.js';
+import { VerificationFormLayout } from '../shared/VerificationFormLayout.jsx';
 
 const DIAL_CODES = ['+380', '+7', '+375', '+370', '+371', '+372', '+48', '+995', '+374'];
 
@@ -148,22 +149,10 @@ export function PhoneVerificationForm({
     </Form>
   );
 
-  if (layout === 'plain') {
-    return (
-      <div className="d-grid gap-3">
-        <div className="fw-semibold fs-5">Телефон</div>
-        {formContent}
-      </div>
-    );
-  }
-
   return (
-    <Card className="w-100">
-      <Card.Body>
-        <Card.Title className="mb-3">Телефон</Card.Title>
-        {formContent}
-      </Card.Body>
-    </Card>
+    <VerificationFormLayout title="Телефон" layout={layout}>
+      {formContent}
+    </VerificationFormLayout>
   );
 }
 

@@ -1,1 +1,1 @@
-export { default } from './page/VerificationPage.jsx';
+export { default } from './Verification.jsx';

@@ -1,6 +1,6 @@
 import { Card, ListGroup } from 'react-bootstrap';
-import { buildBadgePreview, getBadgeEffectMeta } from '../../../../shared/rank/badgeEffects.js';
-import RankBadge from '../../../../shared/rank/components/RankBadge.jsx';
+import { buildBadgePreview, getBadgeEffectMeta } from '../../../../../shared/rank/badgeEffects.js';
+import RankBadge from '../../../../../shared/rank/components/RankBadge.jsx';
 
 const composeTitle = (reward) => {
   const tagline = typeof reward?.tagline === 'string' ? reward.tagline.trim() : '';
@@ -13,7 +13,7 @@ const composeTitle = (reward) => {
   return reward?.label ?? 'VIP';
 };
 
-export default function RankRewardsList({ rewards }) {
+export default function RankRewardsBlock({ rewards }) {
   return (
     <Card>
       <Card.Body>

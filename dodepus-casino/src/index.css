@@ -56,11 +56,6 @@
   color: var(--bs-secondary-color, #9aa0a6);
 }
 
-.profile-sidebar {
-  position: sticky;
-  top: 12px;
-}
-
 .balance-amount {
   font-size: 2.25rem;
   font-weight: 800;
