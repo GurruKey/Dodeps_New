@@ -7,6 +7,49 @@
 ---
 
 <!-- DO NOT REMOVE:TAKES_START -->
+## TAKE-20251017-051 — Исправление импортов local-sim для Vite
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 19:03
+
+**Резюме:** Зафиксировал некорректные относительные пути до local-sim и shared-компонентов, из-за которых Vite ломал сборку. Провёл ревизию импортов и поправил ссылки на нужные файлы.
+
+**Объём работ (файлы/модули):**
+- `src/pages/admin/features/monitoring/log-admin/hooks/useAdminLogs.js`
+- `src/pages/admin/features/monitoring/log-admin/blocks/AdminLogTable/AdminLogTable.jsx`
+- `src/pages/admin/features/communications/blocks/AdminChatChannelPanel/AdminChatChannelPanel.jsx`
+- `src/pages/admin/features/communications/hooks/useAdminChatChannel.js`
+- `local-sim/modules/access/storage/accessSnapshot.js`
+- `local-sim/modules/verification/storage/verificationDataset.js`
+- `local-sim/modules/rank/storage/rankDataset.js`
+- `local-sim/modules/transactions/storage/transactionRecords.js`
+- `local-sim/modules/promo/storage/promocodes.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Проверены импорты local-sim из src-файлов
+- [x] Проверены относительные пути внутри local-sim модулей
+
+**Критерии приёмки:**
+- [x] Vite запускается без ошибок разрешения импортов
+- [x] Все импорты local-sim ведут к существующим файлам
+- [x] Относительные пути внутри local-sim соответствуют реальной структуре каталогов
+
+**Понятным языком: что сделано/что поменял:**
+- Я поправил все относительные пути до local-sim в хуках и блоках админки.
+- Я перенастроил импорт ChatPanel из общей папки admin.
+- Я синхронизировал импорты внутри local-sim storage с реальной структурой каталогов.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim от Гринча)
+- **Что сделано:** Исправил относительные пути к local-sim и shared-компонентам, устранил ошибки разрешения импортов.
+- **Что осталось:** Дождаться подтверждения local-sim.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** Vite импортов теперь сходится; eslint ругается на старые файлы, правки вне задачи.
+
 ## TAKE-20251017-050 — Local-sim: маршруты и валидация датасета
 **Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 22:15
 

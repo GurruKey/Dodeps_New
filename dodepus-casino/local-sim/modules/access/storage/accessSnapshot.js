@@ -3,7 +3,7 @@ import {
   ADMIN_PERMISSIONS_TABLE,
   ADMIN_ROLE_PERMISSIONS_TABLE,
   ADMIN_ROLES_TABLE,
-} from './constants.js';
+} from '../constants.js';
 
 const FALLBACK_TIMESTAMP = '2024-10-10T12:00:00.000Z';
 
