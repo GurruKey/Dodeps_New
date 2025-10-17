@@ -1,5 +1,5 @@
 import { PROFILE_KEY, PROFILES_TABLE } from './constants.js';
-import { getLocalDatabase } from '../../database/index.js';
+import { getLocalDatabase } from '../shared/index.js';
 import {
   VERIFICATION_REQUESTS_TABLE,
   VERIFICATION_UPLOADS_TABLE,
