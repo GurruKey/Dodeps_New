@@ -1,5 +1,4 @@
-export const RANK_LEVELS_TABLE = 'rank_levels';
-export const RANK_REWARDS_TABLE = 'rank_rewards';
+export { RANK_LEVELS_TABLE, RANK_REWARDS_TABLE } from '../shared/index.js';
 
 export const DEFAULT_RANK_BADGE_COLOR = '#adb5bd';
 export const DEFAULT_RANK_BADGE_TEXT_LIGHT = '#ffffff';

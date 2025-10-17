@@ -1,7 +1,7 @@
 const freezeOptionList = (entries) =>
   Object.freeze(entries.map(([value, label]) => Object.freeze({ value, label })));
 
-export const ADMIN_LOGS_TABLE = 'admin_logs';
+export { ADMIN_LOGS_TABLE } from '../shared/index.js';
 
 export const ADMIN_LOG_SECTIONS = Object.freeze({
   OVERVIEW: 'overview',

@@ -1,4 +1,4 @@
-import { getLocalDatabase } from '../../../database/index.js';
+import { getLocalDatabase } from '../../shared/localDatabase.js';
 import {
   ADMIN_LOGS_TABLE,
   DEFAULT_ADMIN_ACTION,

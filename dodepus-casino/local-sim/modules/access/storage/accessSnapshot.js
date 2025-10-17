@@ -1,4 +1,4 @@
-import { getLocalDatabase } from '../../../database/index.js';
+import { getLocalDatabase } from '../../shared/localDatabase.js';
 import {
   ADMIN_PERMISSIONS_TABLE,
   ADMIN_ROLE_PERMISSIONS_TABLE,

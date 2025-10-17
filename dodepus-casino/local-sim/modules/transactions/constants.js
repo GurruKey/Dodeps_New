@@ -1,2 +1,2 @@
-export const PROFILE_TRANSACTIONS_TABLE = 'profile_transactions';
+export { PROFILE_TRANSACTIONS_TABLE } from '../shared/index.js';
 export const DEFAULT_TRANSACTION_CURRENCY = 'USD';

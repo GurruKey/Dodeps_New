@@ -1,4 +1,4 @@
-import { getLocalDatabase } from '../../../database/index.js';
+import { getLocalDatabase } from '../../shared/localDatabase.js';
 import { AUTH_USERS_TABLE, DEFAULT_AUTH_STATUS } from '../constants.js';
 
 const safeClone = (value) => {

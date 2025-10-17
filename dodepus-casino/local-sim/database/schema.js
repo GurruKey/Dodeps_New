@@ -1,21 +1,13 @@
+import { TABLE_PRIMARY_KEYS } from '../modules/shared/index.js';
+
+const freezeTableConfig = (entries) =>
+  Object.freeze(
+    Object.fromEntries(
+      entries.map(([tableName, primaryKey]) => [tableName, Object.freeze({ primaryKey })]),
+    ),
+  );
+
 export const DEFAULT_LOCAL_DB_SCHEMA = Object.freeze({
   version: 1,
-  tables: {
-    auth_users: { primaryKey: 'id' },
-    profiles: { primaryKey: 'id' },
-    admin_roles: { primaryKey: 'id' },
-    admin_permissions: { primaryKey: 'id' },
-    admin_role_permissions: { primaryKey: 'id' },
-    admin_promocodes: { primaryKey: 'id' },
-    profile_transactions: { primaryKey: 'id' },
-    rank_levels: { primaryKey: 'id' },
-    rank_rewards: { primaryKey: 'id' },
-    verification_requests: { primaryKey: 'id' },
-    verification_uploads: { primaryKey: 'id' },
-    verification_queue: { primaryKey: 'id' },
-    admin_logs: { primaryKey: 'id' },
-    communication_threads: { primaryKey: 'id' },
-    communication_thread_participants: { primaryKey: 'id' },
-    communication_messages: { primaryKey: 'id' },
-  },
+  tables: freezeTableConfig(Object.entries(TABLE_PRIMARY_KEYS)),
 });

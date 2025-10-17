@@ -1,4 +1,4 @@
-import { getLocalDatabase } from '../../../database/index.js';
+import { getLocalDatabase } from '../../shared/localDatabase.js';
 import { ADMIN_PROMOCODES_TABLE } from '../constants.js';
 
 const cloneDeep = (value) => {
