@@ -1,4 +1,4 @@
-import ChatPanel from '../../../shared/ChatPanel.jsx';
+import ChatPanel from '../../../../shared/ChatPanel.jsx';
 import { useAdminChatChannel } from '../../hooks/index.js';
 
 export default function AdminChatChannelPanel({

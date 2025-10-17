@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { listCommunicationThreads } from '../../../../../local-sim/modules/communications/index.js';
+import { listCommunicationThreads } from '../../../../../../local-sim/modules/communications/index.js';
 
 export function useAdminChatChannel(channel) {
   const threads = useMemo(() => {

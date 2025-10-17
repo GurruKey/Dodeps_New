@@ -1,4 +1,4 @@
-import { getLocalDatabase } from '../../database/index.js';
+import { getLocalDatabase } from '../../../database/index.js';
 import { RANK_LEVELS_TABLE, RANK_REWARDS_TABLE } from '../constants.js';
 
 const cloneDeep = (value) => {

@@ -1,4 +1,4 @@
-import { getLocalDatabase } from '../../database/index.js';
+import { getLocalDatabase } from '../../../database/index.js';
 import {
   VERIFICATION_QUEUE_TABLE,
   VERIFICATION_REQUESTS_TABLE,

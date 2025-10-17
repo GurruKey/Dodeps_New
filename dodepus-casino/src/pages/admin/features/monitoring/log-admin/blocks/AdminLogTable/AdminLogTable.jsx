@@ -2,7 +2,7 @@ import { Alert, Badge, Card, Col, Row, Spinner, Table } from 'react-bootstrap';
 import {
   getAdminLogRoleLabel,
   getAdminLogSectionLabel,
-} from '../../../../../../local-sim/modules/logs/index.js';
+} from '../../../../../../../../local-sim/modules/logs/index.js';
 
 const formatDateTime = (value) => {
   if (!value) return '';
