@@ -1,5 +1,4 @@
-import { nowIso } from '../core/helpers.js';
-import { updatePromocodeRecord } from '../core/repository.js';
+import { nowIso, updatePromocodeRecord } from '../core/index.js';
 
 export const pauseAdminPromocode = (idOrCode) =>
   updatePromocodeRecord(idOrCode, (draft) => {

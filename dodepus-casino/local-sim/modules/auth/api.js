@@ -4,12 +4,12 @@
 import {
   buildSeedUserRecords,
   ensureSeededAuthStorage,
-} from './accounts/seedLocalAuth';
-import { composeUser } from './composeUser';
-import { loadExtras, saveExtras } from './profileExtras';
+} from './accounts/seedLocalAuth.js';
+import { composeUser } from './composeUser.js';
+import { loadExtras, saveExtras } from './profileExtras.js';
 import { findAdminRoleById } from '../access/index.js';
 import { getRankDefinitionById, getRankBenefitTemplate } from '../rank/index.js';
-import { listAuthUserRecords, updateAuthUsersDataset } from './dataset.js';
+import { listAuthUserRecords, updateAuthUsersDataset } from './storage/index.js';
 
 const USERS_KEY = 'dodepus_local_users_v1';
 const SESSION_KEY = 'dodepus_local_session_v1';

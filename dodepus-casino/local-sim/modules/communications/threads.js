@@ -1,4 +1,4 @@
-import { getCommunicationSnapshot } from './dataset.js';
+import { getCommunicationSnapshot } from './storage/index.js';
 import { COMMUNICATION_CHANNELS, COMMUNICATION_CHANNEL_LIST } from './constants.js';
 
 const CHANNEL_VALUES = Object.freeze([...COMMUNICATION_CHANNEL_LIST]);

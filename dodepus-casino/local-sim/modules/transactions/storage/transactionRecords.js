@@ -1,5 +1,5 @@
-import { getLocalDatabase } from '../../database/engine.js';
-import { DEFAULT_TRANSACTION_CURRENCY, PROFILE_TRANSACTIONS_TABLE } from './constants.js';
+import { getLocalDatabase } from '../../database/index.js';
+import { DEFAULT_TRANSACTION_CURRENCY, PROFILE_TRANSACTIONS_TABLE } from '../constants.js';
 
 const safeClone = (value) => {
   if (value == null) {

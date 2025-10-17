@@ -1,14 +1,14 @@
 import { loadExtras } from '../auth/index.js';
-import { listDefaultRankLevels } from './dataset.js';
 import { resolveRankProgress } from './helpers.js';
 import {
+  listDefaultRankLevels,
   loadRankRewards,
   updateRankReward,
   resetRankRewards,
   listRankDefinitions,
   findRankDefinitionById,
   getRankBenefitTemplate as loadRankBenefitTemplate,
-} from './storage.js';
+} from './storage/index.js';
 
 
 const toTransactions = (source) => (Array.isArray(source) ? source : []);

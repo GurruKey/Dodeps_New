@@ -1,5 +1,5 @@
 import { readAdminClients } from '../clients/api.js';
-import { getTransactionSnapshot } from './dataset.js';
+import { getTransactionSnapshot } from './storage/index.js';
 
 export const ADMIN_TRANSACTIONS_EVENT = 'dodepus:admin-transactions-change';
 

@@ -1,11 +1,14 @@
-import { PROFILE_KEY } from './constants.js';
-import { getLocalDatabase } from '../../database/engine.js';
+import { PROFILE_KEY, PROFILES_TABLE } from './constants.js';
+import { getLocalDatabase } from '../../database/index.js';
 import {
+  VERIFICATION_REQUESTS_TABLE,
+  VERIFICATION_UPLOADS_TABLE,
   normalizeBooleanMap,
   prepareVerificationRequestRows,
   prepareVerificationUploadRows,
   readVerificationDatasetForUser,
 } from '../verification/index.js';
+import { PROFILE_TRANSACTIONS_TABLE } from '../transactions/index.js';
 
 const GENDER_MALE_VALUES = Object.freeze([
   'male',
@@ -133,23 +136,23 @@ const persistExtras = (uid, extras) => {
 
   const db = getLocalDatabase();
   const { verificationRequests, verificationUploads, transactions, ...profileFields } = normalized;
-  db.upsert('profiles', {
+  db.upsert(PROFILES_TABLE, {
     id: uid,
     ...profileFields,
     updatedAt: new Date().toISOString(),
   });
   db.replaceWhere(
-    'verification_requests',
+    VERIFICATION_REQUESTS_TABLE,
     (row) => matchUserRow(row, uid),
     prepareVerificationRequestRows(verificationRequests, uid),
   );
   db.replaceWhere(
-    'verification_uploads',
+    VERIFICATION_UPLOADS_TABLE,
     (row) => matchUserRow(row, uid),
     prepareVerificationUploadRows(verificationUploads, uid),
   );
   db.replaceWhere(
-    'profile_transactions',
+    PROFILE_TRANSACTIONS_TABLE,
     (row) => row.userId === uid,
     toTransactionRows(transactions, uid),
   );
@@ -183,10 +186,10 @@ export const loadExtras = (uid) => {
   }
 
   const db = getLocalDatabase();
-  const profileRow = db.findById('profiles', uid);
+  const profileRow = db.findById(PROFILES_TABLE, uid);
   const { requests: verificationRequestRows, uploads: verificationUploadRows } =
     readVerificationDatasetForUser(uid);
-  const transactionRows = db.select('profile_transactions', (row) => row.userId === uid);
+  const transactionRows = db.select(PROFILE_TRANSACTIONS_TABLE, (row) => row.userId === uid);
 
   if (
     !profileRow &&

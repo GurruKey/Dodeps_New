@@ -1,5 +1,5 @@
 import { composeUser, loadExtras } from '../auth/index.js';
-import { listClientRecords } from './dataset.js';
+import { listClientRecords } from './storage/index.js';
 
 const cloneClient = (client) => JSON.parse(JSON.stringify(client));
 

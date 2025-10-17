@@ -1,8 +1,10 @@
-import { composePromocode, ensureSeededRecords } from '../core/repository.js';
+import { composePromocode, ensureSeededRecords } from '../core/index.js';
 
 export const getAdminPromocodeById = (idOrCode) => {
   const records = ensureSeededRecords();
-  const record = records.find((item) => item.code === idOrCode || item.id === idOrCode);
-  if (!record) return null;
+  const record = records.find((item) => item.id === idOrCode || item.code === idOrCode);
+  if (!record) {
+    return null;
+  }
   return composePromocode(record);
 };

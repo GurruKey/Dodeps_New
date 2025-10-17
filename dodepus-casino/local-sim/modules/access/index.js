@@ -2,8 +2,14 @@ export {
   appendRolePermissionLog,
   listRolePermissionLogs,
   clearRolePermissionLogs,
-  __internals as __rolePermissionLogsInternals,
-} from './rolePermissionLogs.js';
+  __rolePermissionLogsInternals,
+} from './storage/index.js';
+
+export {
+  ADMIN_ROLES_TABLE,
+  ADMIN_PERMISSIONS_TABLE,
+  ADMIN_ROLE_PERMISSIONS_TABLE,
+} from './constants.js';
 
 export {
   listAdminRankRewards,
@@ -29,4 +35,4 @@ export {
   listAccessAssignments,
   getAccessPermissionLegend,
   listAccessRolePermissionMatrix,
-} from './dataset.js';
+} from './storage/index.js';

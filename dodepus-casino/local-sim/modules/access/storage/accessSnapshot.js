@@ -1,4 +1,4 @@
-import { getLocalDatabase } from '../../database/engine.js';
+import { getLocalDatabase } from '../../../database/index.js';
 import {
   ADMIN_PERMISSIONS_TABLE,
   ADMIN_ROLE_PERMISSIONS_TABLE,

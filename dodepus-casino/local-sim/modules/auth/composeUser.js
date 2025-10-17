@@ -1,4 +1,4 @@
-import { pickExtras } from './profileExtras';
+import { pickExtras } from './profileExtras.js';
 import { availableRoles } from '../access/index.js';
 import {
   getRankDefinitions,

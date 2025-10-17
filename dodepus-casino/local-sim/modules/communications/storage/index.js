@@ -1,0 +1,18 @@
+export {
+  mapThreadRowToRecord,
+  mapParticipantRowToRecord,
+  mapMessageRowToRecord,
+  mapThreadRecordToRow,
+  mapParticipantRecordToRow,
+  mapMessageRecordToRow,
+  readCommunicationThreadRecords,
+  readCommunicationParticipantRecords,
+  readCommunicationMessageRecords,
+  readCommunicationDataset,
+  getCommunicationSnapshot,
+  writeCommunicationThreads,
+  writeCommunicationParticipants,
+  writeCommunicationMessages,
+  __internals,
+  __internals as communicationSnapshotInternals,
+} from './communicationSnapshot.js';

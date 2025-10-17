@@ -2,9 +2,9 @@ import {
   getAuthUsersSnapshot,
   listAuthUserRecords,
   pickExtras,
-} from '../auth/index.js';
-import { getLocalDatabase } from '../../database/engine.js';
-import { PROFILES_TABLE } from './constants.js';
+} from '../../auth/index.js';
+import { getLocalDatabase } from '../../../database/index.js';
+import { PROFILES_TABLE } from '../constants.js';
 
 const safeClone = (value) => {
   if (value == null) {

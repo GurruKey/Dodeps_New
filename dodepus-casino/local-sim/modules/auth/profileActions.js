@@ -1,4 +1,4 @@
-import { loadExtras, saveExtras, pickExtras } from './profileExtras';
+import { loadExtras, saveExtras, pickExtras } from './profileExtras.js';
 import { notifyAdminTransactionsChanged } from '../transactions/index.js';
 import {
   updateVerificationSnapshot,

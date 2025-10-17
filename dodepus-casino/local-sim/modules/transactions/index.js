@@ -12,6 +12,12 @@ export {
 } from './constants.js';
 
 export {
+  TRANSACTIONS_LOG_STORAGE_KEY,
+  MAX_DYNAMIC_TRANSACTION_LOGS,
+  TRANSACTIONS_STATIC_LOGS,
+  readTransactionLogs,
+  appendTransactionLog,
+  transactionLogStorageInternals as transactionsLogInternals,
   mapTransactionRowToRecord,
   mapTransactionRecordToRow,
   readTransactionRecords,
@@ -19,14 +25,5 @@ export {
   listTransactionRecords,
   writeTransactionRecords,
   appendTransactionRecord,
-  __internals as transactionsDatasetInternals,
-} from './dataset.js';
-
-export {
-  TRANSACTIONS_LOG_STORAGE_KEY,
-  MAX_DYNAMIC_TRANSACTION_LOGS,
-  TRANSACTIONS_STATIC_LOGS,
-  readTransactionLogs,
-  appendTransactionLog,
-  __internals as transactionsLogInternals,
-} from './logs.js';
+  transactionRecordInternals as transactionsDatasetInternals,
+} from './storage/index.js';

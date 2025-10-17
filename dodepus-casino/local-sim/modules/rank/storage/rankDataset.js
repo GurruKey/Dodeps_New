@@ -1,5 +1,5 @@
-import { getLocalDatabase } from '../../database/engine.js';
-import { RANK_LEVELS_TABLE, RANK_REWARDS_TABLE } from './constants.js';
+import { getLocalDatabase } from '../../database/index.js';
+import { RANK_LEVELS_TABLE, RANK_REWARDS_TABLE } from '../constants.js';
 
 const cloneDeep = (value) => {
   if (typeof structuredClone === 'function') {
@@ -218,3 +218,18 @@ export const getDefaultRankRewardByLevel = (level) => {
   const rewards = listDefaultRankRewards();
   return rewards.find((reward) => reward.level === level) || null;
 };
+
+export const __internals = Object.freeze({
+  cloneDeep,
+  toTrimmedString,
+  toSlug,
+  toNonNegativeInt,
+  toBadgeSpeed,
+  normalizeHexColor,
+  toMultiline,
+  toIsoString,
+  sortByLevel,
+  mapRankLevelRow,
+  mapRankRewardRow,
+  buildLevelLookups,
+});

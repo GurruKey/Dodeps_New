@@ -63,3 +63,8 @@ export interface RankReward {
   createdAt: string | null;
   updatedAt: string | null;
 }
+
+export interface RankDataset {
+  levels: ReadonlyArray<RankLevel>;
+  rewards: ReadonlyArray<RankReward>;
+}

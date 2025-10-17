@@ -11,8 +11,8 @@ import {
 import {
   readVerificationSnapshot,
   updateVerificationSnapshot,
-} from './storage.js';
-import { readVerificationDatasetByUser } from './dataset.js';
+  readVerificationDatasetByUser,
+} from './storage/index.js';
 
 export const ADMIN_VERIFICATION_EVENT = 'dodepus:admin-verification-change';
 

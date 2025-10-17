@@ -15,7 +15,7 @@ import {
   getAdminLogSnapshot,
   listAdminLogRecords,
   readAdminLogRecords,
-} from './dataset.js';
+} from './storage/index.js';
 
 const readStaticLogs = () => listAdminLogRecords();
 

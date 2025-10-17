@@ -1,5 +1,5 @@
-import { isAdminUser } from '../composeUser';
-import { canUserAccessAdminPanel } from './adminPanelVisibility';
+import { isAdminUser } from '../composeUser.js';
+import { canUserAccessAdminPanel } from './adminPanelVisibility.js';
 
 export function createAdminPanelActions({ user }) {
   const isAdmin = isAdminUser(user);

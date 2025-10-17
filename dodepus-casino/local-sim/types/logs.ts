@@ -1,3 +1,15 @@
+export interface AdminLogRow {
+  id: string;
+  admin_id: string;
+  admin_name: string;
+  role: string;
+  section: string;
+  action: string;
+  created_at: string | null;
+  context?: string | null;
+  metadata?: Record<string, unknown> | null;
+}
+
 export interface AdminLogRecord {
   id: string;
   adminId: string;
@@ -6,9 +18,9 @@ export interface AdminLogRecord {
   section: string;
   action: string;
   createdAt: string | null;
-  context?: string;
-  metadata?: Record<string, unknown>;
-  raw: Record<string, unknown> | null;
+  context?: string | null;
+  metadata?: Record<string, unknown> | null;
+  raw: Readonly<AdminLogRow> | null;
 }
 
 export interface AdminLogSnapshot {

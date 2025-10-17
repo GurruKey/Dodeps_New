@@ -1,5 +1,7 @@
 import {
+  AUTH_USERS_TABLE,
   PRESET_ACCOUNTS,
+  PROFILES_TABLE,
   buildSeedUserRecords,
   pickExtras,
 } from '../modules/auth/index.js';
@@ -17,7 +19,26 @@ import rankRewardsDataset from '../db/rank_rewards.json' assert { type: 'json' }
 import verificationQueueDataset from '../db/verification_queue.json' assert { type: 'json' };
 import verificationRequestsDataset from '../db/verification_requests.json' assert { type: 'json' };
 import verificationUploadsDataset from '../db/verification_uploads.json' assert { type: 'json' };
-import { applyVerificationSeed } from '../modules/verification/index.js';
+import { ADMIN_PROMOCODES_TABLE } from '../modules/promo/index.js';
+import {
+  ADMIN_PERMISSIONS_TABLE,
+  ADMIN_ROLE_PERMISSIONS_TABLE,
+  ADMIN_ROLES_TABLE,
+} from '../modules/access/index.js';
+import { PROFILE_TRANSACTIONS_TABLE } from '../modules/transactions/index.js';
+import { ADMIN_LOGS_TABLE } from '../modules/logs/index.js';
+import {
+  COMMUNICATION_MESSAGES_TABLE,
+  COMMUNICATION_THREAD_PARTICIPANTS_TABLE,
+  COMMUNICATION_THREADS_TABLE,
+} from '../modules/communications/index.js';
+import { RANK_LEVELS_TABLE, RANK_REWARDS_TABLE } from '../modules/rank/index.js';
+import {
+  VERIFICATION_QUEUE_TABLE,
+  VERIFICATION_REQUESTS_TABLE,
+  VERIFICATION_UPLOADS_TABLE,
+  applyVerificationSeed,
+} from '../modules/verification/index.js';
 import { getLocalDatabase, resetLocalDatabase } from './engine.js';
 import { DEFAULT_LOCAL_DB_SCHEMA } from './schema.js';
 
@@ -921,43 +942,43 @@ export const buildLocalDatabaseSeedState = () => {
     version: DEFAULT_LOCAL_DB_SCHEMA.version,
     tables: {
       ...baseTables,
-      auth_users: { primaryKey: 'id', rows: userRows },
-      profiles: { primaryKey: 'id', rows: profileRows },
-      verification_requests: {
+      [AUTH_USERS_TABLE]: { primaryKey: 'id', rows: userRows },
+      [PROFILES_TABLE]: { primaryKey: 'id', rows: profileRows },
+      [VERIFICATION_REQUESTS_TABLE]: {
         primaryKey: 'id',
         rows: Array.from(verificationRequestsMap.values()),
       },
-      verification_uploads: {
+      [VERIFICATION_UPLOADS_TABLE]: {
         primaryKey: 'id',
         rows: Array.from(verificationUploadsMap.values()),
       },
-      verification_queue: {
+      [VERIFICATION_QUEUE_TABLE]: {
         primaryKey: 'id',
         rows: Array.from(verificationQueueMap.values()),
       },
-      admin_promocodes: { primaryKey: 'id', rows: adminPromocodeRows },
-      admin_roles: { primaryKey: 'id', rows: adminRoleRows },
-      admin_permissions: { primaryKey: 'id', rows: adminPermissionRows },
-      admin_role_permissions: { primaryKey: 'id', rows: adminRolePermissionRows },
-      rank_levels: {
+      [ADMIN_PROMOCODES_TABLE]: { primaryKey: 'id', rows: adminPromocodeRows },
+      [ADMIN_ROLES_TABLE]: { primaryKey: 'id', rows: adminRoleRows },
+      [ADMIN_PERMISSIONS_TABLE]: { primaryKey: 'id', rows: adminPermissionRows },
+      [ADMIN_ROLE_PERMISSIONS_TABLE]: { primaryKey: 'id', rows: adminRolePermissionRows },
+      [RANK_LEVELS_TABLE]: {
         primaryKey: 'id',
         rows: Array.from(rankLevelMap.values()).sort((a, b) => a.level - b.level || a.sort_order - b.sort_order),
       },
-      rank_rewards: {
+      [RANK_REWARDS_TABLE]: {
         primaryKey: 'id',
         rows: Array.from(rankRewardMap.values()).sort((a, b) => a.level - b.level || a.id.localeCompare(b.id)),
       },
-      profile_transactions: {
+      [PROFILE_TRANSACTIONS_TABLE]: {
         primaryKey: 'id',
         rows: Array.from(profileTransactionsMap.values()),
       },
-      admin_logs: { primaryKey: 'id', rows: adminLogRows },
-      communication_threads: { primaryKey: 'id', rows: communicationThreadRows },
-      communication_thread_participants: {
+      [ADMIN_LOGS_TABLE]: { primaryKey: 'id', rows: adminLogRows },
+      [COMMUNICATION_THREADS_TABLE]: { primaryKey: 'id', rows: communicationThreadRows },
+      [COMMUNICATION_THREAD_PARTICIPANTS_TABLE]: {
         primaryKey: 'id',
         rows: communicationParticipantRows,
       },
-      communication_messages: { primaryKey: 'id', rows: communicationMessageRows },
+      [COMMUNICATION_MESSAGES_TABLE]: { primaryKey: 'id', rows: communicationMessageRows },
     },
   };
 };

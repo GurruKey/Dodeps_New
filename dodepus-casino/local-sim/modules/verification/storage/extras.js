@@ -1,4 +1,4 @@
-import { loadExtras, saveExtras, pickExtras } from '../auth/index.js';
+import { loadExtras, saveExtras, pickExtras } from '../../auth/index.js';
 
 const cloneArray = (value) => (Array.isArray(value) ? value.slice() : []);
 

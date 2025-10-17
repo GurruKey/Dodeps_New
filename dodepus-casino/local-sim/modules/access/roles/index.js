@@ -5,8 +5,8 @@ import {
   listAccessRolePermissionMatrix,
   loadAccessDatasetSnapshot,
   refreshAccessDatasetSnapshot,
-  __internals as datasetInternals,
-} from '../dataset.js';
+  __accessSnapshotInternals as datasetInternals,
+} from '../storage/index.js';
 
 const snapshot = loadAccessDatasetSnapshot();
 
