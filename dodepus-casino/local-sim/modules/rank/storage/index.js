@@ -468,7 +468,7 @@ export const findRankDefinitionById = (rankId) => {
   );
 };
 
-export const getRankBenefitTemplate = () => ({});
+export const loadRankBenefitTemplate = () => ({});
 
 export {
   listDefaultRankLevels,

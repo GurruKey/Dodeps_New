@@ -7,7 +7,7 @@ import {
   resetRankRewards,
   listRankDefinitions,
   findRankDefinitionById,
-  getRankBenefitTemplate as loadRankBenefitTemplate,
+  loadRankBenefitTemplate,
 } from './storage/index.js';
 
 
