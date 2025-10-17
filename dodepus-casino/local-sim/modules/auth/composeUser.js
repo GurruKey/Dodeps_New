@@ -3,7 +3,7 @@ import { availableRoles } from '../access/index.js';
 import {
   getRankDefinitions,
   getRankDefinitionById,
-  getRankBenefitTemplate as loadRankBenefitTemplate,
+  loadRankBenefitTemplate,
 } from '../rank/index.js';
 
 const collectRoles = (...sources) => {
