@@ -8,6 +8,11 @@ export {
   archiveAdminPromocode,
   extendAdminPromocodeEndsAt,
 } from './api/updatePromocode.js';
+export {
+  promoTypeDefinitions,
+  promoTypeMap,
+  getPromoTypeById,
+} from './definitions/index.js';
 
 import { normalizeCode, normalizeStatus, sortPromocodes } from './core/helpers.js';
 import { composePromocode, seedRecords, ensureSeededRecords } from './core/repository.js';

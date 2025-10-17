@@ -1,5 +1,8 @@
-import { getAuthUsersSnapshot, listAuthUserRecords } from '../auth/dataset.js';
-import { pickExtras } from '../auth/profileExtras.js';
+import {
+  getAuthUsersSnapshot,
+  listAuthUserRecords,
+  pickExtras,
+} from '../auth/index.js';
 import { getLocalDatabase } from '../../database/engine.js';
 import { PROFILES_TABLE } from './constants.js';
 

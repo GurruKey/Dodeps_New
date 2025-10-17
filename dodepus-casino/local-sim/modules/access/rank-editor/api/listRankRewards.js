@@ -1,4 +1,4 @@
-import { getRankRewards, getRankLevels } from '../../../rank/api.js';
+import { getRankRewards, getRankLevels } from '../../../rank/index.js';
 
 export const listAdminRankRewards = async () => ({
   rewards: getRankRewards(),

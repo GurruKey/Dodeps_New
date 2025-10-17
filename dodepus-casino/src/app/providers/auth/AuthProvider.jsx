@@ -1,9 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo } from 'react';
-import { createAuthActions } from '../../auth/actions/createAuthActions';
-import { createAdminPanelActions } from '../../auth/admin/createAdminPanelActions';
-import { createUserProfileActions } from '../../auth/user/createUserProfileActions';
-import { useAuthState } from '../../auth/hooks/useAuthState';
+import {
+  createAdminPanelActions,
+  createAuthActions,
+  createUserProfileActions,
+  useAuthState,
+} from '../../auth/index.js';
 
 const AuthCtx = createContext(null);
 

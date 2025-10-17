@@ -3,56 +3,40 @@ import {
   TRANSACTIONS_STATIC_LOGS,
   appendTransactionLog,
   readTransactionLogs,
-} from '../transactions/logs.js';
+} from '../transactions/index.js';
+import {
+  ADMIN_LOG_ROLE_LABELS,
+  ADMIN_LOG_ROLE_OPTIONS,
+  ADMIN_LOG_SECTION_LABELS,
+  ADMIN_LOG_SECTION_OPTIONS,
+  ADMIN_LOG_SECTIONS,
+} from './constants.js';
 import {
   getAdminLogSnapshot,
   listAdminLogRecords,
   readAdminLogRecords,
 } from './dataset.js';
 
-const ADMIN_LOG_SECTIONS = Object.freeze([
-  { value: 'overview', label: 'Обзор' },
-  { value: 'clients', label: 'Клиенты' },
-  { value: 'promocodes', label: 'Promo' },
-  { value: 'promocode-create', label: 'Создать Promo' },
-  { value: 'promocode-archive', label: 'Архив Promo' },
-  { value: 'roles', label: 'Выдать роль' },
-  { value: 'role-edit', label: 'Изменить роль' },
-  { value: 'verification', label: 'Верификация' },
-  { value: 'transactions', label: 'Транзакции' },
-  { value: 'moderators-chat', label: 'Модератор Чат' },
-  { value: 'administrators-chat', label: 'Админ Чат' },
-  { value: 'staff-chat', label: 'Стаф Чат' },
-  { value: 'log-admin', label: 'Log Admin' },
-]);
-
-const ADMIN_LOG_ROLE_LABELS = Object.freeze({
-  admin: 'Админ',
-  superadmin: 'Суперадмин',
-  manager: 'Менеджер',
-  moderator: 'Модератор',
-  analyst: 'Аналитик',
-  operator: 'Оператор',
-  owner: 'Владелец',
-});
-
-const clone = (value) => JSON.parse(JSON.stringify(value));
-
 const readStaticLogs = () => listAdminLogRecords();
+
+const cloneOption = (option) => ({ ...option });
+const cloneOptionList = (options) => options.map((option) => cloneOption(option));
 
 const readTransactionsLogs = (options) =>
   readTransactionLogs(options).map((entry) => ({ ...entry }));
 
-export const getAdminLogSections = () => ADMIN_LOG_SECTIONS.map((entry) => clone(entry));
+export const listAdminLogSections = () => cloneOptionList(ADMIN_LOG_SECTION_OPTIONS);
 
-export const getAdminLogRoleOptions = () =>
-  Object.entries(ADMIN_LOG_ROLE_LABELS).map(([value, label]) => ({ value, label }));
+export const getAdminLogSections = () => listAdminLogSections();
+
+export const listAdminLogRoleOptions = () => cloneOptionList(ADMIN_LOG_ROLE_OPTIONS);
+
+export const getAdminLogRoleOptions = () => listAdminLogRoleOptions();
 
 export const getAdminLogRoleLabel = (role) => ADMIN_LOG_ROLE_LABELS[role] ?? role;
 
 export const getAdminLogSectionLabel = (section) => {
-  const found = ADMIN_LOG_SECTIONS.find((option) => option.value === section);
-  return found ? found.label : section;
+  return ADMIN_LOG_SECTION_LABELS[section] ?? section;
 };
 
 export const readAdminLogs = ({ storage } = {}) => {
@@ -113,6 +97,9 @@ export function listAdminLogs({ signal, delay = 200 } = {}) {
 
 export const __internals = Object.freeze({
   ADMIN_LOG_SECTIONS,
+  ADMIN_LOG_SECTION_OPTIONS,
+  ADMIN_LOG_SECTION_LABELS,
+  ADMIN_LOG_ROLE_OPTIONS,
   ADMIN_LOG_ROLE_LABELS,
   readAdminLogRecords,
   getAdminLogSnapshot,

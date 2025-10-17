@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import AdminLayout from '../layout/AdminLayout.jsx';
+import AdminLayout from '../layout/index.js';
 import { listClients } from '../../../../local-sim/modules/clients/index.js';
 
 export default function AdminPage() {

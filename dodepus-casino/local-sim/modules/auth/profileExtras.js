@@ -1,11 +1,11 @@
 import { PROFILE_KEY } from './constants.js';
 import { getLocalDatabase } from '../../database/engine.js';
-import { normalizeBooleanMap } from '../verification/helpers.js';
 import {
+  normalizeBooleanMap,
   prepareVerificationRequestRows,
   prepareVerificationUploadRows,
   readVerificationDatasetForUser,
-} from '../verification/dataset.js';
+} from '../verification/index.js';
 
 const GENDER_MALE_VALUES = Object.freeze([
   'male',

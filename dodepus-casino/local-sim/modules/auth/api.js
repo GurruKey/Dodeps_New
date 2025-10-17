@@ -8,7 +8,7 @@ import {
 import { composeUser } from './composeUser';
 import { loadExtras, saveExtras } from './profileExtras';
 import { findAdminRoleById } from '../access/index.js';
-import { getRankDefinitionById, getRankBenefitTemplate } from '../rank/api.js';
+import { getRankDefinitionById, getRankBenefitTemplate } from '../rank/index.js';
 import { listAuthUserRecords, updateAuthUsersDataset } from './dataset.js';
 
 const USERS_KEY = 'dodepus_local_users_v1';

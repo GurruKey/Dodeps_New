@@ -1,12 +1,12 @@
 import { loadExtras, saveExtras, pickExtras } from './profileExtras';
-import { notifyAdminTransactionsChanged } from '../transactions/api.js';
-import { updateVerificationSnapshot } from '../verification/storage.js';
+import { notifyAdminTransactionsChanged } from '../transactions/index.js';
 import {
+  updateVerificationSnapshot,
   normalizeNotes,
   normalizeBooleanMap,
   normalizeStatus,
   normalizeString,
-} from '../verification/helpers.js';
+} from '../verification/index.js';
 
 const toNumber = (value, fallback = 0) => {
   const numeric = Number(value);

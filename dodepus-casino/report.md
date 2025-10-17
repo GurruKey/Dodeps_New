@@ -7,6 +7,1139 @@
 ---
 
 <!-- DO NOT REMOVE:TAKES_START -->
+## TAKE-20251017-030 — Каталог: провайдеры
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 13:40
+
+**Резюме:** Привёл страницы провайдеров к структуре с хуками и блоками, чтобы публичный API соответствовал правилу barrels и не тянул глубокие импорты данных.
+
+**Объём работ (файлы/модули):**
+- `src/pages/catalog/providers/details/page/ProviderDetailsPage.jsx`
+- `src/pages/catalog/providers/list/page/ProvidersListPage.jsx`
+- `src/pages/catalog/providers/blocks/*`
+- `src/pages/catalog/providers/hooks/*`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Создал хуки `useProviderGames` и `useProvidersDirectory` с использованием alias `@/data`
+- [x] Собрал блоки `ProviderGamesGrid` и `ProvidersDirectory` для публичного API
+- [x] Перевёл страницы списка и деталей провайдера на новые barrels
+
+**Критерии приёмки:**
+- [x] Страницы провайдеров импортируют данные только через хуки
+- [x] Список провайдеров рендерится через блок `ProvidersDirectory`
+- [x] Страница провайдера использует блок `ProviderGamesGrid` и alias `@/data/games.js`
+
+**Понятным языком: что сделано/что поменял:**
+- Я сделал хуки для игр провайдера и общего каталога.
+- Я собрал блоки для списка и карточек провайдера.
+- Я убрал глубокие импорты и настроил barrels.
+
+**Блокеры (если есть):**
+- Жду подтверждения каталога
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения каталога)
+- **Что сделано:** Провайдеры переведены на хуки, блоки и barrels.
+- **Что осталось:** Дождаться подтверждения и перейти к следующему отделу.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `report.md`
+  - `src/pages/catalog/providers/index.js`
+  - `src/pages/catalog/providers/hooks/useProviderGames.js`
+  - `src/pages/catalog/providers/hooks/useProvidersDirectory.js`
+  - `src/pages/catalog/providers/hooks/index.js`
+  - `src/pages/catalog/providers/blocks/ProviderGamesGrid/ProviderGamesGrid.jsx`
+  - `src/pages/catalog/providers/blocks/ProvidersDirectory/ProvidersDirectory.jsx`
+  - `src/pages/catalog/providers/blocks/index.js`
+  - `src/pages/catalog/providers/details/page/ProviderDetailsPage.jsx`
+  - `src/pages/catalog/providers/list/page/ProvidersListPage.jsx`
+
+
+## TAKE-20251017-029 — Каталог: категории
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 13:25
+
+**Резюме:** Разбил страницу каталога по категориям на хук и блок, чтобы публичный API соответствовал правилу barrels и не тянул глубокие импорты данных. Переключил страницу на alias `@/data` вместо относительного пути.
+
+**Объём работ (файлы/модули):**
+- `src/pages/catalog/categories/index.js`
+- `src/pages/catalog/categories/page/CategoriesPage.jsx`
+- `src/pages/catalog/categories/blocks/CatalogCategoriesSections/CatalogCategoriesSections.jsx`
+- `src/pages/catalog/categories/blocks/index.js`
+- `src/pages/catalog/categories/hooks/useCatalogCategories.js`
+- `src/pages/catalog/categories/hooks/index.js`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Создал хук `useCatalogCategories` с использованием alias `@/data`
+- [x] Собрал блок `CatalogCategoriesSections` для отображения списка
+- [x] Перевёл страницу категорий на локальный barrel
+
+**Критерии приёмки:**
+- [x] Страница категорий импортирует данные только через хук
+- [x] Категории рендерятся через блок `CatalogCategoriesSections`
+- [x] Путь к данным игр использует alias `@/data/games.js`
+
+**Понятным языком: что сделано/что поменял:**
+- Я вынес группировку игр в отдельный хук.
+- Я собрал отображение категорий в блоке.
+- Я заменил глубокий импорт на alias `@/data`.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения каталога)
+- **Что сделано:** Страница категорий переведена на barrels и alias данных.
+- **Что осталось:** Дождаться подтверждения и перейти к следующему отделу.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `src/pages/catalog/categories/index.js`
+  - `src/pages/catalog/categories/page/CategoriesPage.jsx`
+  - `src/pages/catalog/categories/blocks/CatalogCategoriesSections/CatalogCategoriesSections.jsx`
+  - `src/pages/catalog/categories/blocks/index.js`
+  - `src/pages/catalog/categories/hooks/useCatalogCategories.js`
+  - `src/pages/catalog/categories/hooks/index.js`
+
+## TAKE-20251017-028 — Barrel для AuthProvider
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 13:10
+
+**Резюме:** Собрал экшены и хук AuthProvider в единый barrel `src/app/auth`, чтобы провайдер использовал один публичный путь без глубоких импортов.
+
+**Объём работ (файлы/модули):**
+- `src/app/auth/actions/index.js`
+- `src/app/auth/admin/index.js`
+- `src/app/auth/user/index.js`
+- `src/app/auth/hooks/index.js`
+- `src/app/auth/index.js`
+- `src/app/providers/auth/AuthProvider.jsx`
+- Документация по AuthProvider
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Создал barrel `src/app/auth/actions/index.js`
+- [x] Создал barrel `src/app/auth/admin/index.js`
+- [x] Создал barrel `src/app/auth/user/index.js`
+- [x] Создал barrel `src/app/auth/hooks/index.js`
+- [x] Создал общий barrel `src/app/auth/index.js`
+- [x] Обновил `src/app/providers/auth/AuthProvider.jsx` на новый импорт
+- [x] Обновил документацию пути импорта
+
+**Критерии приёмки:**
+- [x] `AuthProvider.jsx` импортирует экшены и хуки через `src/app/auth/index.js`
+- [x] Все новые barrels реэкспортируют прежние публичные функции
+- [x] Документация указывает новый путь импорта
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил index-файлы для экшенов, админских и пользовательских фабрик.
+- Я создал общий barrel `src/app/auth/index.js`.
+- Я переключил AuthProvider и документацию на новый импорт.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- Статус: ✅ Выполнено
+- Что сделано: Barrels созданы, AuthProvider и документация обновлены.
+- Что осталось: Ничего
+- Коммиты/PR: текущая ветка `work`
+- Замечания: —
+
+## TAKE-20251017-027 — Barrel для форм авторизации
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 13:03
+
+**Резюме:** Собрал формы входа и регистрации в единый barrel `features/auth`, чтобы страницы авторизации не тянули компоненты по глубоким путям. Обновил AssignRole, чтобы админка использовала тот же публичный экспорт API.
+
+**Объём работ (файлы/модули):**
+- `src/features/auth/index.js`
+- `src/pages/auth/login/page/LoginPage.jsx`
+- `src/pages/auth/register/page/RegisterPage.jsx`
+- `src/pages/admin/features/access/roles/blocks/AssignRole/AssignRole.jsx`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Создал barrel `src/features/auth/index.js` для форм и API
+- [x] Обновил страницы логина и регистрации на новый импорт
+- [x] Перевёл AssignRole на barrel `features/auth`
+
+**Критерии приёмки:**
+- [x] Формы логина и регистрации импортируются из `features/auth/index.js`
+- [x] Админский AssignRole использует тот же barrel авторизации
+- [x] Barrel `features/auth` реэкспортирует API и справочники
+
+**Понятным языком: что сделано/что поменял:**
+- Я собрал формы авторизации в одном index.
+- Я обновил страницы входа и регистрации на новый импорт.
+- Я поправил AssignRole, чтобы тянуть API из того же места.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения auth-фичи)
+- **Что сделано:** Настроил barrel `features/auth` и обновил зависимости.
+- **Что осталось:** Получить подтверждение и перейти к следующему отделу.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `src/features/auth/index.js`
+  - `src/pages/auth/login/page/LoginPage.jsx`
+  - `src/pages/auth/register/page/RegisterPage.jsx`
+  - `src/pages/admin/features/access/roles/blocks/AssignRole/AssignRole.jsx`
+
+## TAKE-20251017-026 — Коммуникации через блок и хук
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 12:55
+
+**Резюме:** Собрал админские чаты в общий блок и хук, чтобы не держать логику загрузки в компонентах. Добавил плейсхолдер в ChatPanel для пустых каналов.
+
+**Объём работ (файлы/модули):**
+- `src/pages/admin/features/communications/administrators-chat/AdministratorsChat.jsx`
+- `src/pages/admin/features/communications/moderators-chat/ModeratorsChat.jsx`
+- `src/pages/admin/features/communications/staff-chat/StaffChat.jsx`
+- `src/pages/admin/features/communications/blocks/*`
+- `src/pages/admin/features/communications/hooks/*`
+- `src/pages/admin/features/communications/index.js`
+- `src/pages/admin/shared/ChatPanel.jsx`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Создал хук `useAdminChatChannel` для выбора треда по каналу
+- [x] Добавил блок `AdminChatChannelPanel` и перевёл чаты на него
+- [x] Обновил ChatPanel, чтобы показывать плейсхолдер без сообщений
+
+**Критерии приёмки:**
+- [x] Страницы чатов используют общий блок вместо прямого вызова local-sim
+- [x] Хук коммуникаций экспортируется через barrel фичи
+- [x] Пустой канал показывает текстовое состояние без ошибок
+
+**Понятным языком: что сделано/что поменял:**
+- Я вынес загрузку тредов в отдельный хук.
+- Я собрал блок, который рендерит чат по каналу.
+- Я добавил сообщение, когда в канале пока нет переписки.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения коммуникаций)
+- **Что сделано:** Унифицировал админские чаты через блок и хук, добавил плейсхолдер пустого канала.
+- **Что осталось:** Получить подтверждение и перейти к следующему отделу.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `src/pages/admin/features/communications/administrators-chat/AdministratorsChat.jsx`
+  - `src/pages/admin/features/communications/moderators-chat/ModeratorsChat.jsx`
+  - `src/pages/admin/features/communications/staff-chat/StaffChat.jsx`
+  - `src/pages/admin/features/communications/blocks/AdminChatChannelPanel/AdminChatChannelPanel.jsx`
+  - `src/pages/admin/features/communications/blocks/index.js`
+  - `src/pages/admin/features/communications/hooks/useAdminChatChannel.js`
+  - `src/pages/admin/features/communications/hooks/index.js`
+  - `src/pages/admin/features/communications/index.js`
+  - `src/pages/admin/shared/ChatPanel.jsx`
+
+## TAKE-20251017-025 — Баррели логов админки
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 12:46
+
+**Резюме:** Вынес загрузку и фильтры Log Admin в хук и блоки, чтобы страница соответствовала единому правилу публичных API. Обновил индекс фичи для экспорта новых точек входа.
+
+**Объём работ (файлы/модули):**
+- `src/pages/admin/features/monitoring/log-admin/LogAdmin.jsx`
+- `src/pages/admin/features/monitoring/log-admin/blocks/*`
+- `src/pages/admin/features/monitoring/log-admin/hooks/*`
+- `src/pages/admin/features/monitoring/log-admin/index.js`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Вынес загрузку логов в хук `useAdminLogs`
+- [x] Добавил публичные блоки фильтров и таблицы логов
+- [x] Страница Log Admin использует barrels блоков и хуков
+
+**Критерии приёмки:**
+- [x] Логика загрузки логов из local-sim вынесена в хук
+- [x] Карточки фильтров и таблицы экспортируются через `blocks/index.js`
+- [x] `log-admin/index.js` реэкспортирует страницу, блоки и хуки
+
+**Понятным языком: что сделано/что поменял:**
+- Я вынес запрос логов в отдельный хук.
+- Я разбил страницу на блок фильтров и блок таблицы.
+- Я обновил индекс фичи, чтобы экспортировать новые части.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения UI)
+- **Что сделано:** Добавил хук и блоки для Log Admin, обновил публичный API фичи.
+- **Что осталось:** Получить подтверждение и при необходимости продолжить унификацию monitoring.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `src/pages/admin/features/monitoring/log-admin/LogAdmin.jsx`
+  - `src/pages/admin/features/monitoring/log-admin/blocks/AdminLogFilters/AdminLogFilters.jsx`
+  - `src/pages/admin/features/monitoring/log-admin/blocks/AdminLogTable/AdminLogTable.jsx`
+  - `src/pages/admin/features/monitoring/log-admin/blocks/index.js`
+  - `src/pages/admin/features/monitoring/log-admin/hooks/useAdminLogs.js`
+  - `src/pages/admin/features/monitoring/log-admin/hooks/index.js`
+  - `src/pages/admin/features/monitoring/log-admin/index.js`
+
+
+## TAKE-20251017-024 — Баррели корневой админки
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 12:36
+
+**Резюме:** Подготовил barrels для корневых модулей админки, чтобы все внешние импорты шли через единые точки входа вместо прямых ссылок на JSX-файлы.
+
+**Объём работ (файлы/модули):**
+- `src/pages/admin/index.js`
+- `src/pages/admin/page/AdminPage.jsx`
+- `src/pages/admin/page/index.js`
+- `src/pages/admin/layout/index.js`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Создан barrel для `admin/page`
+- [x] Создан barrel для `admin/layout`
+- [x] Обновлены импорты админки на barrels вместо прямых путей
+
+**Критерии приёмки:**
+- [x] `src/pages/admin/index.js` экспортирует страницу и лейаут через index-файлы
+- [x] `AdminPage.jsx` использует barrel лейаута
+- [x] Новый публичный API не содержит прямых импортов `.jsx`
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил index-файл для страницы админки.
+- Я добавил index-файл для лейаута админки.
+- Я обновил импорты, чтобы использовать новые barrels.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения корневых путей)
+- **Что сделано:** Добавил barrels для страницы и лейаута админки, обновил публичный API.
+- **Что осталось:** Получить подтверждение и продолжить унификацию следующих отделов.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `src/pages/admin/index.js`
+  - `src/pages/admin/page/AdminPage.jsx`
+  - `src/pages/admin/page/index.js`
+  - `src/pages/admin/layout/index.js`
+
+## TAKE-20251017-023 — Баррели редактора рангов (UI)
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 12:27
+
+**Резюме:** Собрал компоненты и хук редактора рангов в barrels, чтобы унифицировать публичный импорт без глубоких путей.
+
+**Объём работ (файлы/модули):**
+- `src/pages/admin/features/access/rank-editor/RankEditor.jsx`
+- `src/pages/admin/features/access/rank-editor/components/index.js`
+- `src/pages/admin/features/access/rank-editor/hooks/index.js`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Создан barrel компонентов редактора рангов
+- [x] Создан barrel хуков редактора рангов
+- [x] `RankEditor.jsx` использует barrels компонентов и хуков
+
+**Критерии приёмки:**
+- [x] Импорты компонентов в `RankEditor.jsx` идут через `components/index.js`
+- [x] Импорт хука в `RankEditor.jsx` идёт через `hooks/index.js`
+- [x] Barrels экспортируют все необходимые элементы без глубоких путей
+
+**Понятным языком: что сделано/что поменял:**
+- Я собрал компоненты редактора рангов в одном index.
+- Я вынес хук редактора рангов в собственный index.
+- Я перевёл страницу редактора рангов на новые импорты.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения UI)
+- **Что сделано:** Создал barrels компонентов и хука, обновил страницу на новые импорты.
+- **Что осталось:** Дождаться подтверждения и продолжить унификацию других отделов.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `src/pages/admin/features/access/rank-editor/RankEditor.jsx`
+  - `src/pages/admin/features/access/rank-editor/components/index.js`
+  - `src/pages/admin/features/access/rank-editor/hooks/index.js`
+
+
+## TAKE-20251017-022 — Баррели блоков ролей (UI)
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 12:23
+
+**Резюме:** Собрал блоки страницы ролей админки в единый barrel, чтобы убрать глубокие импорты и выровнять публичный API с остальными фичами. Обновил страницу редактирования роли на новый путь.
+
+**Объём работ (файлы/модули):**
+- `src/pages/admin/features/access/roles/blocks/index.js`
+- `src/pages/admin/features/access/roles/Roles.jsx`
+- `src/pages/admin/features/access/role-edit/RoleEdit.jsx`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Создан barrel блоков ролей админки
+- [x] `Roles.jsx` использует блоки через новый barrel
+- [x] `RoleEdit.jsx` импортирует `EditRolePermissions` из barrel блоков
+
+**Критерии приёмки:**
+- [x] Страница `Roles` не содержит глубоких импортов блоков
+- [x] Barrel блоков экспортирует все публичные компоненты ролей
+- [x] Страница редактирования роли использует тот же публичный API блоков
+
+**Понятным языком: что сделано/что поменял:**
+- Я создал общий index для блоков ролей.
+- Я перевёл страницу ролей на импорт из нового barrel.
+- Я обновил редактирование роли на тот же публичный API.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim/UI)
+- **Что сделано:** Создал barrel блоков ролей и обновил импорты страниц Roles и RoleEdit.
+- **Что осталось:** Получить подтверждение и при необходимости продолжить унификацию других блоков.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `src/pages/admin/features/access/roles/blocks/index.js`
+  - `src/pages/admin/features/access/roles/Roles.jsx`
+  - `src/pages/admin/features/access/role-edit/RoleEdit.jsx`
+
+
+## TAKE-20251017-021 — Баррели архива промо (UI)
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 12:22
+
+**Резюме:** Перевёл страницу архива промокодов на barrels блоков, чтобы убрать глубокие импорты и выровнять публичный API с активным списком. Создал индекс блоков архива для единых точек подключения.
+
+**Объём работ (файлы/модули):**
+- `src/pages/admin/features/promo/archive/PromoArchive.jsx`
+- `src/pages/admin/features/promo/archive/blocks/index.js`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Создан barrel блоков архива промокодов
+- [x] `PromoArchive.jsx` использует блоки архива через локальный barrel
+- [x] Страница архива подключает таблицу и панель деталей через barrel списка промо
+
+**Критерии приёмки:**
+- [x] `PromoArchive.jsx` не содержит глубоких импортов блоков
+- [x] Все публичные блоки архива экспортируются через `blocks/index.js`
+- [x] Архив и список промокодов используют один и тот же barrel блоков списка
+
+**Понятным языком: что сделано/что поменял:**
+- Я создал index для блоков архива промо.
+- Я перевёл страницу архива на импорт блоков через индексы.
+- Я оставил подключение таблицы и деталей через barrel списка промо.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Импорты архива промокодов приведены к единым barrel путям.
+- **Что осталось:** Дождаться подтверждения по обновлённым импортах local-sim/UI.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `src/pages/admin/features/promo/archive/PromoArchive.jsx`
+  - `src/pages/admin/features/promo/archive/blocks/index.js`
+
+## TAKE-20251017-020 — Баррели списка промо (UI)
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 12:04
+
+**Резюме:** Перевёл страницу списка промокодов на единый barrel блоков, чтобы убрать глубокие импорты и упростить поддержку. Обновил панель деталей, чтобы график активаций подключался через тот же индекс.
+
+**Объём работ (файлы/модули):**
+- `src/pages/admin/features/promo/list/PromoCodes.jsx`
+- `src/pages/admin/features/promo/list/blocks/index.js`
+- `src/pages/admin/features/promo/list/blocks/PromoDetailsPanel.jsx`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Создан barrel блоков списка промо
+- [x] `PromoCodes.jsx` импортирует блоки через новый barrel
+- [x] `PromoDetailsPanel.jsx` использует `ActivationChart` из barrel
+
+**Критерии приёмки:**
+- [x] Страница `PromoCodes` не содержит прямых импортов блоков
+- [x] Панель деталей промокода подключает график через общий индекс
+- [x] Barrel блоков экспортирует все публичные компоненты списка промо
+
+**Понятным языком: что сделано/что поменял:**
+- Я собрал блоки промо-списка в одном index.
+- Я переключил страницу промокодов на новые импорты.
+- Я обновил панель деталей, чтобы брать график из того же index.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Импорты списка промокодов приведены к единому barrel блоков.
+- **Что осталось:** Получить подтверждение по обновлённым импортам.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `src/pages/admin/features/promo/list/PromoCodes.jsx`
+  - `src/pages/admin/features/promo/list/blocks/index.js`
+  - `src/pages/admin/features/promo/list/blocks/PromoDetailsPanel.jsx`
+
+## TAKE-20251017-019 — Баррели обзора (UI)
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 03:24
+
+**Резюме:** Перевёл страницу админского обзора на единые barrels для компонентов,
+хуков и констант, чтобы устранить глубокие импорты и соблюдать общее правило
+архитектуры фич. Убедился, что RoleColumn использует собственный barrel для
+вспомогательных рендер-функций.
+
+**Объём работ (файлы/модули):**
+- `src/pages/admin/features/overview/Overview.jsx`
+- `src/pages/admin/features/overview/components/index.js`
+- `src/pages/admin/features/overview/components/roleColumn/index.js`
+- `src/pages/admin/features/overview/hooks/index.js`
+- `src/pages/admin/features/overview/hooks/useGroupedRoles.js`
+- `src/pages/admin/features/overview/constants/index.js`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Создан barrel компонентов `components/index.js`
+- [x] Создан barrel хуков `hooks/index.js`
+- [x] RoleColumn использует barrel `roleColumn/index.js` вместо глубоких импортов
+- [x] `Overview.jsx` импортирует компоненты, хуки и константы через barrels
+
+**Критерии приёмки:**
+- [x] Все импорты Overview проходят через локальные barrels
+- [x] Внутренние функции RoleColumn реэкспортируются через `roleColumn/index.js`
+- [x] Публичный API фичи обзора соответствует общему правилу
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил индексы для компонентов и хуков обзора.
+- Я переключил страницу Overview на новые импорты.
+- Я вынес вспомогательные функции RoleColumn в отдельный barrel.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Импорты страницы обзора приведены к единому правилу barrels.
+- **Что осталось:** Получить общее подтверждение по local-sim и UI структуре.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `src/pages/admin/features/overview/Overview.jsx`
+  - `src/pages/admin/features/overview/components/index.js`
+  - `src/pages/admin/features/overview/components/roleColumn/index.js`
+  - `src/pages/admin/features/overview/hooks/index.js`
+  - `src/pages/admin/features/overview/hooks/useGroupedRoles.js`
+  - `src/pages/admin/features/overview/constants/index.js`
+
+
+## TAKE-20251017-018 — Баррели транзакций (UI)
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 03:16
+
+**Резюме:** Перевожу админскую страницу транзакций на единые barrels для блоков,
+компонентов и хуков, чтобы убрать глубокие импорты и соответствовать общему
+правилу архитектуры. Все импорты теперь идут через индексы, поддерживая
+стабильный публичный API фичи.
+
+**Объём работ (файлы/модули):**
+- `src/pages/admin/features/transactions/Transactions.jsx`
+- `src/pages/admin/features/transactions/blocks/index.js`
+- `src/pages/admin/features/transactions/blocks/TransactionsHistory.jsx`
+- `src/pages/admin/features/transactions/components/index.js`
+- `src/pages/admin/features/transactions/hooks/index.js`
+- `src/pages/admin/features/transactions/hooks/useAdminTransactions.js`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Создан barrel блоков транзакций с экспортом `TransactionsHistory`
+- [x] Страница `Transactions.jsx` использует barrel вместо прямого импорта блока
+- [x] Хуки и компоненты транзакций экспортируются через индексы без глубоких путей
+
+**Критерии приёмки:**
+- [x] `TransactionsHistory` импортирует UI-компоненты и хук через их barrels
+- [x] `Transactions.jsx` импортирует блоки через `./blocks/index.js`
+- [x] Структура фичи соответствует правилу единого публичного API
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил index-файлы для блоков, компонентов и хука транзакций.
+- Я обновил страницу Transactions, чтобы она брала блок через новый barrel.
+- Я переключил блок истории на использование новых индексных импортов.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Импорты страницы транзакций приведены к единому правилу barrels.
+- **Что осталось:** Получить общее подтверждение по local-sim и UI-структуре.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `src/pages/admin/features/transactions/Transactions.jsx`
+  - `src/pages/admin/features/transactions/blocks/index.js`
+  - `src/pages/admin/features/transactions/blocks/TransactionsHistory.jsx`
+  - `src/pages/admin/features/transactions/components/index.js`
+  - `src/pages/admin/features/transactions/hooks/index.js`
+  - `src/pages/admin/features/transactions/hooks/useAdminTransactions.js`
+
+## TAKE-20251017-017 — Баррели клиентов (UI)
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 03:07
+
+**Резюме:** Привожу страницу управления клиентами к единому правилу импорта блоков через локальный barrel. Упрощаю поддержку фичи, чтобы блоки можно было переиспользовать без глубоких путей.
+
+**Объём работ (файлы/модули):**
+- `src/pages/admin/features/clients/Clients.jsx`
+- `src/pages/admin/features/clients/blocks/index.js`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Создан barrel `blocks/index.js` с экспортами клиентских блоков
+- [x] `Clients.jsx` использует barrel вместо глубоких импортов блоков
+- [x] Проверено, что публичный API блоков не изменился
+
+**Критерии приёмки:**
+- [x] Все блоки клиента импортируются через `./blocks/index.js`
+- [x] Страница клиентов продолжает рендерить фильтры, статистику и таблицу
+- [x] Импорты следуют правилу единого barrels без лишних путей
+
+**Понятным языком: что сделано/что поменял:**
+- Я создал единый index для клиентских блоков.
+- Я обновил страницу клиентов, чтобы она брала блоки через barrel.
+- Я проверил, что интерфейс страницы не поменялся.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Страница клиентов переведена на общий barrel блоков.
+- **Что осталось:** Дождаться общего ревью local-sim и UI правил.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `src/pages/admin/features/clients/Clients.jsx`
+  - `src/pages/admin/features/clients/blocks/index.js`
+
+## TAKE-20251017-016 — Баррели верификации (UI)
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 02:58
+
+**Резюме:** Перевожу страницу админской верификации на внутренние barrels для блоков, хуков и компонентов. Это упрощает поддержку фичи и соответствует единому правилу импорта без глубоких путей.
+
+**Объём работ (файлы/модули):**
+- `src/pages/admin/features/verification/Verification.jsx`
+- `src/pages/admin/features/verification/blocks/*`
+- `src/pages/admin/features/verification/hooks/*`
+- `src/pages/admin/features/verification/components/*`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы (не требуется для UI-рефакторинга)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Добавлены barrels `blocks/index.js`, `hooks/index.js`, `components/index.js`
+- [x] Страница `Verification.jsx` использует новые barrels вместо глубоких путей
+- [x] Блоки верификации берут `VerificationFieldBadges` через общий индекс компонентов
+
+**Критерии приёмки:**
+- [x] Все импорты внутри фичи верификации проходят через локальные barrels
+- [x] Страница `Verification` продолжает рендерить все блоки без изменения API
+- [x] Компоненты `VerificationRequestModal` и `VerificationIdleAccountsModal` доступны из `components/index.js`
+
+**Понятным языком: что сделано/что поменял:**
+- Я собрал блоки, хуки и компоненты в отдельные index-файлы.
+- Я обновил страницу Verification, чтобы она импортировала всё через новые barrels.
+- Я переключил блоки на использование общего индекса компонентов.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ✅ Выполнено
+- **Что сделано:** Верификационная фича переведена на внутренние barrels без глубоких импортов.
+- **Что осталось:** Дождаться общего ревью структуры фич.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `src/pages/admin/features/verification/Verification.jsx`
+  - `src/pages/admin/features/verification/blocks/index.js`
+  - `src/pages/admin/features/verification/blocks/VerificationApprovedBlock.jsx`
+  - `src/pages/admin/features/verification/blocks/VerificationPartialBlock.jsx`
+  - `src/pages/admin/features/verification/blocks/VerificationRejectedBlock.jsx`
+  - `src/pages/admin/features/verification/blocks/VerificationRequestsBlock.jsx`
+  - `src/pages/admin/features/verification/hooks/index.js`
+  - `src/pages/admin/features/verification/components/index.js`
+
+## TAKE-20251017-015 — Справочник секций логов
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 02:48
+
+**Резюме:** Выношу список секций и ролей админских логов в constants local-sim, чтобы все модули использовали единый словарь. Обновляю API логов и экран Log Admin, переключая его на новые справочники и функции списка.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/logs/constants.js`
+- `local-sim/modules/logs/api.js`
+- `src/pages/admin/features/monitoring/log-admin/LogAdmin.jsx`
+- `src/pages/admin/features/transactions/blocks/TransactionsHistory.jsx`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (справочники логов в barrel)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Константы секций/ролей логов вынесены в `constants.js`
+- [x] Локальные клиенты используют `listAdminLogSections`/`listAdminLogRoleOptions`
+
+**Критерии приёмки:**
+- [x] `ADMIN_LOG_SECTIONS` доступен из barrel local-sim
+- [x] `getAdminLogSections` и `getAdminLogRoleOptions` возвращают клоны, а не исходные массивы
+- [x] Экран Log Admin использует новые функции списка и отображает те же данные
+
+**Понятным языком: что сделано/что поменял:**
+- Я вынес справочники секций и ролей логов в constants.
+- Я добавил новые функции списка и обновил API логов.
+- Я переключил экран Log Admin и логирование транзакций на общий словарь секций.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Секции и роли логов опубликованы через barrel, фронт использует новые функции списка.
+- **Что осталось:** Получить подтверждение local-sim.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `local-sim/modules/logs/constants.js`
+  - `local-sim/modules/logs/api.js`
+  - `src/pages/admin/features/monitoring/log-admin/LogAdmin.jsx`
+  - `src/pages/admin/features/transactions/blocks/TransactionsHistory.jsx`
+
+## TAKE-20251017-014 — Каналы чатов через barrel
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 02:41
+
+**Резюме:** Привожу модуль communications local-sim к полному barrel-экспорту, добавляю перечисление каналов и общий метод получения тредов. Обновляю админские чаты, чтобы они брали данные через новый API и не дублировали логику каналов.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/communications/constants.js`
+- `local-sim/modules/communications/index.js`
+- `local-sim/modules/communications/threads.js`
+- `src/pages/admin/features/communications/*`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (communications публикует каналы через barrel)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Каналы чатов описаны константами `COMMUNICATION_CHANNELS`
+- [x] Компоненты админских чатов используют `listCommunicationThreads`
+
+**Критерии приёмки:**
+- [x] Из `local-sim/modules/communications` можно импортировать `COMMUNICATION_CHANNELS`
+- [x] `listCommunicationThreads` возвращает клоны списков и принимает канал
+- [x] Обновлённые чаты продолжают показывать первый тред без ошибок
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил общий список каналов чатов.
+- Я вынес общий метод `listCommunicationThreads`.
+- Я переключил все админские чаты на новый barrel-API.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Коммуникации публикуют каналы и списки тредов через единый barrel.
+- **Что осталось:** Дождаться подтверждения local-sim.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `local-sim/modules/communications/constants.js`
+  - `local-sim/modules/communications/index.js`
+  - `local-sim/modules/communications/threads.js`
+  - `src/pages/admin/features/communications/administrators-chat/AdministratorsChat.jsx`
+  - `src/pages/admin/features/communications/moderators-chat/ModeratorsChat.jsx`
+  - `src/pages/admin/features/communications/staff-chat/StaffChat.jsx`
+
+## TAKE-20251017-013 — Auth barrel внутри local-sim
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 02:27
+
+**Резюме:** Привожу клиенты, ранги и verification в local-sim к единому импорту auth-хелперов через barrel. Убираю прямые пути на внутренние файлы auth, чтобы не нарушать публичный API модуля.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/clients/api.js`
+- `local-sim/modules/clients/constants.js`
+- `local-sim/modules/clients/dataset.js`
+- `local-sim/modules/rank/api.js`
+- `local-sim/modules/verification/api.js`
+- `local-sim/modules/verification/storage.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (auth barrel обслуживает clients/rank/verification)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Модули clients/rank/verification используют `../auth/index.js` вместо прямых путей
+
+**Критерии приёмки:**
+- [x] В `local-sim/modules/clients` нет импортов `../auth/composeUser.js` и `../auth/profileExtras.js`
+- [x] `local-sim/modules/rank/api.js` импортирует `loadExtras` из barrel auth
+- [x] `local-sim/modules/verification/{api,storage}.js` импортируют auth-хелперы через barrel
+
+**Понятным языком: что сделано/что поменял:**
+- Я переключил клиентов на barrel auth.
+- Я обновил ранговый API, чтобы брать extras из barrel.
+- Я перевёл verification API и хранилище на barrel auth.
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Все пересекающиеся модули подтягивают auth-хелперы только через barrel.
+- **Что осталось:** Дождаться подтверждения local-sim.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `local-sim/modules/clients/api.js`
+  - `local-sim/modules/clients/constants.js`
+  - `local-sim/modules/clients/dataset.js`
+  - `local-sim/modules/rank/api.js`
+  - `local-sim/modules/verification/api.js`
+  - `local-sim/modules/verification/storage.js`
+
+## TAKE-20251017-012 — Barrel-импорты для auth
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 02:17
+
+**Резюме:** Привожу auth-модуль local-sim к единому публичному API для зависимостей verification и rank. Обновляю API рангового редактора, чтобы ранговые данные читались только через barrel rank.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/auth/profileActions.js`
+- `local-sim/modules/auth/profileExtras.js`
+- `local-sim/modules/auth/accounts/seedLocalAuth.js`
+- `local-sim/modules/auth/composeUser.js`
+- `local-sim/modules/auth/api.js`
+- `local-sim/modules/access/rank-editor/api/listRankRewards.js`
+- `local-sim/modules/access/rank-editor/api/resetRankRewards.js`
+- `local-sim/modules/access/rank-editor/api/updateRankReward.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (auth тянет rank/verification только через barrel)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Auth local-sim не содержит глубоких импортов rank/verification
+- [x] Rank-editor API использует barrel `modules/rank`
+
+**Критерии приёмки:**
+- [x] Нет импортов `../rank/api.js` в `local-sim/modules`
+- [x] Нет импортов `../verification/helpers.js` и `../verification/storage.js`
+- [x] Все нужные утилиты verification/rank берутся из их barrel
+
+**Понятным языком: что сделано/что поменял:**
+- Я перевёл auth-экстра данные на barrel verification
+- Я обновил auth API и composeUser на barrel rank
+- Я настроил rank-editor API работать только через barrel rank
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Auth и rank-editor используют только barrel-пути rank/verification
+- **Что осталось:** Получить подтверждение local-sim
+- **Коммиты/PR:** текущий PR (ветка `work`)
+- **Затронутые файлы:**
+  - `local-sim/modules/auth/profileActions.js`
+  - `local-sim/modules/auth/profileExtras.js`
+  - `local-sim/modules/auth/accounts/seedLocalAuth.js`
+  - `local-sim/modules/auth/composeUser.js`
+  - `local-sim/modules/auth/api.js`
+  - `local-sim/modules/access/rank-editor/api/listRankRewards.js`
+  - `local-sim/modules/access/rank-editor/api/resetRankRewards.js`
+  - `local-sim/modules/access/rank-editor/api/updateRankReward.js`
+
+## TAKE-20251017-011 — Barrel для rank профиля
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 02:16
+
+**Резюме:** Привожу ранговые хуки профиля к использованию единого barrel local-sim. Проверяю, что публичный API rank остаётся стабильным и не требует глубоких путей.
+
+**Объём работ (файлы/модули):**
+- `src/pages/profile/rank/hooks/useProfileRankSummary.js`
+- `src/pages/profile/rank/hooks/useProfileRankData.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (barrel rank публикует API)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Хуки профиля rank импортируют данные только через barrel
+
+**Критерии приёмки:**
+- [x] `getProfileRankSummary` импортируется из `local-sim/modules/rank/index.js`
+- [x] `getProfileRankData` импортируется из `local-sim/modules/rank/index.js`
+- [x] В проекте нет глубоких импортов `local-sim/modules/rank/api.js`
+
+**Понятным языком: что сделано/что поменял:**
+- Я переключил ранговый summary-хук на barrel rank
+- Я обновил ранговый data-хук на barrel rank
+- Я проверил, что прямых импортов `rank/api` не осталось
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Хуки профиля rank используют barrel, глубинных импортов нет
+- **Что осталось:** Дождаться подтверждения local-sim
+- **Коммиты/PR:** текущий PR (ветка `work`)
+- **Затронутые файлы:**
+  - `src/pages/profile/rank/hooks/useProfileRankSummary.js`
+  - `src/pages/profile/rank/hooks/useProfileRankData.js`
+
+## TAKE-20251017-010 — Barrel для promo definitions
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 02:09
+
+**Резюме:** Привожу модуль promo local-sim к единому публичному API. Добавлю экспорт типов промо через основной barrel и переключу фронтовые экраны создания промокодов на новый путь.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/promo/index.js`
+- `local-sim/modules/promo/definitions/index.js`
+- `src/pages/admin/features/promo/create/PromoCodeCreate.jsx`
+- `src/pages/admin/features/promo/create/blocks/PromoTypesGrid.jsx`
+- `src/pages/admin/features/promo/create/blocks/PromoTypesReference.jsx`
+- `src/pages/admin/features/promo/create/hooks/usePromoConstructor.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (promo barrel реэкспортирует определения типов)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Фронтовые импорты promo типов используют только barrel `modules/promo`
+
+**Критерии приёмки:**
+- [x] `promoTypeDefinitions` доступен из `local-sim/modules/promo/index.js`
+- [x] `promoTypeMap` и `getPromoTypeById` доступны через основной barrel
+- [x] Фронтовые экраны promo не делают глубоких импортов в `modules/promo/definitions`
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил экспорт promo-типов в главный barrel
+- Я перевёл весь фронт создания промо на новый путь
+- Я проверил, что больше нет прямых импортов в definitions
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Barrel promo теперь отдаёт типы, фронт переключён на единый путь
+- **Что осталось:** Дождаться подтверждения local-sim
+- **Коммиты/PR:** текущий PR (ветка `work`)
+- **Затронутые файлы:**
+  - `local-sim/modules/promo/index.js`
+  - `src/pages/admin/features/promo/create/PromoCodeCreate.jsx`
+  - `src/pages/admin/features/promo/create/blocks/PromoTypesGrid.jsx`
+  - `src/pages/admin/features/promo/create/blocks/PromoTypesReference.jsx`
+  - `src/pages/admin/features/promo/create/hooks/usePromoConstructor.js`
+
+## TAKE-20251017-009 — Barrel для verification
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 02:03
+
+**Резюме:** Собираю local-sim verification в единый barrel, чтобы фронт и сиды не ходили глубоко в структуру. Обновляю импорты экранов и хуков verification на новый путь.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/verification/index.js`
+- `local-sim/database/seed.js`
+- `src/pages/admin/features/verification/Verification.jsx`
+- `src/pages/admin/features/verification/hooks/useAdminVerificationRequests.js`
+- `src/pages/admin/features/verification/hooks/useAdminVerificationIdleAccounts.js`
+- `src/pages/admin/features/access/roles/blocks/Verification/VerificationQueue.jsx`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (verification barrel собирает публичный API)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Фронтовые импорты verification переключены на barrel
+- [x] Local-sim сиды используют verification через barrel
+
+**Критерии приёмки:**
+- [x] Все внешние импорты verification используют `local-sim/modules/verification/index.js`
+- [x] Barrel verification реэкспортирует admin/api/queue/dataset/helpers/storage/seed
+- [x] `applyVerificationSeed` доступен через barrel и используется в сидере
+
+**Понятным языком: что сделано/что поменял:**
+- Я создал barrel verification
+- Я переключил фронт verification на новый путь
+- Я обновил сид verification на barrel
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Создал barrel verification и обновил все импорты
+- **Что осталось:** Дождаться подтверждения local-sim
+- **Коммиты/PR:** будет оформлено в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/modules/verification/index.js`
+  - `local-sim/database/seed.js`
+  - `src/pages/admin/features/verification/Verification.jsx`
+  - `src/pages/admin/features/verification/hooks/useAdminVerificationRequests.js`
+  - `src/pages/admin/features/verification/hooks/useAdminVerificationIdleAccounts.js`
+  - `src/pages/admin/features/access/roles/blocks/Verification/VerificationQueue.jsx`
+
+## TAKE-20251017-008 — Barrel для access
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 02:38
+
+**Резюме:** Выравниваю local-sim access под единый barrel. Переключаю фронтовые хуки и экраны админки на новый путь без глубоких импортов.
+
+**Объём работ (файлы/модули):**
+- `src/pages/admin/features/access/rank-editor/hooks/useRankEditor.js`
+- `src/pages/admin/features/access/roles/blocks/EditRole/EditRolePermissions.jsx`
+- журнал `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (access barrel закрывает публичный API)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Все фронтовые импорты access используют barrel `modules/access`
+
+**Критерии приёмки:**
+- [x] Хук рангов тянет API только через `local-sim/modules/access`
+- [x] Экран правок ролей импортирует лог изменений через barrel
+- [x] В проекте нет глубоких импортов в `local-sim/modules/access/*`
+
+**Понятным языком: что сделано/что поменял:**
+- Я переключил хук рангов на barrel access
+- Я обновил экран правок ролей на barrel access
+- Я проверил, что больше нет глубоких импортов access
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Переключил ранговый хук и экран ролей на barrel access, проверил пути
+- **Что осталось:** Дождаться подтверждения local-sim
+- **Коммиты/PR:** будет оформлено в текущем PR
+- **Затронутые файлы:**
+  - `src/pages/admin/features/access/rank-editor/hooks/useRankEditor.js`
+  - `src/pages/admin/features/access/roles/blocks/EditRole/EditRolePermissions.jsx`
+  - `report.md`
+
+## TAKE-20251017-007 — Barrel для auth
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 02:10
+
+**Резюме:** Собираю публичный API auth local-sim в один barrel. Обновляю фронтовые импорты и сиды на новый путь, чтобы не обращаться напрямую к вложенным файлам.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/auth/index.js`
+- `local-sim/modules/auth/admin/index.js`
+- `local-sim/modules/auth/accounts/index.js`
+- `local-sim/modules/auth/session/index.js`
+- `local-sim/database/seed.js`
+- `src/features/auth/api.js`
+- `src/app/auth/actions/createAuthActions.js`
+- `src/app/auth/actions/createAuthActions.md`
+- `src/app/auth/admin/createAdminPanelActions.js`
+- `src/app/auth/hooks/useAuthState.js`
+- `src/app/auth/hooks/useAuthState.md`
+- `src/app/auth/user/createUserProfileActions.js`
+- `src/pages/admin/features/access/roles/blocks/EditRole/EditRolePermissions.jsx`
+- `src/pages/admin/features/access/roles/blocks/RolesMatrix.jsx`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (barrel auth объединяет публичный API)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Фронт и сиды импортируют auth только через barrel
+- [x] Документация обновлена под новый путь auth
+
+**Критерии приёмки:**
+- [x] Все внешние импорты auth используют `local-sim/modules/auth/index.js`
+- [x] Barrel auth реэкспортирует admin/session/accounts утилиты
+- [x] Local database seed берёт auth-сиды через barrel
+
+**Понятным языком: что сделано/что поменял:**
+- Я создал barrel `local-sim/modules/auth/index.js`
+- Я сделал под-barrel для admin, accounts и session
+- Я обновил все фронтовые импорты auth на новый путь
+- Я поправил документацию про auth
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Собрал auth-утилиты в barrel и переключил импорты фронта и сидов
+- **Что осталось:** Дождаться подтверждения и перейти к следующему отделу
+- **Коммиты/PR:** будет оформлено в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/modules/auth/index.js`
+  - `local-sim/modules/auth/admin/index.js`
+  - `local-sim/modules/auth/accounts/index.js`
+  - `local-sim/modules/auth/session/index.js`
+  - `local-sim/database/seed.js`
+  - `src/features/auth/api.js`
+  - `src/app/auth/actions/createAuthActions.js`
+  - `src/app/auth/actions/createAuthActions.md`
+  - `src/app/auth/admin/createAdminPanelActions.js`
+  - `src/app/auth/hooks/useAuthState.js`
+  - `src/app/auth/hooks/useAuthState.md`
+  - `src/app/auth/user/createUserProfileActions.js`
+  - `src/pages/admin/features/access/roles/blocks/EditRole/EditRolePermissions.jsx`
+  - `src/pages/admin/features/access/roles/blocks/RolesMatrix.jsx`
+
+## TAKE-20251017-006 — Barrel для транзакций
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 01:42
+
+**Резюме:** Переношу модуль транзакций на единый barrel. Добавляю `modules/transactions/index`, чтобы все локальные моки и фронт использовали один путь и не тянули глубоко внутрь структуры.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/transactions/index.js`
+- `local-sim/modules/auth/profileActions.js`
+- `local-sim/modules/logs/api.js`
+- `src/pages/admin/features/transactions/hooks/useAdminTransactions.js`
+- журнал `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы (transactions barrel отдаёт API)
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Импорты внутри local-sim переключены на barrel `modules/transactions`
+- [x] Фронтовой хук транзакций читает API через barrel путь
+
+**Критерии приёмки:**
+- [x] `listAdminTransactions` и `subscribeToAdminTransactions` доступны через новый barrel
+- [x] `notifyAdminTransactionsChanged` импортируется из `modules/transactions`
+- [x] Админские логи получают константы транзакций через barrel
+
+**Понятным языком: что сделано/что поменял:**
+- Я собрал все экспорты транзакций в `modules/transactions/index`
+- Я обновил auth/profileActions на новый путь
+- Я переключил админские логи и фронтовый хук на barrel
+- Я зафиксировал изменения в отчёте
+
+**Блокеры (если есть):**
+- Нет
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Создан barrel транзакций и обновлены импорты
+- **Что осталось:** Подтвердить обновлённые пути и перейти к следующему отделу
+- **Коммиты/PR:** будет оформлено в текущем PR
+- **Затронутые файлы:**
+  - `local-sim/modules/transactions/index.js`
+  - `local-sim/modules/auth/profileActions.js`
+  - `local-sim/modules/logs/api.js`
+  - `src/pages/admin/features/transactions/hooks/useAdminTransactions.js`
+  - `report.md`
 
 ## TAKE-20251017-005 — Dataset для auth api
 **Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 01:18

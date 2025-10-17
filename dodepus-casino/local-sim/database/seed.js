@@ -1,6 +1,8 @@
-import { buildSeedUserRecords } from '../modules/auth/accounts/seedLocalAuth.js';
-import { PRESET_ACCOUNTS } from '../modules/auth/accounts/seedAccounts.js';
-import { pickExtras } from '../modules/auth/profileExtras.js';
+import {
+  PRESET_ACCOUNTS,
+  buildSeedUserRecords,
+  pickExtras,
+} from '../modules/auth/index.js';
 import adminLogsDataset from '../db/admin_logs.json' assert { type: 'json' };
 import adminPermissionsDataset from '../db/admin_permissions.json' assert { type: 'json' };
 import adminPromocodesDataset from '../db/admin_promocodes.json' assert { type: 'json' };
@@ -15,7 +17,7 @@ import rankRewardsDataset from '../db/rank_rewards.json' assert { type: 'json' }
 import verificationQueueDataset from '../db/verification_queue.json' assert { type: 'json' };
 import verificationRequestsDataset from '../db/verification_requests.json' assert { type: 'json' };
 import verificationUploadsDataset from '../db/verification_uploads.json' assert { type: 'json' };
-import { applyVerificationSeed } from '../modules/verification/seed.js';
+import { applyVerificationSeed } from '../modules/verification/index.js';
 import { getLocalDatabase, resetLocalDatabase } from './engine.js';
 import { DEFAULT_LOCAL_DB_SCHEMA } from './schema.js';
 

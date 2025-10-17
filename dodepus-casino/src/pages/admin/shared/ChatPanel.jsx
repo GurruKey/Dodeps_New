@@ -1,7 +1,12 @@
 import { useState } from 'react';
-import { Badge, Button, Card, Form, Stack } from 'react-bootstrap';
+import { Alert, Badge, Button, Card, Form, Stack } from 'react-bootstrap';
 
-export default function ChatPanel({ heading, thread, placeholder }) {
+export default function ChatPanel({
+  heading,
+  thread,
+  placeholder,
+  emptyMessage = 'Пока нет сообщений в этом канале.',
+}) {
   const [draftMessage, setDraftMessage] = useState('');
   const [messages, setMessages] = useState(thread?.messages ?? []);
   const participantsCount = thread?.participants?.length ?? 0;
@@ -24,6 +29,8 @@ export default function ChatPanel({ heading, thread, placeholder }) {
     setDraftMessage('');
   };
 
+  const hasMessages = messages.length > 0;
+
   return (
     <Card className="h-100 bg-body-tertiary border-0 shadow-sm">
       <Card.Body
@@ -44,20 +51,26 @@ export default function ChatPanel({ heading, thread, placeholder }) {
         </div>
 
         <Stack gap={3} className="flex-grow-1 overflow-auto" style={{ maxHeight: 320 }}>
-          {messages.map((message) => (
-            <Card
-              key={message.id}
-              className="border-0 bg-body-secondary text-body"
-            >
-              <Card.Body className="py-2">
-                <div className="d-flex justify-content-between align-items-start">
-                  <span className="fw-semibold">{message.author}</span>
-                  <span className="text-muted small">{message.createdAt}</span>
-                </div>
-                <Card.Text className="mb-0">{message.text}</Card.Text>
-              </Card.Body>
-            </Card>
-          ))}
+          {hasMessages ? (
+            messages.map((message) => (
+              <Card
+                key={message.id}
+                className="border-0 bg-body-secondary text-body"
+              >
+                <Card.Body className="py-2">
+                  <div className="d-flex justify-content-between align-items-start">
+                    <span className="fw-semibold">{message.author}</span>
+                    <span className="text-muted small">{message.createdAt}</span>
+                  </div>
+                  <Card.Text className="mb-0">{message.text}</Card.Text>
+                </Card.Body>
+              </Card>
+            ))
+          ) : (
+            <Alert variant="light" className="border text-muted text-center mb-0">
+              {emptyMessage}
+            </Alert>
+          )}
         </Stack>
 
         <Stack direction="horizontal" gap={2} className="align-items-start">

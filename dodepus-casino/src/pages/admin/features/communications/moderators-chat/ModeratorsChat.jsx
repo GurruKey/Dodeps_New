@@ -1,16 +1,13 @@
-import ChatPanel from '../../../shared/ChatPanel.jsx';
-import { listModeratorsChatThreads } from '../../../../../../local-sim/modules/communications/index.js';
-
-const moderatorsChatThreads = listModeratorsChatThreads();
+import { COMMUNICATION_CHANNELS } from '../../../../../../local-sim/modules/communications/index.js';
+import { AdminChatChannelPanel } from '../blocks/index.js';
 
 export default function ModeratorsChat() {
-  const activeThread = moderatorsChatThreads[0];
-
   return (
-    <ChatPanel
-      heading="Модератор Чат"
-      thread={activeThread}
+    <AdminChatChannelPanel
+      channel={COMMUNICATION_CHANNELS.MODERATORS}
+      title="Модератор Чат"
       placeholder="Напишите ответ модераторам…"
+      emptyMessage="Пока нет сообщений от модераторов."
     />
   );
 }

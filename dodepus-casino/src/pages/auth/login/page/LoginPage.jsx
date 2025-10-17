@@ -3,9 +3,8 @@ import { Card, Button, Alert } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../../app/providers';
 
-// Блоки логина (пришлю следующими файлами)
-import EmailLoginForm from '../../../../features/auth/EmailLoginForm.jsx';
-import PhoneLoginForm from '../../../../features/auth/PhoneLoginForm.jsx';
+// Формы логина приходят из barrel `features/auth`
+import { EmailLoginForm, PhoneLoginForm } from '../../../../features/auth/index.js';
 
 export default function Login() {
   const { isAuthed } = useAuth();

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import ROLE_COLUMNS from '../constants/roleColumns.js';
+import { ROLE_COLUMNS } from '../constants/index.js';
 import normalizeClients from '../utils/normalizeClients.js';
 import createRoleGroups from '../utils/createRoleGroups.js';
 import getRoleGroupKey from '../utils/getRoleGroupKey.js';

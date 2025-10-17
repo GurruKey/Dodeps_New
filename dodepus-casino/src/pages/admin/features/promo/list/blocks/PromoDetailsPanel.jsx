@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Alert, Badge, Button, ButtonGroup, Modal, Stack, Table } from 'react-bootstrap';
-import ActivationChart from './ActivationChart.jsx';
+import { ActivationChart } from './index.js';
 
 const formatDateTime = (value) => {
   if (!value) return '—';

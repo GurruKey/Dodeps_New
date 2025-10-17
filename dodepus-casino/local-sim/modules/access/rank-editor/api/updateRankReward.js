@@ -1,4 +1,4 @@
-import { adminUpdateRankReward } from '../../../rank/api.js';
+import { adminUpdateRankReward } from '../../../rank/index.js';
 
 const ensureLevel = (value) => {
   const level = Number(value);

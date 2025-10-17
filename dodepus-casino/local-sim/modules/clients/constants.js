@@ -2,7 +2,7 @@ import {
   AUTH_USERS_TABLE,
   DEFAULT_AUTH_STATUS,
   PROFILES_TABLE,
-} from '../auth/constants.js';
+} from '../auth/index.js';
 
 export { AUTH_USERS_TABLE, PROFILES_TABLE };
 

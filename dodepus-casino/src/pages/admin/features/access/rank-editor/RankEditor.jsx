@@ -1,7 +1,6 @@
 import { Alert, Spinner, Stack } from 'react-bootstrap';
-import RankEditorIntro from './components/RankEditorIntro.jsx';
-import RankList from './components/RankList.jsx';
-import { useRankEditor } from './hooks/useRankEditor.js';
+import { RankEditorIntro, RankList } from './components/index.js';
+import { useRankEditor } from './hooks/index.js';
 
 export default function RankEditor() {
   const {

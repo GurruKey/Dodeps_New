@@ -3,9 +3,8 @@ import { Card, Button, Alert } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../../app/providers';
 
-// блоки (создадим следующими файлами)
-import EmailRegisterForm from '../../../../features/auth/EmailRegisterForm.jsx';
-import PhoneRegisterForm from '../../../../features/auth/PhoneRegisterForm.jsx';
+// Формы регистрации берём из barrel `features/auth`
+import { EmailRegisterForm, PhoneRegisterForm } from '../../../../features/auth/index.js';
 
 export default function Register() {
   const { isAuthed } = useAuth();
