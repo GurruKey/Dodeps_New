@@ -2,7 +2,7 @@ import { DEFAULT_AUTH_STATUS, PROFILE_KEY } from '../constants.js';
 import { pickExtras } from '../profileExtras.js';
 import { applyVerificationSeed } from '../../verification/index.js';
 import { PRESET_ACCOUNTS } from './seedAccounts.js';
-import { applyLocalDatabaseSeed } from '../../../database/index.js';
+import { applyLocalDatabaseSeed } from '../../shared/localDatabase.js';
 
 const ADMIN_ROLES = new Set(['admin', 'owner']);
 

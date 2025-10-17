@@ -1,4 +1,4 @@
-import { getLocalDatabase } from '../../../database/index.js';
+import { getLocalDatabase } from '../../shared/localDatabase.js';
 import {
   COMMUNICATION_MESSAGES_TABLE,
   COMMUNICATION_THREAD_PARTICIPANTS_TABLE,

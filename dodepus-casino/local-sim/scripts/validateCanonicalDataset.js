@@ -15,6 +15,7 @@ import verificationQueue from '../db/verification_queue.json' with { type: 'json
 import communicationThreads from '../db/communication_threads.json' with { type: 'json' };
 import communicationThreadParticipants from '../db/communication_thread_participants.json' with { type: 'json' };
 import communicationMessages from '../db/communication_messages.json' with { type: 'json' };
+import { TABLES } from '../modules/shared/index.js';
 
 const errors = [];
 
@@ -98,39 +99,39 @@ const registerDataset = (raw, label, key = 'id') => {
   return { rows: array, index };
 };
 
-const authDataset = registerDataset(authUsers, 'auth_users');
-const profileDataset = registerDataset(profiles, 'profiles');
-const rolesDataset = registerDataset(adminRoles, 'admin_roles');
-const permissionsDataset = registerDataset(adminPermissions, 'admin_permissions');
-const rolePermissionsDataset = registerDataset(adminRolePermissions, 'admin_role_permissions');
-const promocodeDataset = registerDataset(adminPromocodes, 'admin_promocodes', 'code');
-const promoIdDataset = registerDataset(adminPromocodes, 'admin_promocodes_by_id');
-const adminLogsDataset = registerDataset(adminLogs, 'admin_logs');
-const transactionsDataset = registerDataset(profileTransactions, 'profile_transactions');
-const rankLevelsDataset = registerDataset(rankLevels, 'rank_levels');
-const rankRewardsDataset = registerDataset(rankRewards, 'rank_rewards');
-const verificationRequestsDataset = registerDataset(verificationRequests, 'verification_requests');
-const verificationUploadsDataset = registerDataset(verificationUploads, 'verification_uploads');
-const verificationQueueDataset = registerDataset(verificationQueue, 'verification_queue');
-const communicationThreadsDataset = registerDataset(communicationThreads, 'communication_threads');
+const authDataset = registerDataset(authUsers, TABLES.authUsers);
+const profileDataset = registerDataset(profiles, TABLES.profiles);
+const rolesDataset = registerDataset(adminRoles, TABLES.adminRoles);
+const permissionsDataset = registerDataset(adminPermissions, TABLES.adminPermissions);
+const rolePermissionsDataset = registerDataset(adminRolePermissions, TABLES.adminRolePermissions);
+const promocodeDataset = registerDataset(adminPromocodes, TABLES.adminPromocodes, 'code');
+const promoIdDataset = registerDataset(adminPromocodes, `${TABLES.adminPromocodes}_by_id`);
+const adminLogsDataset = registerDataset(adminLogs, TABLES.adminLogs);
+const transactionsDataset = registerDataset(profileTransactions, TABLES.profileTransactions);
+const rankLevelsDataset = registerDataset(rankLevels, TABLES.rankLevels);
+const rankRewardsDataset = registerDataset(rankRewards, TABLES.rankRewards);
+const verificationRequestsDataset = registerDataset(verificationRequests, TABLES.verificationRequests);
+const verificationUploadsDataset = registerDataset(verificationUploads, TABLES.verificationUploads);
+const verificationQueueDataset = registerDataset(verificationQueue, TABLES.verificationQueue);
+const communicationThreadsDataset = registerDataset(communicationThreads, TABLES.communicationThreads);
 const communicationParticipantsDataset = registerDataset(
   communicationThreadParticipants,
-  'communication_thread_participants',
+  TABLES.communicationThreadParticipants,
 );
-const communicationMessagesDataset = registerDataset(communicationMessages, 'communication_messages');
+const communicationMessagesDataset = registerDataset(communicationMessages, TABLES.communicationMessages);
 
 // auth ↔ profiles parity
 if (authDataset.rows.length !== profileDataset.rows.length) {
   pushError(
-    `profiles: expected ${authDataset.rows.length} rows to match auth_users but received ${profileDataset.rows.length}`,
+    `profiles: expected ${authDataset.rows.length} rows to match ${TABLES.authUsers} but received ${profileDataset.rows.length}`,
   );
 }
 ensureReference({
   items: profileDataset.rows,
   fromKey: 'id',
   toMap: authDataset.index,
-  toLabel: 'auth_users.id',
-  label: 'profiles',
+  toLabel: `${TABLES.authUsers}.id`,
+  label: TABLES.profiles,
 });
 
 // profile transactions
@@ -138,8 +139,8 @@ ensureReference({
   items: transactionsDataset.rows,
   fromKey: 'user_id',
   toMap: authDataset.index,
-  toLabel: 'auth_users.id',
-  label: 'profile_transactions',
+  toLabel: `${TABLES.authUsers}.id`,
+  label: TABLES.profileTransactions,
 });
 
 // admin role permissions
@@ -147,22 +148,22 @@ ensureReference({
   items: rolePermissionsDataset.rows,
   fromKey: 'role_id',
   toMap: rolesDataset.index,
-  toLabel: 'admin_roles.id',
-  label: 'admin_role_permissions',
+  toLabel: `${TABLES.adminRoles}.id`,
+  label: TABLES.adminRolePermissions,
 });
 ensureReference({
   items: rolePermissionsDataset.rows,
   fromKey: 'permission_id',
   toMap: permissionsDataset.index,
-  toLabel: 'admin_permissions.id',
-  label: 'admin_role_permissions',
+  toLabel: `${TABLES.adminPermissions}.id`,
+  label: TABLES.adminRolePermissions,
 });
 
 // admin logs require non-empty admin_id values
 ensureNonEmptyString({
   items: adminLogsDataset.rows,
   key: 'admin_id',
-  label: 'admin_logs',
+  label: TABLES.adminLogs,
 });
 
 // rank rewards reference levels
@@ -170,8 +171,8 @@ ensureReference({
   items: rankRewardsDataset.rows,
   fromKey: 'rank_level_id',
   toMap: rankLevelsDataset.index,
-  toLabel: 'rank_levels.id',
-  label: 'rank_rewards',
+  toLabel: `${TABLES.rankLevels}.id`,
+  label: TABLES.rankRewards,
 });
 
 // verification datasets cross references
@@ -179,45 +180,45 @@ ensureReference({
   items: verificationRequestsDataset.rows,
   fromKey: 'user_id',
   toMap: authDataset.index,
-  toLabel: 'auth_users.id',
-  label: 'verification_requests',
+  toLabel: `${TABLES.authUsers}.id`,
+  label: TABLES.verificationRequests,
 });
 ensureReference({
   items: verificationRequestsDataset.rows,
   fromKey: 'reviewer_id',
   toMap: authDataset.index,
-  toLabel: 'auth_users.id',
-  label: 'verification_requests',
+  toLabel: `${TABLES.authUsers}.id`,
+  label: TABLES.verificationRequests,
   allowNull: true,
 });
 ensureReference({
   items: verificationUploadsDataset.rows,
   fromKey: 'user_id',
   toMap: authDataset.index,
-  toLabel: 'auth_users.id',
-  label: 'verification_uploads',
+  toLabel: `${TABLES.authUsers}.id`,
+  label: TABLES.verificationUploads,
 });
 ensureReference({
   items: verificationUploadsDataset.rows,
   fromKey: 'request_id',
   toMap: verificationRequestsDataset.index,
-  toLabel: 'verification_requests.id',
-  label: 'verification_uploads',
+  toLabel: `${TABLES.verificationRequests}.id`,
+  label: TABLES.verificationUploads,
   allowNull: true,
 });
 ensureReference({
   items: verificationQueueDataset.rows,
   fromKey: 'user_id',
   toMap: authDataset.index,
-  toLabel: 'auth_users.id',
-  label: 'verification_queue',
+  toLabel: `${TABLES.authUsers}.id`,
+  label: TABLES.verificationQueue,
 });
 ensureReference({
   items: verificationQueueDataset.rows,
   fromKey: 'request_id',
   toMap: verificationRequestsDataset.index,
-  toLabel: 'verification_requests.id',
-  label: 'verification_queue',
+  toLabel: `${TABLES.verificationRequests}.id`,
+  label: TABLES.verificationQueue,
   allowNull: true,
 });
 
@@ -226,29 +227,29 @@ ensureReference({
   items: communicationParticipantsDataset.rows,
   fromKey: 'thread_id',
   toMap: communicationThreadsDataset.index,
-  toLabel: 'communication_threads.id',
-  label: 'communication_thread_participants',
+  toLabel: `${TABLES.communicationThreads}.id`,
+  label: TABLES.communicationThreadParticipants,
 });
 ensureReference({
   items: communicationMessagesDataset.rows,
   fromKey: 'thread_id',
   toMap: communicationThreadsDataset.index,
-  toLabel: 'communication_threads.id',
-  label: 'communication_messages',
+  toLabel: `${TABLES.communicationThreads}.id`,
+  label: TABLES.communicationMessages,
 });
 ensureReference({
   items: communicationMessagesDataset.rows,
   fromKey: 'participant_id',
   toMap: communicationParticipantsDataset.index,
-  toLabel: 'communication_thread_participants.id',
-  label: 'communication_messages',
+  toLabel: `${TABLES.communicationThreadParticipants}.id`,
+  label: TABLES.communicationMessages,
 });
 
 // verification queue requires non-empty status strings
 ensureNonEmptyString({
   items: verificationQueueDataset.rows,
   key: 'status',
-  label: 'verification_queue',
+  label: TABLES.verificationQueue,
 });
 
 const totalDatasets = {

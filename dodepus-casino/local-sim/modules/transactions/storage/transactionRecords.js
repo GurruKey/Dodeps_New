@@ -1,4 +1,4 @@
-import { getLocalDatabase } from '../../../database/index.js';
+import { getLocalDatabase } from '../../shared/localDatabase.js';
 import { DEFAULT_TRANSACTION_CURRENCY, PROFILE_TRANSACTIONS_TABLE } from '../constants.js';
 
 const safeClone = (value) => {

@@ -3,7 +3,7 @@ import {
   listAuthUserRecords,
   pickExtras,
 } from '../../auth/index.js';
-import { getLocalDatabase } from '../../../database/index.js';
+import { getLocalDatabase } from '../../shared/localDatabase.js';
 import { PROFILES_TABLE } from '../constants.js';
 
 const safeClone = (value) => {

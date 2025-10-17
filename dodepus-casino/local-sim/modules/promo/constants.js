@@ -1,4 +1,4 @@
-export const ADMIN_PROMOCODES_TABLE = 'admin_promocodes';
+export { ADMIN_PROMOCODES_TABLE } from '../shared/index.js';
 
 export const ADMIN_PROMOCODES_STORAGE_KEY = 'dodepus.admin.promocodes';
 
