@@ -1,11 +1,12 @@
 import { Alert, Col, Row, Stack } from 'react-bootstrap';
 import { useOutletContext } from 'react-router-dom';
-import StatCard from './components/StatCard.jsx';
-import RoleColumn from './components/RoleColumn.jsx';
-import ROLE_COLUMNS from './constants/roleColumns.js';
-import useTotalClients from './hooks/useTotalClients.js';
-import useNewClients from './hooks/useNewClients.js';
-import useGroupedRoles from './hooks/useGroupedRoles.js';
+import { RoleColumn, StatCard } from './components/index.js';
+import { ROLE_COLUMNS } from './constants/index.js';
+import {
+  useGroupedRoles,
+  useNewClients,
+  useTotalClients,
+} from './hooks/index.js';
 
 export default function AdminOverview() {
   const { clients = [], isLoading, error } = useOutletContext() ?? {};

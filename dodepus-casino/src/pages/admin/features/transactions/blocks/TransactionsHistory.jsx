@@ -1,14 +1,19 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Alert, Button, Card, Spinner } from 'react-bootstrap';
 
-import TransactionsFilters from '../components/TransactionsFilters.jsx';
-import TransactionsSummary from '../components/TransactionsSummary.jsx';
-import TransactionsTable from '../components/TransactionsTable.jsx';
+import {
+  TransactionsFilters,
+  TransactionsSummary,
+  TransactionsTable,
+} from '../components/index.js';
 import { METHOD_LABELS, STATUS_VARIANTS, TYPE_VARIANTS } from '../constants.js';
 import { formatMethod, normalizeMethodValue } from '../utils.js';
-import { useAdminTransactions } from '../hooks/useAdminTransactions.js';
+import { useAdminTransactions } from '../hooks/index.js';
 import { useAuth } from '../../../../../app/providers';
-import { appendAdminLog } from '../../../../../../local-sim/modules/logs/index.js';
+import {
+  appendAdminLog,
+  ADMIN_LOG_SECTIONS,
+} from '../../../../../../local-sim/modules/logs/index.js';
 
 const TRANSACTIONS_VIEW_CONTEXT = 'transactions-view';
 
@@ -57,7 +62,7 @@ const getAdminId = (user) => {
 };
 
 const buildViewLogDetails = (user) => ({
-  section: 'transactions',
+  section: ADMIN_LOG_SECTIONS.TRANSACTIONS,
   action: 'Запросил просмотр истории транзакций',
   adminId: getAdminId(user),
   adminName: getAdminDisplayName(user),

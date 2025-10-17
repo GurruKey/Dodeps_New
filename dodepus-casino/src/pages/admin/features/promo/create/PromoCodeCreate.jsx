@@ -1,5 +1,5 @@
 import { Alert, Button, Card, Col, Form, Row, Stack } from 'react-bootstrap';
-import { promoTypeDefinitions } from '../../../../../../local-sim/modules/promo/definitions/index.js';
+import { promoTypeDefinitions } from '../../../../../../local-sim/modules/promo/index.js';
 import PromoTypesReference from './blocks/PromoTypesReference.jsx';
 import { usePromoConstructor } from './hooks/usePromoConstructor.js';
 import BasicSettingsSection from './sections/BasicSettingsSection.jsx';

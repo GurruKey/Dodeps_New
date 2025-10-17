@@ -1,3 +1,3 @@
-export { default } from './page/AdminPage.jsx';
-export { default as AdminLayout } from './layout/AdminLayout.jsx';
+export { default } from './page/index.js';
+export { default as AdminLayout } from './layout/index.js';
 export * as adminFeatures from './features';

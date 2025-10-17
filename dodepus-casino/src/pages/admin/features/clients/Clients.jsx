@@ -1,9 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Alert, Button, Card, Stack } from 'react-bootstrap';
-import ClientSearchFilters from './blocks/ClientSearchFilters.jsx';
-import ClientsTable from './blocks/ClientsTable.jsx';
-import ClientStats from './blocks/ClientStats.jsx';
+import { ClientSearchFilters, ClientsTable, ClientStats } from './blocks/index.js';
 
 function normalize(value) {
   return String(value ?? '')

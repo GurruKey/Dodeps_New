@@ -1,4 +1,4 @@
-import { loadExtras } from '../auth/profileExtras.js';
+import { loadExtras } from '../auth/index.js';
 import { listDefaultRankLevels } from './dataset.js';
 import { resolveRankProgress } from './helpers.js';
 import {

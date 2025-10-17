@@ -5,14 +5,18 @@ import { useAuth } from '../../../../app/providers';
 import {
   updateVerificationRequestStatus,
   resetVerificationRequestModules,
-} from '../../../../../local-sim/modules/verification/api.js';
-import { useAdminVerificationRequests } from './hooks/useAdminVerificationRequests.js';
-import VerificationRequestsBlock from './blocks/VerificationRequestsBlock.jsx';
-import VerificationPartialBlock from './blocks/VerificationPartialBlock.jsx';
-import VerificationRejectedBlock from './blocks/VerificationRejectedBlock.jsx';
-import VerificationApprovedBlock from './blocks/VerificationApprovedBlock.jsx';
-import VerificationRequestModal from './components/VerificationRequestModal.jsx';
-import VerificationIdleAccountsModal from './components/VerificationIdleAccountsModal.jsx';
+} from '../../../../../local-sim/modules/verification/index.js';
+import { useAdminVerificationRequests, useAdminVerificationIdleAccounts } from './hooks/index.js';
+import {
+  VerificationRequestsBlock,
+  VerificationPartialBlock,
+  VerificationRejectedBlock,
+  VerificationApprovedBlock,
+} from './blocks/index.js';
+import {
+  VerificationRequestModal,
+  VerificationIdleAccountsModal,
+} from './components/index.js';
 import {
   getAdminDisplayName,
   getAdminId,
@@ -24,7 +28,6 @@ import {
   summarizeModuleStates,
   VERIFICATION_MODULES,
 } from '../../../../shared/verification/index.js';
-import { useAdminVerificationIdleAccounts } from './hooks/useAdminVerificationIdleAccounts.js';
 
 const parseTimestamp = (value) => {
   if (!value) return 0;

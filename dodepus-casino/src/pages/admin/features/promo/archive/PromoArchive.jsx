@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Stack } from 'react-bootstrap';
 
-import PromoArchiveHeader from './blocks/PromoArchiveHeader.jsx';
-import PromoCodesTable from '../list/blocks/PromoCodesTable.jsx';
-import PromoDetailsPanel from '../list/blocks/PromoDetailsPanel.jsx';
+import { PromoArchiveHeader } from './blocks/index.js';
+import { PromoCodesTable, PromoDetailsPanel } from '../list/blocks/index.js';
 import {
   listAdminArchivedPromocodes,
   subscribeToAdminPromocodes,

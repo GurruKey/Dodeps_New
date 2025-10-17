@@ -1,4 +1,21 @@
 import { getCommunicationSnapshot } from './dataset.js';
+import { COMMUNICATION_CHANNELS, COMMUNICATION_CHANNEL_LIST } from './constants.js';
+
+const CHANNEL_VALUES = Object.freeze([...COMMUNICATION_CHANNEL_LIST]);
+const KNOWN_CHANNELS = new Set(CHANNEL_VALUES);
+
+const normalizeChannelInput = (value) => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) {
+    return null;
+  }
+
+  return KNOWN_CHANNELS.has(normalized) ? normalized : null;
+};
 
 const formatTimestamp = (value) => {
   if (!value) {
@@ -71,24 +88,37 @@ const buildThread = (record, snapshot) => {
 };
 
 const buildThreadsByChannel = (channel) => {
+  const normalizedChannel = normalizeChannelInput(channel);
+  if (!normalizedChannel) {
+    return [];
+  }
+
   const snapshot = getCommunicationSnapshot();
   return snapshot.threads
-    .filter((thread) => thread.channel === channel)
+    .filter((thread) => thread.channel === normalizedChannel)
     .map((thread) => buildThread(thread, snapshot));
 };
 
 const loadThreadList = (channel) => freezeThreadList(buildThreadsByChannel(channel));
 
-export const moderatorsChatThreads = loadThreadList('moderators');
-export const administratorsChatThreads = loadThreadList('administrators');
-export const staffChatThreads = loadThreadList('staff');
+export const moderatorsChatThreads = loadThreadList(COMMUNICATION_CHANNELS.MODERATORS);
+export const administratorsChatThreads =
+  loadThreadList(COMMUNICATION_CHANNELS.ADMINISTRATORS);
+export const staffChatThreads = loadThreadList(COMMUNICATION_CHANNELS.STAFF);
 
-export const listModeratorsChatThreads = () => cloneThreads(buildThreadsByChannel('moderators'));
-export const listAdministratorsChatThreads = () => cloneThreads(buildThreadsByChannel('administrators'));
-export const listStaffChatThreads = () => cloneThreads(buildThreadsByChannel('staff'));
+export const listCommunicationThreads = (channel) => cloneThreads(buildThreadsByChannel(channel));
+
+export const listModeratorsChatThreads = () =>
+  listCommunicationThreads(COMMUNICATION_CHANNELS.MODERATORS);
+export const listAdministratorsChatThreads = () =>
+  listCommunicationThreads(COMMUNICATION_CHANNELS.ADMINISTRATORS);
+export const listStaffChatThreads = () =>
+  listCommunicationThreads(COMMUNICATION_CHANNELS.STAFF);
 
 export const __internals = Object.freeze({
   buildThread,
   buildThreadsByChannel,
   loadThreadList,
+  normalizeChannelInput,
+  KNOWN_CHANNELS,
 });

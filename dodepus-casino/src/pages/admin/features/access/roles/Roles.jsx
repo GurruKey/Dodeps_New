@@ -1,7 +1,6 @@
 import { Stack } from 'react-bootstrap';
 import { useOutletContext } from 'react-router-dom';
-import RolesMatrix from './blocks/RolesMatrix.jsx';
-import AssignRole from './blocks/AssignRole/AssignRole.jsx';
+import { AssignRole, RolesMatrix } from './blocks/index.js';
 
 export default function Roles() {
   const { isLoading } = useOutletContext() ?? {};

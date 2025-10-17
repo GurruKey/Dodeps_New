@@ -4,7 +4,7 @@ import {
   getRankDefinitions,
   getRankDefinitionById,
   getRankBenefitTemplate as loadRankBenefitTemplate,
-} from '../rank/api.js';
+} from '../rank/index.js';
 
 const collectRoles = (...sources) => {
   const normalized = [];

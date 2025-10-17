@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useAuth } from '../../../../app/providers';
-import { getProfileRankData } from '../../../../../local-sim/modules/rank/api.js';
+import { getProfileRankData } from '../../../../../local-sim/modules/rank/index.js';
 
 const buildTransactionsSignature = (transactions) =>
   (Array.isArray(transactions) ? transactions : [])

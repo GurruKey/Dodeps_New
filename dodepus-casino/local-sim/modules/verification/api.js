@@ -8,7 +8,7 @@ export {
 
 export {
   createProfileActions as createClientVerificationActions,
-} from '../auth/profileActions.js';
+} from '../auth/index.js';
 
 export {
   verificationQueue,

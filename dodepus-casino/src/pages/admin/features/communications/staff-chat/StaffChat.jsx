@@ -1,16 +1,13 @@
-import ChatPanel from '../../../shared/ChatPanel.jsx';
-import { listStaffChatThreads } from '../../../../../../local-sim/modules/communications/index.js';
-
-const staffChatThreads = listStaffChatThreads();
+import { COMMUNICATION_CHANNELS } from '../../../../../../local-sim/modules/communications/index.js';
+import { AdminChatChannelPanel } from '../blocks/index.js';
 
 export default function StaffChat() {
-  const activeThread = staffChatThreads[0];
-
   return (
-    <ChatPanel
-      heading="Стаф Чат"
-      thread={activeThread}
+    <AdminChatChannelPanel
+      channel={COMMUNICATION_CHANNELS.STAFF}
+      title="Стаф Чат"
       placeholder="Напишите сообщение для стафа…"
+      emptyMessage="Пока нет сообщений от стафа."
     />
   );
 }
