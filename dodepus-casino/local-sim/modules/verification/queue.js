@@ -1,7 +1,7 @@
 import {
   getVerificationQueueSnapshot,
   listVerificationQueueRecords,
-} from './dataset.js';
+} from './storage/index.js';
 
 const formatSubmittedAt = (value) => {
   if (!value) {

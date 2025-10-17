@@ -1,5 +1,5 @@
-import { getLocalDatabase } from '../../database/engine.js';
-import { AUTH_USERS_TABLE, DEFAULT_AUTH_STATUS } from './constants.js';
+import { getLocalDatabase } from '../../../database/index.js';
+import { AUTH_USERS_TABLE, DEFAULT_AUTH_STATUS } from '../constants.js';
 
 const safeClone = (value) => {
   if (value == null) {

@@ -19,4 +19,4 @@ export {
   getVerificationQueueSnapshot,
   listVerificationQueueRecords,
   findVerificationQueueRecordById,
-} from './dataset.js';
+} from './storage/index.js';

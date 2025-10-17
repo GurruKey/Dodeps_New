@@ -1,21 +1,32 @@
-export { notifyAdminPromocodesChanged, subscribeToAdminPromocodes } from './core/events.js';
-export { listAdminPromocodes, listAdminArchivedPromocodes } from './api/listPromocodes.js';
-export { createAdminPromocode } from './api/createPromocode.js';
-export { getAdminPromocodeById } from './api/getPromocode.js';
 export {
+  notifyAdminPromocodesChanged,
+  subscribeToAdminPromocodes,
+} from './core/index.js';
+export {
+  listAdminPromocodes,
+  listAdminArchivedPromocodes,
+  createAdminPromocode,
+  getAdminPromocodeById,
   pauseAdminPromocode,
   resumeAdminPromocode,
   archiveAdminPromocode,
   extendAdminPromocodeEndsAt,
-} from './api/updatePromocode.js';
+} from './api/index.js';
 export {
   promoTypeDefinitions,
   promoTypeMap,
   getPromoTypeById,
 } from './definitions/index.js';
+export { ADMIN_PROMOCODES_TABLE } from './constants.js';
 
-import { normalizeCode, normalizeStatus, sortPromocodes } from './core/helpers.js';
-import { composePromocode, seedRecords, ensureSeededRecords } from './core/repository.js';
+import {
+  normalizeCode,
+  normalizeStatus,
+  sortPromocodes,
+  composePromocode,
+  seedRecords,
+  ensureSeededRecords,
+} from './core/index.js';
 
 export const __internals = Object.freeze({
   normalizeCode,

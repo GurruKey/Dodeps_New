@@ -1,10 +1,10 @@
-import { getLocalDatabase } from '../../database/engine.js';
+import { getLocalDatabase } from '../../../database/index.js';
 import {
   ADMIN_LOGS_TABLE,
   DEFAULT_ADMIN_ACTION,
   DEFAULT_ADMIN_ROLE,
   DEFAULT_ADMIN_SECTION,
-} from './constants.js';
+} from '../constants.js';
 
 const safeClone = (value) => {
   if (value == null) {

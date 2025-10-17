@@ -26,10 +26,23 @@ export interface ProfileTransactionEntry {
   method: TransactionMethod;
   createdAt: string | null;
   updatedAt: string | null;
+  raw?: ProfileTransactionRow | Record<string, unknown> | null;
 }
 
 export interface TransactionsSnapshot {
   records: ReadonlyArray<ProfileTransactionEntry>;
   byId: Map<string, ProfileTransactionEntry>;
   byUserId: Map<string, ReadonlyArray<ProfileTransactionEntry>>;
+}
+
+export interface TransactionLogEntry {
+  id: string;
+  adminId: string;
+  adminName: string;
+  role: string;
+  section: string;
+  action: string;
+  createdAt: string;
+  context?: string;
+  metadata?: Record<string, unknown>;
 }

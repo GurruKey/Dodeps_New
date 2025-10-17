@@ -1,5 +1,12 @@
 # Migration Notes
 
+## 2025-10-17 — Dataset validation & admin routes
+- Добавлен скрипт `local-sim/scripts/validateCanonicalDataset.js`, который валидирует referential integrity (`user_id`, `rank_level_id`,
+  `thread_id`, `request_id`) между JSON-таблицами и проверяет уникальность `id`/`code` перед переносом в SQL.
+- Создан npm-скрипт `npm run local-sim:validate`, чтобы быстро запускать проверку каноничного датасета перед миграциями.
+- Описаны admin-маршруты в `local-sim/routes/admin.md`, фиксирующие контракт локального API для auth, promo, transactions,
+  verification, rank, logs и communications перед реализацией SQL.
+
 ## 2025-10-17 — Auth users & profiles tables
 - **auth_users**
   - Columns: `id text PK`, `email text not null`, `phone text`, `password text not null`,
@@ -19,10 +26,15 @@
 
 **Parity заметки (clients/auth):**
 - Таблицы `auth_users` и `profiles` держат canonical пользователей и их профильные поля в local-sim; демо-записей нет.
-- Dataset `modules/auth/dataset` нормализует строки `auth_users`, строит snapshot с индексами `byId`/`byEmail`/`byPhone` и заменяет прямое чтение БД в `modules/auth/api`.
-- Dataset `modules/clients/dataset` переиспользует snapshot auth и дополняет его профилями, фиксируя ISO-таймстемпы и индексы `byId`/`byEmail`/`byPhone`/`profilesById`.
-- `modules/clients/api` читает админских клиентов только через dataset и объединяет их с profile extras.
+- JSON-файлы `db/auth_users.json` и `db/profiles.json` содержат четыре предустановленных аккаунта (owner, ops admin, support, vip manager) и синхронизированы с профилями, чтобы local-sim хранил точные email/phone/role значения перед SQL.
+- Storage helper `modules/auth/storage/authUsers` нормализует строки `auth_users`, строит snapshot с индексами `byId`/`byEmail`/`byPhone` и заменяет прямое чтение БД в `modules/auth/api`.
+- Storage helper `modules/clients/storage/clientSnapshot` переиспользует snapshot auth и дополняет его профилями, фиксируя ISO-таймстемпы и индексы `byId`/`byEmail`/`byPhone`/`profilesById`.
+- `modules/clients/api` читает админских клиентов только через storage индекс и объединяет их с profile extras.
 - Типы и структура вынесены в `local-sim/types/clients.ts` и `local-sim/types/auth.ts` для подготовки будущих SQL-схем.
+- TypeScript-описания `local-sim/types/auth.ts` и `local-sim/types/clients.ts` фиксируют snake_case строки JSON и нормализованные snapshot-записи, облегчая генерацию SQL-схем.
+- Дополнительно зафиксированы структуры promo/transactions/verification/rank в `local-sim/types/*.ts`: описаны snake_case строки таблиц, нормализованные записи с `raw`/history и наборы params для будущих миграций.
+- Типы промокодов теперь включают repeat/audience/limits/display параметры, а транзакции — shape динамических логов админ-панели.
+- Табличные константы для auth/profiles/verification/transactions теперь экспортируются из модулей и переиспользуются сидером локальной БД, чтобы исключить расхождения имён перед миграциями.
 
 ## 2025-10-16 — Admin promocodes table
 - **admin_promocodes**
@@ -36,8 +48,8 @@
 
 **Parity заметки (admin promocodes):**
 - JSON `admin_promocodes.json` хранит canonical набор кодов, который поднимается сидером local-sim.
-- Dataset `modules/promo/dataset` читает таблицу `admin_promocodes` через локальную БД и мапит snake_case → camelCase структуры.
-- `modules/promo/storage` и core-репозиторий используют dataset как источник истины и персистят изменения обратно в локальную БД.
+- Storage helper `modules/promo/storage/promocodes` читает таблицу `admin_promocodes` через локальную БД, мапит snake_case → camelCase структуры и формирует canonical snapshot.
+- `modules/promo/storage/index` используется core-репозиторием и API как единая точка доступа к промокодам и точка записи обратно в локальную БД.
 - Поле `activations` остаётся jsonb-массивом; при переходе в SQL возможен вынос в отдельную таблицу `admin_promocode_activations`.
 
 ## 2025-10-16 — Admin roles & permissions tables
@@ -60,8 +72,8 @@
 
 **Parity заметки (admin access):**
 - JSONы `admin_roles.json`, `admin_permissions.json`, `admin_role_permissions.json` описывают canonical набор ролей и доступов.
-- Dataset `modules/access/dataset` читает локальную БД, нормализует роли/права и строит матрицу разрешений, которой пользуются все модули доступа.
-- `modules/access/roles` переиспользует dataset, отдаёт готовый snapshot и предоставляет хелперы для фронта; fallback остаётся только на случай пустой БД.
+- Storage helper `modules/access/storage/accessSnapshot` читает локальную БД, нормализует роли/права и строит матрицу разрешений, которой пользуются все модули доступа.
+- `modules/access/roles` переиспользует storage snapshot, отдаёт готовый набор и предоставляет хелперы для фронта; fallback остаётся только на случай пустой БД.
 
 ## 2025-10-16 — Rank levels & rewards tables
 - **rank_levels**
@@ -81,8 +93,8 @@
 
 **Parity заметки (rank):**
 - JSONы `rank_levels.json` и `rank_rewards.json` задают canonical набор VIP-уровней и базовых наград.
-- `modules/rank/dataset` читает таблицы через локальную БД, мапит snake_case поля в camelCase структуры.
-- Хранилище `modules/rank/storage` использует эти таблицы как дефолт, а оверрайды (localStorage) применяются поверх них.
+- Storage helper `modules/rank/storage/rankDataset` читает таблицы через локальную БД, мапит snake_case поля в camelCase структуры и отдаёт snapshot для остальных модулей рангов.
+- Хранилище `modules/rank/storage` использует dataset-хелпер как дефолт, а оверрайды (localStorage) применяются поверх него.
 
 ## 2025-10-16 — Admin logs table
 - **admin_logs**
@@ -94,8 +106,9 @@
 
 **Parity заметки (admin logs):**
 - JSON `admin_logs.json` задаёт canonical данные для local-sim и будущей SQL-таблицы.
-- Dataset `modules/logs/dataset` нормализует строки таблицы, приводит snake_case → camelCase, строит snapshot индексы `byId`/`byAdminId`/`bySection`.
-- Модуль `modules/logs/api` использует dataset как источник истины, а динамические логи транзакций продолжают дополнять выдачу поверх canonical набора.
+- Storage helper `modules/logs/storage/adminLogs` нормализует строки таблицы, приводит snake_case → camelCase, строит snapshot индексы `byId`/`byAdminId`/`bySection`.
+- Модуль `modules/logs/api` использует storage helper как источник истины, а динамические логи транзакций продолжают дополнять выдачу поверх canonical набора.
+- Типы `local-sim/types/logs.ts` фиксируют и строки таблицы, и нормализованные записи snapshot для дальнейшей генерации SQL-типов.
 
 ## 2025-10-16 — Communications tables
 - **communication_threads**
@@ -114,8 +127,9 @@
 - JSON-файлы `local-sim/db` отражают будущие таблицы 1в1 по именам и полям.
 - Демо-события удалены: массивы по умолчанию пустые и ожидают реальных записей после подтверждения схемы.
 - В local-sim формат сообщений мапится на camelCase (`createdAt`), но оригинальные поля в JSON остаются snake_case для SQL.
-- Dataset `modules/communications/dataset` читает таблицы коммуникаций из локальной БД, сортирует участников по `joined_at`,
-  а сообщения — по `created_at DESC`, и используется модулем `threads` как канонический источник данных.
+- Snapshot `modules/communications/storage/communicationSnapshot` читает таблицы коммуникаций из локальной БД, сортирует
+  участников по `joined_at`, а сообщения — по `created_at DESC`, и используется модулем `threads` как канонический источник
+  данных.
 
 ## 2025-10-16 — Profile transactions table
 - **profile_transactions**
@@ -126,9 +140,9 @@
   - Indexes: primary key on `id`, btree index on (`user_id`, `created_at` DESC)
 
 **Parity заметки (transactions):**
-- JSON `profile_transactions.json` хранит структуру таблицы; демо-транзакции очищены и будут добавляться реальными сидерами.
-- Dataset `modules/transactions/dataset` нормализует строки таблицы, сортирует по `created_at DESC`, строит индексы `byId`/`byUserId` и выступает каноническим источником для API.
-- Модуль `modules/transactions/api` читает snapshot dataset, добавляет почту/никнейм клиента и мапит snake_case поля (`created_at`, `transaction_type`) в camelCase для фронта.
+- JSON `profile_transactions.json` содержит реальные записи для предустановленных админских аккаунтов (депозиты/выводы/бонусы), а сидеры могут дополнять данные поверх них.
+- Storage helper `modules/transactions/storage/transactionRecords` нормализует строки таблицы, сортирует по `created_at DESC`, строит индексы `byId`/`byUserId` и выступает каноническим источником для API.
+- Модуль `modules/transactions/api` читает snapshot storage-хелпера, добавляет почту/никнейм клиента и мапит snake_case поля (`created_at`, `transaction_type`) в camelCase для фронта.
 
 ## 2025-10-16 — Verification tables
 - **verification_requests**
@@ -151,8 +165,8 @@
     foreign key `user_id` → `auth_users(id)` ON DELETE CASCADE
   - Indexes: primary key on `id`, btree index on (`status`, `submitted_at` DESC)
 
-**Parity заметки (verification):**
-- JSONы `verification_requests.json`, `verification_uploads.json`, `verification_queue.json` отражают будущие таблицы; демо-записи очищены.
-- Dataset `modules/verification/dataset` мапит таблицы `verification_requests`, `verification_uploads`, `verification_queue` в canonical структуры, строит snapshot с индексами `byId`/`byRequestId`/`byUserId` и используется `profileExtras` и админ-модулями.
-- `profileExtras` мапит snake_case данные в camelCase для фронта и обратно при сохранении через dataset.
-- Очередь (`modules/verification/queue`) читает snapshot dataset, форматирует `submitted_at` для UI и переиспользует canonical данные.
+- **Parity заметки (verification):**
+- JSONы `verification_requests.json`, `verification_uploads.json`, `verification_queue.json` содержат актуальные заявки и загрузки для предустановленных аккаунтов (owner/ops/vip/support) и выступают каноничными записями local-sim.
+- Storage helper `modules/verification/storage/verificationDataset` мапит таблицы `verification_requests`, `verification_uploads`, `verification_queue` в canonical структуры, строит snapshot с индексами `byId`/`byRequestId`/`byUserId` и используется `profileExtras` и админ-модулями.
+- `profileExtras` мапит snake_case данные в camelCase для фронта и обратно при сохранении через storage-хелпер.
+- Очередь (`modules/verification/queue`) читает snapshot storage-хелпера, форматирует `submitted_at` для UI и переиспользует canonical данные.

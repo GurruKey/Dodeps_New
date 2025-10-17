@@ -2,9 +2,12 @@ import {
   DEFAULT_PROMOCODE_CASHOUT_CAP,
   DEFAULT_PROMOCODE_WAGER,
 } from '../constants.js';
-import { listCanonicalPromocodeRecords, clonePromocodeRecord } from '../dataset.js';
+import {
+  clonePromocodeRecord,
+  listCanonicalPromocodeRecords,
+  storageAdapter,
+} from '../storage/index.js';
 import { promoTypeDefinitions, getPromoTypeById } from '../definitions/index.js';
-import { storageAdapter } from '../storage.js';
 import { emitPromocodesChanged } from './events.js';
 import {
   clampUsage,

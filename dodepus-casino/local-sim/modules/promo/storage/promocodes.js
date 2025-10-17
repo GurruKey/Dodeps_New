@@ -1,5 +1,5 @@
-import { getLocalDatabase } from '../../database/engine.js';
-import { ADMIN_PROMOCODES_TABLE } from './constants.js';
+import { getLocalDatabase } from '../../database/index.js';
+import { ADMIN_PROMOCODES_TABLE } from '../constants.js';
 
 const cloneDeep = (value) => {
   if (value == null) {
@@ -239,7 +239,34 @@ export const listNormalizedPromocodeRecords = () => {
 export const listCanonicalPromocodeRecords = () =>
   listNormalizedPromocodeRecords().map((record) => clonePromocodeRecord(record)).filter(Boolean);
 
+const tryGetLocalStorage = () => null;
+
+const readFromStorage = () => listCanonicalPromocodeRecords();
+
+const writeToStorage = (records) => {
+  const db = getLocalDatabase();
+  db.truncate(ADMIN_PROMOCODES_TABLE);
+
+  if (!Array.isArray(records)) {
+    return;
+  }
+
+  records.forEach((record) => {
+    const row = mapPromocodeRecordToRow(clonePromocodeRecord(record));
+    if (row) {
+      db.upsert(ADMIN_PROMOCODES_TABLE, row);
+    }
+  });
+};
+
+export const storageAdapter = Object.freeze({
+  tryGetLocalStorage,
+  readFromStorage,
+  writeToStorage,
+});
+
 export const __internals = Object.freeze({
+  cloneDeep,
   normalizeString,
   toNullableNumber,
   toNullablePositiveInt,

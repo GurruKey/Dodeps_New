@@ -1,19 +1,19 @@
-import cashback from './cashback';
-import depositFreeSpins from './depositFreeSpins';
-import depositWelcome from './depositWelcome';
-import eventCode from './eventCode';
-import happyHour from './happyHour';
-import mystery from './mystery';
-import noDepositFreeSpins from './noDepositFreeSpins';
-import noDepositMoney from './noDepositMoney';
-import nonSticky from './nonSticky';
-import promoStore from './promoStore';
-import referral from './referral';
-import reloadBonus from './reloadBonus';
-import riskFree from './riskFree';
-import sticky from './sticky';
-import vipPersonal from './vipPersonal';
-import wagerFree from './wagerFree';
+import cashback from './cashback.js';
+import depositFreeSpins from './depositFreeSpins.js';
+import depositWelcome from './depositWelcome.js';
+import eventCode from './eventCode.js';
+import happyHour from './happyHour.js';
+import mystery from './mystery.js';
+import noDepositFreeSpins from './noDepositFreeSpins.js';
+import noDepositMoney from './noDepositMoney.js';
+import nonSticky from './nonSticky.js';
+import promoStore from './promoStore.js';
+import referral from './referral.js';
+import reloadBonus from './reloadBonus.js';
+import riskFree from './riskFree.js';
+import sticky from './sticky.js';
+import vipPersonal from './vipPersonal.js';
+import wagerFree from './wagerFree.js';
 
 export const promoTypeDefinitions = [
   depositWelcome,

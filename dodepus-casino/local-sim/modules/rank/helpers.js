@@ -1,4 +1,4 @@
-import { listDefaultRankLevels } from './dataset.js';
+import { listDefaultRankLevels } from './storage/index.js';
 
 const ensureNumber = (value) => {
   const numeric = Number(value);

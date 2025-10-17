@@ -1,8 +1,8 @@
-import { PROFILE_KEY } from '../constants';
-import { pickExtras } from '../profileExtras';
+import { DEFAULT_AUTH_STATUS, PROFILE_KEY } from '../constants.js';
+import { pickExtras } from '../profileExtras.js';
 import { applyVerificationSeed } from '../../verification/index.js';
-import { PRESET_ACCOUNTS } from './seedAccounts';
-import { applyLocalDatabaseSeed } from '../../../database/seed.js';
+import { PRESET_ACCOUNTS } from './seedAccounts.js';
+import { applyLocalDatabaseSeed } from '../../../database/index.js';
 
 const ADMIN_ROLES = new Set(['admin', 'owner']);
 
@@ -46,6 +46,14 @@ const buildTimestamps = (index) => {
   };
 };
 
+const normalizeRoleLevel = (value) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return null;
+  }
+  return Math.trunc(numeric);
+};
+
 const toStoredUser = (account, index) => {
   const timestamps = buildTimestamps(index);
   const { baseRole, roles } = mergeRoles(account.role, [
@@ -54,6 +62,13 @@ const toStoredUser = (account, index) => {
     account.user_metadata?.roles,
   ]);
   const isAdmin = roles.includes('admin') || Boolean(account?.user_metadata?.isAdmin);
+  const status = typeof account.status === 'string' ? account.status.trim().toLowerCase() : '';
+  const normalizedStatus = status || DEFAULT_AUTH_STATUS;
+
+  const normalizedRoleLevel =
+    normalizeRoleLevel(account.role_level ?? account.roleLevel) ??
+    normalizeRoleLevel(account.user_metadata?.roleLevel ?? account.user_metadata?.role_level) ??
+    normalizeRoleLevel(account.app_metadata?.roleLevel ?? account.app_metadata?.role_level);
 
   const appMetadata = {
     provider: account.email ? 'email' : 'phone',
@@ -99,6 +114,10 @@ const toStoredUser = (account, index) => {
     email: (account.email ?? '').toLowerCase(),
     phone: account.phone ?? '',
     password: account.password,
+    status: normalizedStatus,
+    role: baseRole,
+    role_level: normalizedRoleLevel,
+    roles,
     created_at: account.created_at ?? timestamps.created_at,
     confirmed_at: account.confirmed_at ?? timestamps.confirmed_at,
     email_confirmed_at:

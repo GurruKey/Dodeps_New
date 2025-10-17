@@ -30,6 +30,47 @@ export interface AdminPromocodeActivationRecord {
   clientId?: string;
 }
 
+export interface PromocodeRepeatParams {
+  limit?: number;
+  delayHours?: number;
+}
+
+export interface PromocodeAudienceParams {
+  segments?: string[];
+  countries?: string[];
+  levels?: string[];
+  tags?: string[];
+  vipOnly?: boolean;
+  newPlayersOnly?: boolean;
+}
+
+export interface PromocodeLimitsParams {
+  minDeposit?: number;
+  maxDeposit?: number;
+  minBalance?: number;
+  maxBalance?: number;
+  maxUsagePerClient?: number;
+  allowedCurrencies?: string[];
+}
+
+export interface PromocodeDisplayParams {
+  highlight?: boolean;
+  showOnMain?: boolean;
+  showInStore?: boolean;
+  channels?: string[];
+  highlightColor?: string;
+  badgeText?: string;
+  description?: string;
+}
+
+export interface AdminPromocodeParams {
+  audience?: PromocodeAudienceParams;
+  limits?: PromocodeLimitsParams;
+  display?: PromocodeDisplayParams;
+  repeat?: PromocodeRepeatParams;
+  [key: string]: unknown;
+}
+
 export interface AdminPromocodeRecord {
   id: string;
   code: string;
@@ -42,10 +83,16 @@ export interface AdminPromocodeRecord {
   wager: number | null;
   cashoutCap: number | null;
   notes: string;
-  params: Record<string, unknown>;
+  params: AdminPromocodeParams;
   startsAt: string | null;
   endsAt: string | null;
   createdAt: string | null;
   updatedAt: string | null;
   activations: AdminPromocodeActivationRecord[];
+  repeat?: PromocodeRepeatParams;
+}
+
+export interface AdminPromocodeSnapshot {
+  records: ReadonlyArray<AdminPromocodeRecord>;
+  byId: Map<string, AdminPromocodeRecord>;
 }

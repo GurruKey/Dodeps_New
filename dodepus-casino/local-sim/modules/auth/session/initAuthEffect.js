@@ -3,10 +3,10 @@ import {
   clearStoredSession,
   getStoredSession,
   getUserById,
-} from '../api';
-import { LEGACY_LS_KEY } from '../constants';
-import { composeUser } from '../composeUser';
-import { loadExtras } from '../profileExtras';
+} from '../api.js';
+import { LEGACY_LS_KEY } from '../constants.js';
+import { composeUser } from '../composeUser.js';
+import { loadExtras } from '../profileExtras.js';
 
 export function initAuthEffect({ setSession, setUser, setLoading }) {
   let mounted = true;

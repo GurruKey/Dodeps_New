@@ -7,6 +7,953 @@
 ---
 
 <!-- DO NOT REMOVE:TAKES_START -->
+## TAKE-20251017-050 — Local-sim: маршруты и валидация датасета
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 22:15
+
+**Резюме:** Описал каноничные admin-маршруты local-sim и добавил автоматическую проверку связей JSON-таблиц. Настроил npm-команду,
+ чтобы быстро гонять валидацию перед будущими SQL-миграциями.
+
+**Объём работ (файлы/модули):**
+- `local-sim/routes/admin.md`
+- `local-sim/scripts/validateCanonicalDataset.js`
+- `package.json`
+- `local-sim/migration-notes.md`
+- `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Добавил скрипт `validateCanonicalDataset` для проверки JSON
+- [x] Настроил npm-скрипт `local-sim:validate`
+- [x] Обновил migration-notes с новыми маршрутами и проверкой
+
+**Критерии приёмки:**
+- [x] Документ маршрутов описывает ключевые admin-эндпоинты с примерами/заглушками
+- [x] Скрипт `validateCanonicalDataset` валидирует ключевые связи (`user_id`, `rank_level_id`, `thread_id`, `request_id`)
+- [x] Команда `npm run local-sim:validate` запускает проверку без ошибок
+
+**Понятным языком: что сделано/что поменял:**
+- Я расписал маршруты admin-local-sim с примерами ответов.
+- Я добавил скрипт, который проверяет, что JSON-таблицы согласованы между собой.
+- Я вывел команду `npm run local-sim:validate`, чтобы гонять проверку в один шаг.
+- Я дополнил migration-notes и отчёт свежим прогрессом.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim от Гринча
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Подготовил документацию маршрутов и автоматическую проверку каноничного датасета.
+- **Что осталось:** Дождаться подтверждения local-sim и перейти к SQL-миграциям.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** Перед миграциями запускаем `npm run local-sim:validate`, чтобы убедиться в ссылочной целостности JSON.
+- **Затронутые файлы:**
+  - `local-sim/routes/admin.md`
+  - `local-sim/scripts/validateCanonicalDataset.js`
+  - `package.json`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251017-049 — Local-sim: типы promo/transactions/verification/rank
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 21:00
+
+**Резюме:** Дополнил TypeScript-описания promo, transactions, verification и rank, чтобы зафиксировать snake_case строки таблиц, нормализованные записи snapshot и параметры для будущих SQL-схем.
+
+**Объём работ (файлы/модули):**
+- `local-sim/types/promo.ts`
+- `local-sim/types/transactions.ts`
+- `local-sim/types/verification.ts`
+- `local-sim/types/rank.ts`
+- `local-sim/migration-notes.md`
+- `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Расширил типы промокодов параметрами audience/limits/repeat/display
+- [x] Добавил `raw` и типы логов в `transactions.ts`
+- [x] Задал нормализованные записи verification (history, uploads, queue)
+- [x] Описал dataset рангов и обновил migration-notes
+
+**Критерии приёмки:**
+- [x] Типы promo описывают и строки таблицы, и нормализованные записи с параметрами
+- [x] Типы transactions включают `raw` и структуру логов
+- [x] Verification типы покрывают заявки, историю, загрузки и очередь
+- [x] Migration-notes отражают новые описания типов
+
+**Понятным языком: что сделано/что поменял:**
+- Я расписал параметры промокодов (аудитория, лимиты, повтор, отображение).
+- Я добавил `raw` и тип логов в транзакциях, чтобы не терять контекст.
+- Я описал историю и загрузки в типах verification.
+- Я дописал dataset рангов и обновил заметки миграций.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim от Гринча
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Обновил типы promo/transactions/verification/rank и миграционные заметки под новые структуры.
+- **Что осталось:** Получить подтверждение и перейти к подготовке SQL-миграций.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** Типы теперь полностью отражают canonical JSON и нормализованные snapshot-структуры.
+- **Затронутые файлы:**
+  - `local-sim/types/promo.ts`
+  - `local-sim/types/transactions.ts`
+  - `local-sim/types/verification.ts`
+  - `local-sim/types/rank.ts`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251017-048 — Local-sim: типы auth/clients/logs
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 20:15
+
+**Резюме:** Синхронизировал TypeScript-описания auth, clients и logs с каноничными JSON local-sim, чтобы облегчить генерацию SQL-схем и не терять связь snake_case ↔ camelCase.
+
+**Объём работ (файлы/модули):**
+- `local-sim/types/auth.ts`
+- `local-sim/types/clients.ts`
+- `local-sim/types/logs.ts`
+- `local-sim/migration-notes.md`
+- `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Обновил `auth.ts`, добавив row/record-структуры и метаданные
+- [x] Переписал `clients.ts`, разделив JSON-строки профилей и нормализованные extras
+- [x] Добавил row-типы для admin logs и обновил migration-notes
+
+**Критерии приёмки:**
+- [x] Типы auth описывают snake_case строки JSON и нормализованные snapshot-записи
+- [x] Типы clients разделяют структуру таблицы и camelCase extras
+- [x] Логи имеют row-типы и отражены в migration-notes
+
+**Понятным языком: что сделано/что поменял:**
+- Я переписал типы auth, чтобы они повторяли JSON и snapshot.
+- Я разделил профильные типы на строки таблицы и camelCase extras.
+- Я добавил row-типы для логов и отметил это в заметках миграций.
+- Я обновил отчёт об этом тейке.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim от Гринча
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Уточнил TypeScript-описания auth/clients/logs и обновил миграционные заметки.
+- **Что осталось:** Получить подтверждение и двигаться к SQL-миграциям.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** Типы теперь 1в1 соответствуют JSON-структурам и snapshot-представлениям.
+- **Затронутые файлы:**
+  - `local-sim/types/auth.ts`
+  - `local-sim/types/clients.ts`
+  - `local-sim/types/logs.ts`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251017-047 — Local-sim: табличные константы
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 19:45
+
+**Резюме:** Объединил все имена таблиц local-sim в экспортируемые константы модулей и применил их в сидере, чтобы исключить расхождения перед будущими SQL-миграциями.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/verification/constants.js`
+- `local-sim/modules/verification/index.js`
+- `local-sim/modules/verification/storage/verificationDataset.js`
+- `local-sim/modules/auth/profileExtras.js`
+- `local-sim/modules/promo/index.js`
+- `local-sim/modules/access/index.js`
+- `local-sim/database/seed.js`
+- `local-sim/migration-notes.md`
+- `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Добавил константы таблиц verification и экспортировал их через barrel
+- [x] Экспортировал константы promo/access для переиспользования
+- [x] Перевёл seed.js и profileExtras на новые константы таблиц
+- [x] Обновил migration-notes и отчёт
+
+**Критерии приёмки:**
+- [x] `database/seed` использует те же имена таблиц, что и публичные модули
+- [x] Модули auth/verification/profileExtras не содержат жёстко прописанных имён таблиц
+- [x] Константы таблиц доступны через barrel каждого модуля
+
+**Понятным языком: что сделано/что поменял:**
+- Я создал файл с константами таблиц в verification.
+- Я экспортировал константы таблиц из promo и access.
+- Я обновил сидер и профили, чтобы брать имена таблиц из констант.
+- Я дополнил заметки миграций и отчёт.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim от Гринча
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Унифицировал имена таблиц между модулями и сидером local-sim, обновил документацию.
+- **Что осталось:** Получить подтверждение и двигаться к SQL-миграциям.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** Константы таблиц теперь единые для модулей и сидера.
+- **Затронутые файлы:**
+  - `local-sim/modules/verification/constants.js`
+  - `local-sim/modules/verification/index.js`
+  - `local-sim/modules/verification/storage/verificationDataset.js`
+  - `local-sim/modules/auth/profileExtras.js`
+  - `local-sim/modules/promo/index.js`
+  - `local-sim/modules/access/index.js`
+  - `local-sim/database/seed.js`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251017-046 — Local-sim: canonical auth dataset
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 19:05
+
+**Резюме:** Заполнил локальные JSON таблицы auth и profiles каноничными администраторами, обновил сидеры, транзакции и верификационные данные, чтобы local-sim отражал реальную структуру перед SQL.
+
+**Объём работ (файлы/модули):**
+- `local-sim/db/auth_users.json`
+- `local-sim/db/profiles.json`
+- `local-sim/db/profile_transactions.json`
+- `local-sim/db/verification_requests.json`
+- `local-sim/db/verification_uploads.json`
+- `local-sim/db/verification_queue.json`
+- `local-sim/modules/auth/accounts/seedAccounts.js`
+- `local-sim/modules/auth/accounts/seedLocalAuth.js`
+- `local-sim/migration-notes.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Описал canonical аккаунты в `db/auth_users.json` и `db/profiles.json`
+- [x] Обновил сидер auth для чтения JSON и прокидывания статуса/ролей
+- [x] Дополнил транзакции и верификацию данными по новым аккаунтам
+- [x] Обновил migration-notes и отчёт
+
+**Критерии приёмки:**
+- [x] Auth snapshot возвращает четыре предустановленных аккаунта с корректными ролями и статусами
+- [x] Transactions и verification JSON ссылаются на те же `user_id`
+- [x] Сидер `seedLocalAuth` сохраняет `status`, `role_level` и массив `roles`
+
+**Понятным языком: что сделано/что поменял:**
+- Я записал пользователей и профили админов в JSON.
+- Я заставил сидер auth брать данные из этих JSON и хранить статусы.
+- Я добавил реальные транзакции и заявки на верификацию для этих людей.
+- Я переписал заметки миграций под новый набор данных.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim от Гринча
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Каноничные аккаунты и связанные с ними данные заведены в db JSON, сидеры и заметки обновлены.
+- **Что осталось:** Получить подтверждение и переходить к подготовке SQL-миграций.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** Данные в local-sim теперь полностью согласованы между auth, transactions и verification.
+- **Затронутые файлы:**
+  - `local-sim/db/auth_users.json`
+  - `local-sim/db/profiles.json`
+  - `local-sim/db/profile_transactions.json`
+  - `local-sim/db/verification_requests.json`
+  - `local-sim/db/verification_uploads.json`
+  - `local-sim/db/verification_queue.json`
+  - `local-sim/modules/auth/accounts/seedAccounts.js`
+  - `local-sim/modules/auth/accounts/seedLocalAuth.js`
+  - `local-sim/migration-notes.md`
+
+## TAKE-20251017-045 — Local-sim: storage для promo/transactions/verification/rank
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 18:25
+
+**Резюме:** Перенёс оставшиеся dataset-хелперы promo, transactions, verification и rank в подпапки storage, собрал единые barrel-экспорты и обновил документацию. Теперь все ключевые модули local-sim используют storage-индексы перед будущими SQL-миграциями.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/promo/storage/promocodes.js`
+- `local-sim/modules/transactions/storage/transactionRecords.js`
+- `local-sim/modules/verification/storage/verificationDataset.js`
+- `local-sim/modules/rank/storage/rankDataset.js`
+- `local-sim/migration-notes.md`
+- `local-sim/modules/*/index.js`, `api.js`, `helpers.js`
+- `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Перенести promo dataset в `storage/promocodes`
+- [x] Перенести transactions dataset в `storage/transactionRecords`
+- [x] Перенести verification dataset в `storage/verificationDataset`
+- [x] Перенести rank dataset в `storage/rankDataset`
+- [x] Обновить migration-notes под новые storage-хелперы
+
+**Критерии приёмки:**
+- [x] Модули promo/transactions/verification/rank используют только storage-баррели без прямых импортов dataset
+- [x] Storage-индексы реэкспортируют canonical snapshot-хелперы и адаптеры
+- [x] Migration-notes отражают перенос dataset-логики в storage
+
+**Понятным языком: что сделано/что поменял:**
+- Я вынес все оставшиеся dataset-файлы в подпапки storage.
+- Я обновил импорты модулей, чтобы они брали данные через storage.
+- Я переписал migration-notes под новую структуру.
+- Я зафиксировал изменения в отчёте.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim от Гринча
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Storage-хелперы для promo, transactions, verification, rank собраны и подключены через единые индексы; документация обновлена.
+- **Что осталось:** Получить подтверждение и перейти к подготовке SQL-миграций.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** Удалены устаревшие `dataset.js`, добавлены новые storage-файлы.
+- **Затронутые файлы:**
+  - `local-sim/modules/promo/storage/promocodes.js`
+  - `local-sim/modules/promo/storage/index.js`
+  - `local-sim/modules/promo/core/repository.js`
+  - `local-sim/modules/transactions/storage/transactionRecords.js`
+  - `local-sim/modules/transactions/storage/index.js`
+  - `local-sim/modules/transactions/api.js`
+  - `local-sim/modules/transactions/index.js`
+  - `local-sim/modules/verification/storage/extras.js`
+  - `local-sim/modules/verification/storage/verificationDataset.js`
+  - `local-sim/modules/verification/storage/index.js`
+  - `local-sim/modules/verification/index.js`
+  - `local-sim/modules/verification/api.js`
+  - `local-sim/modules/verification/queue.js`
+  - `local-sim/modules/verification/admin.js`
+  - `local-sim/modules/rank/storage/rankDataset.js`
+  - `local-sim/modules/rank/storage/index.js`
+  - `local-sim/modules/rank/api.js`
+  - `local-sim/modules/rank/helpers.js`
+  - `local-sim/modules/rank/index.js`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+
+## TAKE-20251017-044 — Local-sim: ревизия storage прогресса
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 17:50
+
+**Резюме:** Провёл ревизию модулей local-sim, чтобы убедиться в наличии storage-баррелов и оценить остаток работ по переносу dataset.
+
+**Объём работ (файлы/модули):**
+- Проверка `local-sim/modules/*/storage/index.js`
+- Анализ импортов `./dataset.js` в модулях local-sim
+- Обновление `report.md`
+
+**Чеклист выполнения:**
+- [ ] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Проверил наличие storage/index.js во всех модулях local-sim
+- [x] Собрал список модулей с прямыми импортами `./dataset.js`
+- [x] Сформировал сводку по выполненным и оставшимся задачам
+
+**Критерии приёмки:**
+- [x] Отчёт фиксирует текущее покрытие storage по модулям
+- [x] Указаны оставшиеся модули с зависимостью от dataset
+- [x] Пользователь получает оценку объёма оставшихся работ
+
+**Понятным языком: что сделано/что поменял:**
+- Я проверил все модули local-sim на наличие storage индексов.
+- Я нашёл модули, где всё ещё импортируется dataset напрямую.
+- Я описал, сколько работы осталось и какие модули впереди.
+
+**Блокеры (если есть):**
+- Блокеров нет
+
+**Итоги выполнения:**
+- **Статус:** ✅ Выполнено
+- **Что сделано:** Провёл ревизию storage-структуры и обновил отчёт.
+- **Что осталось:** Перенести dataset-логику promo, transactions, verification, rank в storage и дождаться подтверждения local-sim.
+- **Коммиты/PR:** текущая ветка `work` (новых коммитов нет)
+- **Замечания:** Изменений кода не делал, только отчёт.
+- **Затронутые файлы:**
+  - `report.md`
+
+## TAKE-20251017-043 — Local-sim: storage для admin access snapshot
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 17:33
+
+**Резюме:** Перенёс snapshot доступа в подпапку storage, собрал общий barrel и обновил импорты. Продолжаю выравнивать local-sim по единым путям перед SQL.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/access/storage/accessSnapshot.js`
+- `local-sim/modules/access/storage/index.js`
+- `local-sim/modules/access/roles/index.js`
+- `local-sim/modules/access/index.js`
+- `local-sim/migration-notes.md`
+- `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Перенести dataset доступа в `storage/accessSnapshot.js`
+- [x] Обновить barrel `storage/index.js` и публичные экспорты
+- [x] Перевести roles/index на импорт через storage
+- [x] Обновить migration-notes и отчёт
+
+**Критерии приёмки:**
+- [x] В каталоге `access` нет прямых импортов `./dataset.js`
+- [x] Barrel `modules/access/storage/index.js` экспортирует snapshot и логи
+- [x] Migration notes описывают storage helper доступа
+
+**Понятным языком: что сделано/что поменял:**
+- Я перенёс dataset доступа в storage/accessSnapshot.
+- Я обновил barrel storage и все импорты на новый путь.
+- Я переписал заметки миграций и отчёт под storage.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Snapshot доступа перенесён в storage, импорты и документация обновлены.
+- **Что осталось:** Получить подтверждение и готовить SQL-миграции.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** Файл `modules/access/dataset.js` удалён, логика переехала в storage.
+- **Затронутые файлы:**
+  - `local-sim/modules/access/storage/accessSnapshot.js`
+  - `local-sim/modules/access/storage/index.js`
+  - `local-sim/modules/access/roles/index.js`
+  - `local-sim/modules/access/index.js`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+
+## TAKE-20251017-042 — Local-sim: storage для auth users
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 17:15
+
+**Резюме:** Перенёс auth snapshot в подпапку storage, добавил barrel и обновил импорты. Продолжаю приводить local-sim к единому правилу путей перед SQL-миграциями.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/auth/storage/authUsers.js`
+- `local-sim/modules/auth/storage/index.js`
+- `local-sim/modules/auth/api.js`
+- `local-sim/modules/auth/index.js`
+- `local-sim/migration-notes.md`
+- `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Перенести auth dataset в `storage/authUsers.js`
+- [x] Добавить barrel `storage/index.js` для auth
+- [x] Обновить импорты auth API и публичного barrel на storage
+- [x] Обновить migration-notes и отчёт под новый путь
+
+**Критерии приёмки:**
+- [x] В каталоге `auth` нет прямых импортов `./dataset.js`
+- [x] Barrel `modules/auth/index.js` экспортирует snapshot только через storage
+- [x] Migration notes фиксируют новый storage helper auth пользователей
+
+**Понятным языком: что сделано/что поменял:**
+- Я перенёс auth snapshot в файл storage/authUsers.
+- Я сделал barrel storage и переключил API на новый путь.
+- Я обновил migration-notes и этот отчёт.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Auth snapshot перенесён в storage, barrel собран, импорты и документация обновлены.
+- **Что осталось:** Получить подтверждение и готовить SQL-миграции.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** Файл `dataset.js` переехал в `storage/authUsers.js`.
+- **Затронутые файлы:**
+  - `local-sim/modules/auth/storage/authUsers.js`
+  - `local-sim/modules/auth/storage/index.js`
+  - `local-sim/modules/auth/api.js`
+  - `local-sim/modules/auth/index.js`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251017-041 — Local-sim: storage для communications snapshot
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 16:45
+
+**Резюме:** Перенёс snapshot коммуникаций в подпапку storage, собрал barrel и обновил импорты. Продолжаю выравнивать local-sim по
+единому правилу путей перед будущими SQL-миграциями.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/communications/storage/communicationSnapshot.js`
+- `local-sim/modules/communications/storage/index.js`
+- `local-sim/modules/communications/threads.js`
+- `local-sim/modules/communications/index.js`
+- `local-sim/migration-notes.md`
+- `report.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Перенести snapshot коммуникаций в `storage/communicationSnapshot.js`
+- [x] Собрать barrel `storage/index.js`
+- [x] Обновить импорты `threads` и публичного barrel на storage
+- [x] Обновить migration-notes и отчёт под новый путь
+
+**Критерии приёмки:**
+- [x] В каталоге `communications` нет импортов `./dataset.js`
+- [x] Barrel `communications/index.js` экспортирует snapshot через `storage/index.js`
+- [x] Migration notes фиксируют новый путь snapshot коммуникаций
+
+**Понятным языком: что сделано/что поменял:**
+- Я перенёс dataset коммуникаций в подпапку storage.
+- Я сделал индекс storage и обновил все импорты на него.
+- Я поправил migration-notes и этот отчёт.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** snapshot коммуникаций перенесён в storage, barrel собран, документация обновлена.
+- **Что осталось:** получить подтверждение и готовить SQL-миграции.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** Файл `dataset.js` переименован в `storage/communicationSnapshot.js`.
+- **Затронутые файлы:**
+  - `local-sim/modules/communications/storage/communicationSnapshot.js`
+  - `local-sim/modules/communications/storage/index.js`
+  - `local-sim/modules/communications/threads.js`
+  - `local-sim/modules/communications/index.js`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251017-040 — Local-sim: storage для clients snapshot
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 16:30
+
+**Резюме:** Переношу клиентский dataset в подпапку storage, добавляю barrel и обновляю импорты, чтобы все пути шли через единый индекс перед SQL-миграциями.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/clients/storage/clientSnapshot.js`
+- `local-sim/modules/clients/storage/index.js`
+- `local-sim/modules/clients/api.js`
+- `local-sim/modules/clients/index.js`
+- `local-sim/migration-notes.md`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Перенести клиентский dataset в `storage/clientSnapshot.js`
+- [x] Собрать barrel `storage/index.js` для клиентов
+- [x] Обновить импорты `clients/api` и публичного barrel на новый путь storage
+
+**Критерии приёмки:**
+- [x] В каталоге `clients` нет прямых импортов `./dataset.js`
+- [x] Barrel `clients/index.js` реэкспортирует функции через `storage/index.js`
+- [x] Migration notes отражают новый storage helper для клиентов
+
+**Понятным языком: что сделано/что поменял:**
+- Перенёс весь код dataset клиентов в новый файл storage/clientSnapshot.
+- Добавил индекс storage и переключил клиенты на импорт через него.
+- Обновил заметки миграций, чтобы зафиксировать новый путь.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Storage для клиентов собран, импорты и документация обновлены.
+- **Что осталось:** Дождаться подтверждения и затем синхронизировать SQL.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** Удалил старый `modules/clients/dataset.js`, всё переехало в storage.
+- **Затронутые файлы:**
+  - `local-sim/modules/clients/storage/clientSnapshot.js`
+  - `local-sim/modules/clients/storage/index.js`
+  - `local-sim/modules/clients/api.js`
+  - `local-sim/modules/clients/index.js`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+
+## TAKE-20251017-039 — Local-sim: storage для admin logs
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 16:18
+
+**Резюме:** Планирую вынести helpers админских логов в подпапку `storage`, собрать barrel и обновить импорты API. Это продолжит унификацию путей local-sim перед миграциями SQL.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/logs/dataset.js`
+- `local-sim/modules/logs/storage/index.js`
+- `local-sim/modules/logs/storage/adminLogs.js`
+- `local-sim/modules/logs/api.js`
+- `local-sim/modules/logs/index.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Вынести код dataset в `storage/adminLogs.js`
+- [x] Добавить barrel `storage/index.js`
+- [x] Обновить импорты API и публичного barrel `logs/index.js`
+
+**Критерии приёмки:**
+- [x] В каталоге `logs` нет прямых импортов `dataset.js`
+- [x] `logs/storage/index.js` реэкспортирует функции чтения/снимков
+- [x] API логов использует новый путь storage
+
+**Понятным языком: что сделано/что поменял:**
+- Перенёс логику dataset в новый файл storage/adminLogs.
+- Создал индекс storage и подключил его в публичный barrel.
+- Обновил API, чтобы брать данные только через storage.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Перенёс admin logs в storage, обновил импорты и barrels.
+- **Что осталось:** Получить подтверждение local-sim и переходить к SQL.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** —
+- **Затронутые файлы:**
+  - `local-sim/modules/logs/storage/adminLogs.js`
+  - `local-sim/modules/logs/storage/index.js`
+  - `local-sim/modules/logs/api.js`
+  - `local-sim/modules/logs/index.js`
+  - `local-sim/migration-notes.md`
+  - `report.md`
+
+## TAKE-20251017-038 — Local-sim: storage для access logs
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 16:05
+
+**Резюме:** Перенёс логи изменений ролей в подпапку `storage`, собрал barrel и обновил публичный экспорт модуля access. Это продолжает унификацию путей local-sim перед будущими SQL-миграциями.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/access/storage/rolePermissionLogs.js`
+- `local-sim/modules/access/storage/index.js`
+- `local-sim/modules/access/index.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Перенести лог ролей в подпапку `storage/rolePermissionLogs.js`
+- [x] Добавить barrel `storage/index.js` для access
+- [x] Обновить публичный экспорт модуля на новый путь
+
+**Критерии приёмки:**
+- [x] В каталоге `access` нет прямых импортов `rolePermissionLogs.js`
+- [x] Barrel `access/index.js` экспортирует логи через `storage/index.js`
+- [x] Публичные функции логов (append/list/clear) и `__internals` доступны как раньше
+
+**Понятным языком: что сделано/что поменял:**
+- Перенёс файл логов в подпапку storage.
+- Сделал индекс storage, который реэкспортирует функции логов.
+- Обновил barrel access, чтобы он брал логи только через storage.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Перенёс логи ролей в storage, добавил barrel и обновил экспорт access.
+- **Что осталось:** Получить подтверждение local-sim и переходить к SQL.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** —
+- **Затронутые файлы:**
+  - `local-sim/modules/access/storage/rolePermissionLogs.js`
+  - `local-sim/modules/access/storage/index.js`
+  - `local-sim/modules/access/index.js`
+  - `report.md`
+
+
+## TAKE-20251017-037 — Local-sim: storage для transaction logs
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 15:53
+
+**Резюме:** Перенёс хранилище логов транзакций в подкаталог `storage`, оформил barrel и выровнял публичный API модуля.
+Это продолжает унификацию путей local-sim и готовит данные к будущей миграции в SQL.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/transactions/storage/index.js`
+- `local-sim/modules/transactions/storage/logs.js`
+- `local-sim/modules/transactions/index.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Перенести `transactions/logs.js` в `storage/logs.js`
+- [x] Собрать barrel `transactions/storage/index.js`
+- [x] Обновить публичный экспорт модуля на новый путь `storage`
+
+**Критерии приёмки:**
+- [x] В каталоге `transactions` нет прямых импортов `./logs.js`
+- [x] Barrel `transactions/index.js` экспортирует логи через `storage/index.js`
+- [x] Новая структура сохраняет существующий API `readTransactionLogs` и `appendTransactionLog`
+
+**Понятным языком: что сделано/что поменял:**
+- Перенёс файл логов в новую папку storage.
+- Добавил index, чтобы импортировать логи через единый путь.
+- Проверил, что публичный API транзакций остался прежним.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Переставил хранилище логов и обновил barrel экспорта.
+- **Что осталось:** Получить подтверждение local-sim и затем переходить к SQL.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** —
+- **Затронутые файлы:**
+  - `local-sim/modules/transactions/storage/index.js`
+  - `local-sim/modules/transactions/storage/logs.js`
+  - `local-sim/modules/transactions/index.js`
+  - `report.md`
+
+## TAKE-20251017-036 — Local-sim: storage для rank
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 15:39
+
+**Резюме:** Планирую перенести хранилище рангов в подпапку `storage` и собрать barrel, чтобы унифицировать публичные пути local-sim. Обновлю импорты API и помощников, проверю, что модуль продолжает экспортировать те же функции.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/rank/storage/index.js`
+- `local-sim/modules/rank/api.js`
+- `local-sim/modules/rank/index.js`
+- `local-sim/modules/rank/helpers.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Перенести хранилище rank в подпапку `storage` с barrel `index.js`
+- [x] Обновить импорты rank на новый путь `storage/index.js`
+- [x] Проверить публичный API rank после переноса
+
+**Критерии приёмки:**
+- [x] Модуль `rank/api` импортирует хранилище через `storage/index.js`
+- [x] Barrel `rank/index.js` реэкспортирует хранилище из нового индекса
+- [x] В каталоге `rank` нет прямых импортов `storage.js`
+
+**Понятным языком: что сделано/что поменял:**
+- Перенёс файл `storage.js` в подпапку `storage` и оставил логику без изменений.
+- Подключил API рангов к новому пути `storage/index.js`.
+- Добавил экспорт хранилища в `rank/index.js`, чтобы barrel оставался единой точкой входа.
+
+**Блокеры (если есть):**
+- —
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Перенёс rank storage в подпапку, обновил импорты и barrel.
+- **Что осталось:** Получить подтверждение local-sim и далее двигаться к SQL.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** —
+- **Затронутые файлы:**
+  - `local-sim/modules/rank/storage/index.js`
+  - `local-sim/modules/rank/api.js`
+  - `local-sim/modules/rank/index.js`
+  - `report.md`
+
+## TAKE-20251017-035 — Local-sim: storage для verification
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 15:27
+
+**Резюме:** Перенёс модуль хранения verification в подпапку со своим barrel, обновил импорты и проверил публичный API модуля.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/verification/storage/index.js`
+- `local-sim/modules/verification/admin.js`
+- `local-sim/modules/verification/index.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Перенёс `verification/storage.js` в подкаталог с barrel
+- [x] Обновил импорты verification на новый путь
+- [x] Проверил публичный API verification после перестановки
+
+**Критерии приёмки:**
+- [x] Модуль `verification/admin` импортирует хранилище через `storage/index.js`
+- [x] Barrel `verification/index.js` реэкспортирует хранилище из нового индекса
+- [x] В проекте нет прямых импортов `verification/storage.js`
+
+**Понятным языком: что сделано/что поменял:**
+- Перенёс файл хранилища verification в подпапку storage.
+- Сделал barrel `storage/index.js` и обновил импорты.
+- Убедился, что публичные экспорты verification остались прежними.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Перенёс хранилище verification и обновил barrels.
+- **Что осталось:** Дождаться подтверждения и решить по SQL.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** —
+- **Затронутые файлы:**
+  - `local-sim/modules/verification/storage/index.js`
+  - `local-sim/modules/verification/index.js`
+  - `local-sim/modules/verification/admin.js`
+  - `report.md`
+
+## TAKE-20251017-034 — Local-sim: storage для promo
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 15:22
+
+**Резюме:** Вынес адаптер хранилища промокодов в отдельный подкаталог `storage` и собрал для него barrel.
+Обновил импорты `core` и `api`, чтобы они тянули хранилище через новый индекс и не трогали файл напрямую.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/promo/storage/index.js`
+- `local-sim/modules/promo/core/repository.js`
+- `local-sim/modules/promo/api/createPromocode.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Перенёс `storage.js` в подкаталог с barrel `storage/index.js`
+- [x] Обновил импорты promo-core и promo-api на новый путь
+
+**Критерии приёмки:**
+- [x] Модуль `promo/core` обращается к хранилищу через `storage/index.js`
+- [x] Эндпоинт `createPromocode` использует тот же barrel
+- [x] В каталоге `promo` нет прямых импортов `storage.js`
+
+**Понятным языком: что сделано/что поменял:**
+- Я перенёс адаптер хранилища промо в отдельную папку.
+- Я сделал индекс, чтобы хранилище подключалось по правилам barrels.
+- Я поправил импорты в core и api, чтобы они брали новый путь.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Подготовлен barrel для promo storage и обновлены импорты.
+- **Что осталось:** Получить подтверждение и решать по SQL.
+- **Коммиты/PR:** текущая ветка `work`
+- **Затронутые файлы:**
+  - `local-sim/modules/promo/storage/index.js`
+  - `local-sim/modules/promo/core/repository.js`
+  - `local-sim/modules/promo/api/createPromocode.js`
+
+## TAKE-20251017-033 — Local-sim: barrels для promo
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 14:20
+
+**Резюме:** Привёл промо-модуль local-sim к правилу barrels: собрал индекс для `core` и `api`, убрал прямые импорты файлов.
+Обновил `promo/index.js`, чтобы публичный API подтягивался только через новые точки входа и сохранял `__internals`.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/promo/index.js`
+- `local-sim/modules/promo/api/{index.js,createPromocode.js,getPromocode.js,listPromocodes.js,updatePromocode.js}`
+- `local-sim/modules/promo/core/index.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Собрал barrels для `promo/core` и `promo/api`
+- [x] Перевёл все импорты promo на новые barrels
+- [x] Проверил, что `__internals` promo используют barrel-функции
+
+**Критерии приёмки:**
+- [x] `local-sim/modules/promo/index.js` не импортирует файлы напрямую из `api/*`
+- [x] API promo берёт хелперы и репозиторий через `core/index.js`
+- [x] Все публичные методы promo доступны через barrel `local-sim/modules/promo/index.js`
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил index-файлы для подпапок core и api в promo.
+- Я обновил промо-эндпоинты, чтобы они брали хелперы через новый barrel.
+- Я почистил `promo/index.js`, чтобы публичный API был через новые index-файлы.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Настроены barrels promo и обновлены импорты local-sim.
+- **Что осталось:** Получить подтверждение и, при необходимости, двигаться к SQL.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** —
+
+## TAKE-20251017-032 — Local-sim: barrel для database
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 14:05
+
+**Резюме:** Собрал единый barrel для каталога `local-sim/database`, чтобы все модули тянули `getLocalDatabase` и сидеры через одну точку. Обновил датасеты и сидеры модулей, проверил, что доступ к локальной БД и seed-состоянию продолжает работать через новый публичный путь.
+
+**Объём работ (файлы/модули):**
+- `local-sim/database/index.js`
+- `local-sim/modules/auth/{profileExtras.js,dataset.js,accounts/seedLocalAuth.js}`
+- `local-sim/modules/{access,clients,communications,logs,promo,rank,transactions,verification}/dataset.js`
+- `local-sim/modules/promo/storage.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Собрал barrel `local-sim/database/index.js`
+- [x] Перевёл модули local-sim на новый импорт базы
+- [x] Проверил сидер local-sim на использование barrel
+
+**Критерии приёмки:**
+- [x] Все импорты `getLocalDatabase` идут через `local-sim/database/index.js`
+- [x] `applyLocalDatabaseSeed` доступен из `local-sim/database/index.js`
+- [x] Нет прямых импортов `local-sim/database/engine.js` и `seed.js` вне каталога `database`
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил index-файл в каталоге local-sim/database.
+- Я обновил все модули, чтобы они брали базу через новый barrel.
+- Я убедился, что сидер подключает функции через index.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Собран barrel базы и обновлены импорты модулей local-sim.
+- **Что осталось:** Дождаться подтверждения и при необходимости перейти к SQL.
+- **Коммиты/PR:** текущая ветка `work`
+- **Замечания:** —
+
+## TAKE-20251017-031 — Local-sim: унификация импортов
+**Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 13:50
+
+**Резюме:** Привёл локальные модули авторизации к единым путям с расширениями `.js`, чтобы полностью соблюсти правила публичного API без глубоких импортов. Обновил словари промо-определений, проверил, что barrels продолжают экспортировать нужные функции.
+
+**Объём работ (файлы/модули):**
+- `local-sim/modules/auth/accounts/seedAccounts.js`
+- `local-sim/modules/auth/accounts/seedLocalAuth.js`
+- `local-sim/modules/auth/admin/createAdminPanelActions.js`
+- `local-sim/modules/auth/api.js`
+- `local-sim/modules/auth/composeUser.js`
+- `local-sim/modules/auth/profileActions.js`
+- `local-sim/modules/auth/session/initAuthEffect.js`
+- `local-sim/modules/promo/definitions/index.js`
+
+**Чеклист выполнения:**
+- [x] Local-sim: маршрут/эндпоинты готовы
+- [ ] Local-sim: подтверждено Гринч
+- [ ] SQL-миграции применены (после подтверждения local-sim)
+- [x] Обновил относительные импорты на расширения `.js`
+- [x] Проверил, что barrels продолжают экспортировать публичные функции
+
+**Критерии приёмки:**
+- [x] Все локальные импорты внутри `local-sim/modules/auth` используют явное расширение `.js`
+- [x] Справочник промо-типов импортируется с расширениями `.js`
+- [x] Никакие пути не ссылаются на каталоги без barrel
+
+**Понятным языком: что сделано/что поменял:**
+- Я добавил `.js` ко всем относительным импортам в auth-модулях.
+- Я поправил подключение промо-определений, чтобы пути были явными.
+- Я убедился, что barrels продолжают работать и ничего не сломалось.
+
+**Блокеры (если есть):**
+- Жду подтверждения local-sim
+
+**Итоги выполнения:**
+- **Статус:** ⏳ В работе (жду подтверждения local-sim)
+- **Что сделано:** Пути импортов local-sim приведены к единому формату.
+- **Что осталось:** Дождаться подтверждения и при необходимости перейти к SQL.
+- **Коммиты/PR:** текущая ветка `work` (будет оформлено после подтверждения)
+- **Замечания:** —
+
+
 ## TAKE-20251017-030 — Каталог: провайдеры
 **Автор:** Владислав • **Время (Europe/Kyiv):** 2025-10-17 13:40
 

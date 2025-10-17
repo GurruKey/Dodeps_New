@@ -1,9 +1,9 @@
-import { getLocalDatabase } from '../../database/engine.js';
+import { getLocalDatabase } from '../../../database/index.js';
 import {
   COMMUNICATION_MESSAGES_TABLE,
   COMMUNICATION_THREAD_PARTICIPANTS_TABLE,
   COMMUNICATION_THREADS_TABLE,
-} from './constants.js';
+} from '../constants.js';
 
 const safeClone = (value) => {
   if (typeof structuredClone === 'function') {

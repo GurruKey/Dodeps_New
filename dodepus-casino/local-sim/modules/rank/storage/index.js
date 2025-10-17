@@ -4,8 +4,8 @@ import {
   DEFAULT_RANK_BADGE_EFFECT_SPEED,
   DEFAULT_RANK_BADGE_TEXT_DARK,
   DEFAULT_RANK_BADGE_TEXT_LIGHT,
-} from './constants.js';
-import { listDefaultRankLevels, listDefaultRankRewards } from './dataset.js';
+} from '../constants.js';
+import { listDefaultRankLevels, listDefaultRankRewards } from './rankDataset.js';
 
 const STORAGE_KEY = 'dodepus.rankRewards';
 
@@ -469,3 +469,10 @@ export const findRankDefinitionById = (rankId) => {
 };
 
 export const getRankBenefitTemplate = () => ({});
+
+export {
+  listDefaultRankLevels,
+  listDefaultRankRewards,
+  getDefaultRankRewardByLevel,
+  __internals as rankDatasetInternals,
+} from './rankDataset.js';

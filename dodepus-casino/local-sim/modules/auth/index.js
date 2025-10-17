@@ -1,6 +1,6 @@
 export * from './api.js';
 export * from './constants.js';
-export * from './dataset.js';
+export * from './storage/index.js';
 export * from './profileActions.js';
 export * from './profileExtras.js';
 export * from './composeUser.js';

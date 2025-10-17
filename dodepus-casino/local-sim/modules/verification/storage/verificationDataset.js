@@ -1,10 +1,15 @@
-import { getLocalDatabase } from '../../database/engine.js';
+import { getLocalDatabase } from '../../database/index.js';
+import {
+  VERIFICATION_QUEUE_TABLE,
+  VERIFICATION_REQUESTS_TABLE,
+  VERIFICATION_UPLOADS_TABLE,
+} from '../constants.js';
 import {
   normalizeBooleanMap,
   normalizeNotes,
   normalizeStatus,
   normalizeString,
-} from './helpers.js';
+} from '../helpers.js';
 
 const toStringId = (value) => {
   if (typeof value === 'string') {
@@ -96,7 +101,7 @@ const mapVerificationQueueRow = (row) => {
 
 const readVerificationQueueRecords = () => {
   const db = getLocalDatabase();
-  const rows = db.select('verification_queue');
+  const rows = db.select(VERIFICATION_QUEUE_TABLE);
   return rows.map((row) => mapVerificationQueueRow(row)).filter(Boolean);
 };
 
@@ -403,12 +408,12 @@ export const prepareVerificationUploadRows = (uploads, userId) =>
 
 export const readVerificationRequestsDataset = () => {
   const db = getLocalDatabase();
-  return db.select('verification_requests').map(mapVerificationRequestRow).filter(Boolean);
+  return db.select(VERIFICATION_REQUESTS_TABLE).map(mapVerificationRequestRow).filter(Boolean);
 };
 
 export const readVerificationUploadsDataset = () => {
   const db = getLocalDatabase();
-  return db.select('verification_uploads').map(mapVerificationUploadRow).filter(Boolean);
+  return db.select(VERIFICATION_UPLOADS_TABLE).map(mapVerificationUploadRow).filter(Boolean);
 };
 
 export const readVerificationDataset = () => ({
@@ -450,11 +455,11 @@ export const readVerificationDatasetForUser = (userId) => {
 
   const db = getLocalDatabase();
   const requests = db
-    .select('verification_requests', (row) => matchUserRow(row, userId))
+    .select(VERIFICATION_REQUESTS_TABLE, (row) => matchUserRow(row, userId))
     .map(mapVerificationRequestRow)
     .filter(Boolean);
   const uploads = db
-    .select('verification_uploads', (row) => matchUserRow(row, userId))
+    .select(VERIFICATION_UPLOADS_TABLE, (row) => matchUserRow(row, userId))
     .map(mapVerificationUploadRow)
     .filter(Boolean);
 
@@ -473,8 +478,8 @@ export const writeVerificationDatasetForUser = (userId, { requests, uploads } = 
   const requestRows = prepareVerificationRequestRows(requests, userId);
   const uploadRows = prepareVerificationUploadRows(uploads, userId);
 
-  db.replaceWhere('verification_requests', (row) => matchUserRow(row, userId), requestRows);
-  db.replaceWhere('verification_uploads', (row) => matchUserRow(row, userId), uploadRows);
+  db.replaceWhere(VERIFICATION_REQUESTS_TABLE, (row) => matchUserRow(row, userId), requestRows);
+  db.replaceWhere(VERIFICATION_UPLOADS_TABLE, (row) => matchUserRow(row, userId), uploadRows);
 
   return {
     requests: requestRows,
