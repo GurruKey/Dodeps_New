@@ -1,10 +1,21 @@
-import { createRequire } from 'node:module';
 import { enrichAccountsWithTransactions } from './transactionsSeed.js';
 
-const require = createRequire(import.meta.url);
+let authUsersDataset;
+let profilesDataset;
 
-const authUsersDataset = require('../../../db/auth_users.json');
-const profilesDataset = require('../../../db/profiles.json');
+try {
+  const { createRequire } = await import('node:module');
+  const require = createRequire(import.meta.url);
+  authUsersDataset = require('../../../db/auth_users.json');
+  profilesDataset = require('../../../db/profiles.json');
+} catch {
+  const [{ default: authUsersRaw }, { default: profilesRaw }] = await Promise.all([
+    import('../../../db/auth_users.json?raw'),
+    import('../../../db/profiles.json?raw'),
+  ]);
+  authUsersDataset = JSON.parse(authUsersRaw);
+  profilesDataset = JSON.parse(profilesRaw);
+}
 
 const ensureArray = (value) => (Array.isArray(value) ? value : []);
 
