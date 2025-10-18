@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navbar, Nav, Button, Badge, Container, Dropdown } from 'react-bootstrap';
+import { Navbar, Nav, Button, Badge, Container, Offcanvas } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Coins, Sun, Moon, LogOut, Menu as MenuIcon } from 'lucide-react';
 import { useAuth, useTheme } from '@/app/providers';
@@ -17,7 +17,7 @@ function ThemeToggleButton({ withLabel = false, onAfterToggle, className = '' })
   };
 
   const baseClass = withLabel
-    ? `d-flex align-items-center gap-2 justify-content-start px-3 py-2 ${className}`.trim()
+    ? `d-flex align-items-center justify-content-center gap-2 px-3 py-2 ${className}`.trim()
     : `d-flex align-items-center justify-content-center p-1 ${className}`.trim();
 
   return (
@@ -31,7 +31,7 @@ function ThemeToggleButton({ withLabel = false, onAfterToggle, className = '' })
       style={withLabel ? undefined : { width: 32, height: 32 }}
     >
       {withLabel ? (
-        <span className="d-flex align-items-center gap-2">
+        <span className="d-flex align-items-center justify-content-center gap-2 w-100 text-center">
           <Icon size={16} />
           <span>Тема: {label}</span>
         </span>
@@ -61,6 +61,7 @@ export default function Header() {
 
   const stackClass = 'd-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2';
 
+  const openMenu = () => setIsMenuOpen(true);
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
@@ -92,58 +93,56 @@ export default function Header() {
                       Админ
                     </Button>
                   )}
-                  <Dropdown
-                    align="end"
-                    show={isMenuOpen}
-                    onToggle={(nextOpen) => setIsMenuOpen(nextOpen)}
+                  <Button
+                    id="header-menu"
+                    variant="outline-secondary"
+                    size="sm"
+                    className="d-flex align-items-center gap-2"
+                    onClick={openMenu}
                   >
-                    <Dropdown.Toggle
-                      id="header-menu"
-                      variant="outline-secondary"
-                      size="sm"
-                      className="d-flex align-items-center gap-2"
-                    >
-                      <MenuIcon size={16} />
-                      Меню
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu className="p-2" align="end">
-                      <div className="d-flex flex-column gap-2" style={{ minWidth: '12rem' }}>
-                        <Button
-                          as={Link}
-                          to="/profile"
-                          size="sm"
-                          variant="outline-primary"
-                          className="w-100"
-                          onClick={closeMenu}
-                        >
-                          Профиль
-                        </Button>
-                        <Button
-                          as={Link}
-                          to="/profile/terminal"
-                          size="sm"
-                          variant="primary"
-                          className="w-100"
-                          onClick={closeMenu}
-                        >
-                          Пополнить
-                        </Button>
-                        <ThemeToggleButton withLabel className="w-100" onAfterToggle={closeMenu} />
-                        <Button
-                          size="sm"
-                          variant="outline-danger"
-                          className="w-100 d-flex align-items-center justify-content-between"
-                          onClick={() => {
-                            closeMenu();
-                            logout();
-                          }}
-                        >
-                          <span>Выйти</span>
-                          <LogOut size={16} />
-                        </Button>
-                      </div>
-                    </Dropdown.Menu>
-                  </Dropdown>
+                    <MenuIcon size={16} />
+                    Меню
+                  </Button>
+                  <Offcanvas placement="end" show={isMenuOpen} onHide={closeMenu} aria-labelledby="header-menu">
+                    <Offcanvas.Header closeButton closeVariant={theme === 'dark' ? 'white' : undefined}>
+                      <Offcanvas.Title>Меню</Offcanvas.Title>
+                    </Offcanvas.Header>
+                    <Offcanvas.Body className="d-flex flex-column gap-2">
+                      <Button
+                        as={Link}
+                        to="/profile"
+                        size="sm"
+                        variant="outline-primary"
+                        className="w-100"
+                        onClick={closeMenu}
+                      >
+                        Профиль
+                      </Button>
+                      <Button
+                        as={Link}
+                        to="/profile/terminal"
+                        size="sm"
+                        variant="primary"
+                        className="w-100"
+                        onClick={closeMenu}
+                      >
+                        Пополнить
+                      </Button>
+                      <ThemeToggleButton withLabel className="w-100" />
+                      <Button
+                        size="sm"
+                        variant="outline-danger"
+                        className="w-100 d-flex align-items-center justify-content-between"
+                        onClick={() => {
+                          closeMenu();
+                          logout();
+                        }}
+                      >
+                        <span>Выйти</span>
+                        <LogOut size={16} />
+                      </Button>
+                    </Offcanvas.Body>
+                  </Offcanvas>
                 </div>
               </div>
             ) : (
