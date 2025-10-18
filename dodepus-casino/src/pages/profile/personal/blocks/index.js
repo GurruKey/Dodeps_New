@@ -1,9 +1,10 @@
 export { default as AccountIdBlock } from './AccountIdBlock';
 export { default as AddressBlock } from './AddressBlock';
 export { default as AuthenticatorBlock } from './AuthenticatorBlock';
-export { default as ContactsBlock } from './ContactsBlock';
+export { default as EmailBlock } from './EmailBlock';
 export { default as GenderDobBlock } from './GenderDobBlock';
 export { default as NameBlock } from './NameBlock';
 export { default as NicknameBlock } from './NicknameBlock';
+export { default as PhoneBlock } from './PhoneBlock';
 export { default as SavePersonalBlock } from './SavePersonalBlock';
 export { default as SocialStatusBlock } from './SocialStatusBlock';

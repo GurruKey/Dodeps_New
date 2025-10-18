@@ -5,7 +5,8 @@ import {
   GenderDobBlock,
   SocialStatusBlock,
   NicknameBlock,
-  ContactsBlock,
+  PhoneBlock,
+  EmailBlock,
   AddressBlock,
   AuthenticatorBlock,
   SavePersonalBlock,
@@ -19,7 +20,8 @@ export default function Personal() {
       <GenderDobBlock />
       <SocialStatusBlock />
       <NicknameBlock />
-      <ContactsBlock />
+      <PhoneBlock />
+      <EmailBlock />
       <AddressBlock />
       <AuthenticatorBlock />
       <SavePersonalBlock />
