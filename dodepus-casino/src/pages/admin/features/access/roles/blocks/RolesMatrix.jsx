@@ -47,7 +47,7 @@ export default function RolesMatrix() {
       <Card.Body>
         <Card.Title>Матрица ролей</Card.Title>
         <Card.Text className="text-muted">
-          Предпросмотр того, какие разделы панели доступны каждой роли.
+          Предпросмотр того, какие разделы панели доступны  роли.
         </Card.Text>
         <Table responsive hover className="mb-0 align-middle text-center">
           <thead>
