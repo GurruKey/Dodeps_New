@@ -1,45 +1,9 @@
-import { useState } from 'react';
-import { Navbar, Nav, Button, Badge, Container, Offcanvas } from 'react-bootstrap';
+import { Navbar, Nav, Button, Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { Coins, Sun, Moon, LogOut, Menu as MenuIcon } from 'lucide-react';
+import { Coins } from 'lucide-react';
 import { useAuth, useTheme } from '@/app/providers';
-
-function ThemeToggleButton({ withLabel = false, onAfterToggle, className = '' }) {
-  const { theme, toggle } = useTheme();
-  const Icon = theme === 'dark' ? Moon : Sun;
-
-  const handleClick = () => {
-    toggle();
-    if (typeof onAfterToggle === 'function') {
-      onAfterToggle();
-    }
-  };
-
-  const baseClass = withLabel
-    ? `d-flex align-items-center justify-content-center gap-2 px-3 py-2 ${className}`.trim()
-    : `d-flex align-items-center justify-content-center p-1 ${className}`.trim();
-
-  return (
-    <Button
-      variant={theme === 'dark' ? 'outline-light' : 'outline-secondary'}
-      size="sm"
-      className={baseClass}
-      onClick={handleClick}
-      aria-label="Переключить тему"
-      title={`Переключить на ${theme === 'dark' ? 'светлую' : 'тёмную'} тему`}
-      style={withLabel ? undefined : { width: 32, height: 32 }}
-    >
-      {withLabel ? (
-        <span className="d-flex align-items-center justify-content-center gap-2 w-100 text-center">
-          <Icon size={16} />
-          <span>Тема</span>
-        </span>
-      ) : (
-        <Icon size={16} />
-      )}
-    </Button>
-  );
-}
+import ThemeToggleButton from './ThemeToggleButton.jsx';
+import HeaderMenuActions from './HeaderMenuActions.jsx';
 
 function fmtCurrency(v, curr) {
   try {
@@ -56,12 +20,8 @@ export default function Header() {
   const balance = Number(user?.balance || 0);
   const currency = user?.currency || 'USD';
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const stackClass = 'd-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2';
-
-  const openMenu = () => setIsMenuOpen(true);
-  const closeMenu = () => setIsMenuOpen(false);
+  const formattedBalance = fmtCurrency(balance, currency);
 
   return (
     <Navbar bg="body-tertiary" expand="md" sticky="top" data-bs-theme={theme} className="shadow-sm">
@@ -83,81 +43,11 @@ export default function Header() {
           <div className={`${stackClass} ms-md-auto`}>
             {isAuthed ? (
               <div className="d-flex flex-column flex-md-row align-items-md-center gap-2 w-100 justify-content-md-end">
-                <div className="d-flex align-items-center gap-2 justify-content-md-end">
-                  <Badge bg="secondary" className="fs-6">
-                    {fmtCurrency(balance, currency)}
-                  </Badge>
-                  {(isAdmin || canAccessAdminPanel?.()) && (
-                    <Button as={Link} to="/admin" size="sm" variant="danger">
-                      Админ
-                    </Button>
-                  )}
-                  <Button
-                    id="header-menu"
-                    variant="outline-secondary"
-                    size="sm"
-                    className="d-flex align-items-center gap-2"
-                    onClick={openMenu}
-                  >
-                    <MenuIcon size={16} />
-                    Меню
-                  </Button>
-                  <Offcanvas
-                    placement="end"
-                    show={isMenuOpen}
-                    onHide={closeMenu}
-                    aria-labelledby="header-menu"
-                    style={{ '--bs-offcanvas-width': '180px' }}
-                  >
-                    <Offcanvas.Header
-                      closeButton
-                      closeVariant={theme === 'dark' ? 'white' : undefined}
-                      className="justify-content-center"
-                    >
-                      <Offcanvas.Title className="w-100 text-center">Меню</Offcanvas.Title>
-                    </Offcanvas.Header>
-                    <Offcanvas.Body className="d-flex flex-column align-items-center gap-3 text-center h-100 pt-2">
-                      <div className="w-100 d-flex flex-column align-items-center">
-                        <Badge bg="secondary" className="fs-6 px-3 py-2">
-                          {fmtCurrency(balance, currency)}
-                        </Badge>
-                      </div>
-                      <Button
-                        as={Link}
-                        to="/profile"
-                        size="sm"
-                        variant="outline-primary"
-                        className="w-100"
-                        onClick={closeMenu}
-                      >
-                        Профиль
-                      </Button>
-                      <Button
-                        as={Link}
-                        to="/profile/terminal"
-                        size="sm"
-                        variant="primary"
-                        className="w-100"
-                        onClick={closeMenu}
-                      >
-                        Пополнить
-                      </Button>
-                      <ThemeToggleButton withLabel className="w-100" />
-                      <Button
-                        size="sm"
-                        variant="outline-danger"
-                        className="w-100 d-flex align-items-center justify-content-center gap-2 mt-auto"
-                        onClick={() => {
-                          closeMenu();
-                          logout();
-                        }}
-                      >
-                        <LogOut size={16} />
-                        <span>Выйти</span>
-                      </Button>
-                    </Offcanvas.Body>
-                  </Offcanvas>
-                </div>
+                <HeaderMenuActions
+                  balanceLabel={formattedBalance}
+                  showAdminLink={Boolean(isAdmin || canAccessAdminPanel?.())}
+                  onLogout={logout}
+                />
               </div>
             ) : (
               <>
