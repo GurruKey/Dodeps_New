@@ -1,10 +1,14 @@
 import RoleGroupSection from './RoleGroupSection.jsx';
 
-export const metadata = {
+const metadata = {
   key: 'staff',
   label: 'Админ стаф',
 };
 
-export default function StaffRoleGroup(props) {
+function StaffRoleGroup(props) {
   return <RoleGroupSection {...props} />;
 }
+
+StaffRoleGroup.metadata = metadata;
+
+export default StaffRoleGroup;

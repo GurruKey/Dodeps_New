@@ -1,1 +1,1 @@
-export { default } from './PromoArchive.jsx';
+export { default } from './page/AdminPromoArchivePage.jsx';

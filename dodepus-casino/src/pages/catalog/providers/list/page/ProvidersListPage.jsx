@@ -1,7 +1,7 @@
 import { Alert, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { ProvidersDirectory } from '../../blocks';
-import { useProvidersDirectory } from '../../hooks';
+import { ProvidersDirectory } from '@/pages/catalog/providers/blocks';
+import { useProvidersDirectory } from '@/pages/catalog/providers/hooks';
 
 export default function ProvidersListPage() {
   const providers = useProvidersDirectory();

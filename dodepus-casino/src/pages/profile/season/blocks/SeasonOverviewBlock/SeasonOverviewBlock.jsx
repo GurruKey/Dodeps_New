@@ -1,4 +1,4 @@
-import { ProfilePlaceholderBlock } from '../../../layout/blocks';
+import { ProfilePlaceholderBlock } from '@/pages/profile/layout/blocks';
 
 export default function SeasonOverviewBlock() {
   return (

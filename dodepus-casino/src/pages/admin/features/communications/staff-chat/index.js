@@ -1,1 +1,1 @@
-export { default } from './StaffChat.jsx';
+export { default } from './page/AdminStaffChatPage.jsx';

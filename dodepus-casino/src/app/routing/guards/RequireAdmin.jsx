@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../providers';
+import { useAuth } from '@/app/providers';
 
 export function RequireAdmin({ children }) {
   const { isAuthed, canAccessAdminPanel } = useAuth();

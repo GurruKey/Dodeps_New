@@ -1,61 +1,34 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Form, Button, Alert, InputGroup, Dropdown } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/providers';
-import { useVerificationState } from '../../state/useVerificationState.js';
+import { Form, Button, Alert, InputGroup } from 'react-bootstrap';
+import { useAuth } from '@/app/providers';
+import { useVerificationState } from '@/pages/profile/verification/state';
 import { VerificationFormLayout } from '../shared';
 
-const DIAL_CODES = ['+380', '+7', '+375', '+370', '+371', '+372', '+48', '+995', '+374'];
+const PHONE_CODES = ['+380', '+7', '+375', '+373', '+374'];
 
-const splitPhone = (full = '') => {
-  if (typeof full !== 'string' || !full.trim()) {
-    return { dial: '+380', number: '' };
-  }
-
-  const normalized = full.trim();
-  if (!normalized.startsWith('+')) {
-    return { dial: '+380', number: normalized.replace(/\D/g, '') };
-  }
-
-  const dial = DIAL_CODES.find((code) => normalized.startsWith(code));
-  if (dial) {
-    return { dial, number: normalized.slice(dial.length).replace(/\D/g, '') };
-  }
-
-  return { dial: '+380', number: normalized.replace(/\D/g, '') };
-};
-
-const composePhone = (dial, number) => {
-  const digits = String(number ?? '').replace(/\D/g, '');
-  if (!digits) return '';
-  const prefix = DIAL_CODES.includes(dial) ? dial : '+380';
-  return `${prefix}${digits}`;
-};
-
-export function PhoneVerificationForm({
-  layout = 'card',
-  autoFocus = false,
-  onSubmitSuccess,
-}) {
+export function PhoneVerificationForm({ layout = 'card', onSubmitSuccess }) {
   const { user, updateContacts } = useAuth();
   const { locks } = useVerificationState();
 
   const phoneLocked = Boolean(locks.phone);
-
-  const initialPhone = useMemo(() => splitPhone(user?.phone), [user?.phone]);
-  const [dial, setDial] = useState(initialPhone.dial);
-  const [number, setNumber] = useState(initialPhone.number);
+  const [prefix, setPrefix] = useState('+380');
+  const [number, setNumber] = useState('');
   const [status, setStatus] = useState({ type: null, message: '' });
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const next = splitPhone(user?.phone);
-    setDial(next.dial);
-    setNumber(next.number);
+    const userPhone = (user?.phone ?? '').trim();
+    const match = PHONE_CODES.find((code) => userPhone.startsWith(code));
+    if (match) {
+      setPrefix(match);
+      setNumber(userPhone.slice(match.length));
+    } else {
+      setNumber(userPhone);
+    }
   }, [user?.phone]);
 
-  const composedPhone = composePhone(dial, number);
-  const trimmedPhone = (user?.phone ?? '').trim();
-  const hasPhoneChange = !phoneLocked && composedPhone !== trimmedPhone;
+  const trimmedPhone = useMemo(() => `${prefix}${(number || '').replace(/\D+/g, '')}`, [prefix, number]);
+  const hasPhoneChange = !phoneLocked && trimmedPhone !== (user?.phone ?? '').trim();
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -71,17 +44,13 @@ export function PhoneVerificationForm({
       return;
     }
 
-    if (!composedPhone) {
-      setStatus({ type: 'error', message: 'Укажите телефон полностью.' });
-      return;
-    }
-
     setIsSaving(true);
+
     try {
-      await Promise.resolve(updateContacts({ phone: composedPhone }));
+      await Promise.resolve(updateContacts({ phone: trimmedPhone }));
       setStatus({ type: 'success', message: 'Телефон сохранён.' });
       if (typeof onSubmitSuccess === 'function') {
-        onSubmitSuccess();
+        onSubmitSuccess(trimmedPhone);
       }
     } catch (error) {
       const message =
@@ -94,27 +63,25 @@ export function PhoneVerificationForm({
     }
   };
 
-  const infoMessage = phoneLocked
-    ? 'Поле блокируется во время проверки телефона. Отмените запрос или дождитесь решения администратора.'
-    : 'Телефон понадобится для подтверждения личности и получения уведомлений.';
-
   const formContent = (
     <Form onSubmit={onSubmit} className="d-grid gap-3">
-      <Form.Group>
+      <Form.Group controlId="verification-phone">
         <Form.Label>Номер телефона</Form.Label>
         <InputGroup>
-          <Dropdown onSelect={(value) => value && setDial(value)}>
-            <Dropdown.Toggle variant="outline-secondary" id="verification-phone-dial" disabled={phoneLocked}>
-              {dial}
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-              {DIAL_CODES.map((code) => (
-                <Dropdown.Item key={code} eventKey={code} active={dial === code}>
-                  {code}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
+          <Form.Select
+            value={prefix}
+            onChange={(event) => {
+              if (phoneLocked) return;
+              setPrefix(event.target.value);
+            }}
+            disabled={phoneLocked}
+          >
+            {PHONE_CODES.map((code) => (
+              <option key={code} value={code}>
+                {code}
+              </option>
+            ))}
+          </Form.Select>
           <Form.Control
             type="tel"
             value={number}
@@ -122,19 +89,21 @@ export function PhoneVerificationForm({
               if (phoneLocked) return;
               setNumber(event.target.value);
             }}
-            placeholder="0000000000"
-            autoComplete="tel"
+            placeholder="000 000 000"
             disabled={phoneLocked}
-            autoFocus={autoFocus}
           />
         </InputGroup>
       </Form.Group>
 
-      <div className="text-secondary small">{infoMessage}</div>
+      <div className="text-secondary small">
+        {phoneLocked
+          ? 'Телефон блокируется во время проверки. Отмените запрос или дождитесь решения администратора.'
+          : 'Укажите номер, который будет подтверждён SMS-кодом.'}
+      </div>
 
       <div className="d-flex justify-content-center">
         <Button type="submit" disabled={!hasPhoneChange || isSaving}>
-          {isSaving ? 'Сохранение…' : 'Сохранить изменения'}
+          {isSaving ? 'Сохранение…' : 'Сохранить телефон'}
         </Button>
       </div>
 
@@ -150,7 +119,7 @@ export function PhoneVerificationForm({
   );
 
   return (
-    <VerificationFormLayout title="Телефон" layout={layout}>
+    <VerificationFormLayout title="Номер телефона" layout={layout}>
       {formContent}
     </VerificationFormLayout>
   );

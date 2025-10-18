@@ -1,1 +1,1 @@
-export { default } from './PromoCodeCreate.jsx';
+export { default } from './page/AdminPromoCreatePage.jsx';

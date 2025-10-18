@@ -1,5 +1,5 @@
-import ChatPanel from '../../../../shared/ChatPanel.jsx';
-import { useAdminChatChannel } from '../../hooks/index.js';
+import { AdminChatPanel } from '@/pages/admin/shared/index.js';
+import { useAdminChatChannel } from '@/pages/admin/features/communications/hooks/index.js';
 
 export default function AdminChatChannelPanel({
   channel,
@@ -10,7 +10,7 @@ export default function AdminChatChannelPanel({
   const { activeThread } = useAdminChatChannel(channel);
 
   return (
-    <ChatPanel
+    <AdminChatPanel
       heading={title}
       thread={activeThread}
       placeholder={placeholder}

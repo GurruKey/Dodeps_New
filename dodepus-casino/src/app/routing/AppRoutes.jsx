@@ -1,8 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Home from '../../pages/home';
-import Lobby from '../../pages/lobby';
-import Game from '../../pages/game';
-import Admin from '../../pages/admin';
+import HomePage from '@/pages/home';
+import LobbyPage from '@/pages/lobby';
+import GamePage from '@/pages/game';
+import AdminPage from '@/pages/admin';
 import {
   AdminOverviewPage,
   AdminClientsPage,
@@ -18,13 +18,13 @@ import {
   AdminAdministratorsChatPage,
   AdminStaffChatPage,
   AdminLogPage,
-} from '../../pages/admin/features';
-import { ProviderDetailsPage, ProvidersListPage } from '../../pages/catalog/providers';
-import CategoriesPage from '../../pages/catalog/categories';
-import NotFound from '../../pages/not-found';
+} from '@/pages/admin/features';
+import { ProviderDetailsPage, ProvidersListPage } from '@/pages/catalog/providers';
+import CategoriesPage from '@/pages/catalog/categories';
+import NotFoundPage from '@/pages/not-found';
 
-import Login from '../../pages/auth/login';
-import Register from '../../pages/auth/register';
+import LoginPage from '@/pages/auth/login';
+import RegisterPage from '@/pages/auth/register';
 
 import {
   ProfileLayout,
@@ -37,19 +37,19 @@ import {
   ProfileSeasonPage,
   ProfileGamesHistoryPage,
   ProfileVerificationPage,
-} from '../../pages/profile';
+} from '@/pages/profile';
 
 import { RequireAdmin, RequireAuth } from './guards';
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<HomePage />} />
 
       {/* Доступно гостям */}
-      <Route path="/game/:provider/:slug" element={<Game />} />
+      <Route path="/game/:provider/:slug" element={<GamePage />} />
       {/* Временная совместимость со старым путём /game/:slug */}
-      <Route path="/game/:slug" element={<Game />} />
+      <Route path="/game/:slug" element={<GamePage />} />
 
       {/* Категории и провайдеры */}
       <Route path="/categories" element={<CategoriesPage />} />
@@ -57,15 +57,15 @@ export default function AppRoutes() {
       <Route path="/providers/:provider" element={<ProviderDetailsPage />} />
 
       {/* Auth */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route path="/auth" element={<Navigate to="/login" replace />} />
 
       <Route
         path="/admin"
         element={
           <RequireAdmin>
-            <Admin />
+            <AdminPage />
           </RequireAdmin>
         }
       >
@@ -91,7 +91,7 @@ export default function AppRoutes() {
         path="/lobby"
         element={
           <RequireAuth>
-            <Lobby />
+            <LobbyPage />
           </RequireAuth>
         }
       />
@@ -119,7 +119,7 @@ export default function AppRoutes() {
         {/* будущее: security, notifications и т.п. */}
       </Route>
 
-      <Route path="*" element={<NotFound />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

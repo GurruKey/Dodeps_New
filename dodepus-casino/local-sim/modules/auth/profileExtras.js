@@ -3,7 +3,6 @@ import { getLocalDatabase } from '../shared/index.js';
 import {
   VERIFICATION_REQUESTS_TABLE,
   VERIFICATION_UPLOADS_TABLE,
-  normalizeBooleanMap,
   prepareVerificationRequestRows,
   prepareVerificationUploadRows,
   readVerificationDatasetForUser,

@@ -1,1 +1,1 @@
-export { ProfilePlaceholderBlock } from './ProfilePlaceholderBlock.jsx';
+export { default } from './ProfilePlaceholderBlock.jsx';

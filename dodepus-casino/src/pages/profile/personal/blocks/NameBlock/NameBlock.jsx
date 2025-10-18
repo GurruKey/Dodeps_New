@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card, Form, Row, Col } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/providers';
+import { useAuth } from '@/app/providers';
 import {
   useVerificationModules,
   computeModuleLocks,
-} from '../../../../../shared/verification/index.js';
+} from '@/shared/verification';
 
 export default function NameBlock() {
   const { user, updateProfile } = useAuth();

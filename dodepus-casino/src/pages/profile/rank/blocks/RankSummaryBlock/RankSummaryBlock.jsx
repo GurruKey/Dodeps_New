@@ -1,6 +1,6 @@
 import { Card } from 'react-bootstrap';
-import { buildBadgePreview } from '../../../../../shared/rank/badgeEffects.js';
-import RankBadge from '../../../../../shared/rank/components/RankBadge.jsx';
+import { buildBadgePreview } from '@/shared/rank';
+import { RankBadge } from '@/shared/rank';
 
 const fallbackLevel = Object.freeze({
   label: 'VIP 0',

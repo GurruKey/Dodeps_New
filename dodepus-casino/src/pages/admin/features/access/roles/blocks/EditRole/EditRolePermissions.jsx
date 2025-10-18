@@ -5,7 +5,7 @@ import {
   listRolePermissionMatrix,
   getRolePermissionLegend,
   appendRolePermissionLog,
-} from '../../../../../../../../local-sim/modules/access/index.js';
+} from '@local-sim/modules/access/index.js';
 import {
   resolveCategoryKey,
   roleGroups,
@@ -15,7 +15,7 @@ import {
   ADMIN_PANEL_VISIBILITY_EVENT,
   loadAdminPanelVisibility,
   setAdminPanelVisibilityForRole,
-} from '../../../../../../../../local-sim/modules/auth/index.js';
+} from '@local-sim/modules/auth/index.js';
 
 const availableRoles = listAvailableAdminRoles();
 const roleMatrixLegend = getRolePermissionLegend();

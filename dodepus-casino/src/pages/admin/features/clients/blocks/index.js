@@ -1,3 +1,3 @@
-export { default as ClientSearchFilters } from './ClientSearchFilters.jsx';
-export { default as ClientStats } from './ClientStats.jsx';
-export { default as ClientsTable } from './ClientsTable.jsx';
+export { default as ClientSearchFilters } from './ClientSearchFilters/index.js';
+export { default as ClientStats } from './ClientStats/index.js';
+export { default as ClientsTable } from './ClientsTable/index.js';

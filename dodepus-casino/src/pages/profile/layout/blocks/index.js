@@ -1,3 +1,4 @@
-export { ProfileSidebarBlock } from './ProfileSidebarBlock/ProfileSidebarBlock.jsx';
-export { ProfileBlocksLayout } from './ProfileBlocksLayout/ProfileBlocksLayout.jsx';
-export { ProfilePlaceholderBlock } from './ProfilePlaceholderBlock/ProfilePlaceholderBlock.jsx';
+export { default as ProfileSidebarBlock } from './ProfileSidebarBlock/index.js';
+export { default as ProfileBlocksLayout } from './ProfileBlocksLayout/index.js';
+export { default as ProfilePlaceholderBlock } from './ProfilePlaceholderBlock/index.js';
+export { default as SidebarNavLink } from './SidebarNavLink/index.js';

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/providers';
-import { useVerificationState } from '../../state/useVerificationState.js';
+import { useAuth } from '@/app/providers';
+import { useVerificationState } from '@/pages/profile/verification/state';
 import { VerificationFormLayout } from '../shared';
 
 export function EmailVerificationForm({
@@ -40,11 +40,12 @@ export function EmailVerificationForm({
     }
 
     setIsSaving(true);
+
     try {
       await Promise.resolve(updateContacts({ email: trimmedEmail }));
       setStatus({ type: 'success', message: 'Почта сохранена.' });
       if (typeof onSubmitSuccess === 'function') {
-        onSubmitSuccess();
+        onSubmitSuccess(trimmedEmail);
       }
     } catch (error) {
       const message =
@@ -57,13 +58,9 @@ export function EmailVerificationForm({
     }
   };
 
-  const infoMessage = emailLocked
-    ? 'Поле блокируется, пока модуль проверяется или уже подтверждён.'
-    : 'E-mail используется для входа и получения уведомлений.';
-
   const formContent = (
     <Form onSubmit={onSubmit} className="d-grid gap-3">
-      <Form.Group>
+      <Form.Group controlId="verification-email">
         <Form.Label>Электронная почта</Form.Label>
         <Form.Control
           type="email"
@@ -73,17 +70,20 @@ export function EmailVerificationForm({
             setEmail(event.target.value);
           }}
           placeholder="you@example.com"
-          autoComplete="email"
           disabled={emailLocked}
           autoFocus={autoFocus}
         />
       </Form.Group>
 
-      <div className="text-secondary small">{infoMessage}</div>
+      <div className="text-secondary small">
+        {emailLocked
+          ? 'Почта блокируется во время проверки. Отмените запрос или дождитесь решения администратора.'
+          : 'Новый адрес будет подтверждён через письмо с кодом.'}
+      </div>
 
       <div className="d-flex justify-content-center">
         <Button type="submit" disabled={!hasEmailChange || isSaving}>
-          {isSaving ? 'Сохранение…' : 'Сохранить изменения'}
+          {isSaving ? 'Сохранение…' : 'Сохранить почту'}
         </Button>
       </div>
 
@@ -99,7 +99,7 @@ export function EmailVerificationForm({
   );
 
   return (
-    <VerificationFormLayout title="Почта" layout={layout}>
+    <VerificationFormLayout title="Электронная почта" layout={layout}>
       {formContent}
     </VerificationFormLayout>
   );

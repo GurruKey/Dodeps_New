@@ -9,4 +9,4 @@ export {
   formatModuleList,
   isModuleLocked,
   computeModuleLocks,
-} from '../../../../shared/verification/index.js';
+} from '@/shared/verification';

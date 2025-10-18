@@ -1,8 +1,8 @@
 import { useMemo, useRef, useState } from 'react';
 import { Form, Alert } from 'react-bootstrap';
 import { Upload, Lock } from 'lucide-react';
-import { useVerificationState } from '../../state/useVerificationState.js';
-import { useVerificationActions } from '../../actions/useVerificationActions.js';
+import { useVerificationState } from '@/pages/profile/verification/state';
+import { useVerificationActions } from '@/pages/profile/verification/actions';
 import { VerificationFormLayout } from './VerificationFormLayout.jsx';
 
 const readFileAsDataUrl = (file) =>

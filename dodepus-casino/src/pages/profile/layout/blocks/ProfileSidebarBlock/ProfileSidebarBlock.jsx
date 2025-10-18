@@ -1,17 +1,21 @@
 import { Nav } from 'react-bootstrap';
-import { createNavItems } from './createNavItems.jsx';
-import { SidebarNavLink } from './SidebarNavLink.jsx';
-import { formatBalance, pickRankBadgeMeta, pickVerificationMeta } from './meta.js';
+import { createProfileNavItems } from '@/pages/profile/layout/createNavItems.jsx';
+import SidebarNavLink from '../SidebarNavLink';
+import {
+  formatProfileBalance,
+  pickProfileRankMeta,
+  pickProfileVerificationMeta,
+} from '@/pages/profile/layout/meta';
 
 export function ProfileSidebarBlock({ user, verificationSummary, rankSummary }) {
   const currency = user?.currency || 'USD';
   const balance = user?.balance ?? 0;
 
-  const rankMeta = pickRankBadgeMeta(rankSummary);
-  const verificationMeta = pickVerificationMeta(verificationSummary);
-  const balanceLabel = formatBalance(balance, currency);
+  const rankMeta = pickProfileRankMeta(rankSummary);
+  const verificationMeta = pickProfileVerificationMeta(verificationSummary);
+  const balanceLabel = formatProfileBalance(balance, currency);
 
-  const navItems = createNavItems({
+  const navItems = createProfileNavItems({
     balanceLabel,
     verificationMeta,
     rankMeta,

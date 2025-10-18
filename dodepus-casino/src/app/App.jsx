@@ -1,6 +1,5 @@
 import { Container } from 'react-bootstrap';
-import Header from '../shared/ui/Header.jsx';
-import Footer from '../shared/ui/Footer.jsx';
+import { Header, Footer } from '@/shared/ui';
 import { AppRoutes } from './routing';
 
 export default function App() {

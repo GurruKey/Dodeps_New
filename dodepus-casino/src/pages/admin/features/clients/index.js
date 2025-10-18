@@ -1,1 +1,1 @@
-export { default } from './Clients.jsx';
+export { default } from './page/AdminClientsPage.jsx';

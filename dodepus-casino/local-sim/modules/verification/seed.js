@@ -32,7 +32,7 @@ export const getVerificationSeedForUser = () => ({
   verificationUploads: [],
 });
 
-export const applyVerificationSeed = (extras = {}, _userId) => {
+export const applyVerificationSeed = (extras = {}) => {
   const normalizedExtras = { ...extras };
 
   const requests = Array.isArray(extras.verificationRequests)

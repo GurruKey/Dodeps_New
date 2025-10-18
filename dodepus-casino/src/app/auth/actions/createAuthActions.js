@@ -3,7 +3,7 @@ import {
   signInEmailPassword,
   signUpEmailPassword,
   signUpPhonePassword,
-} from '../../../../local-sim/modules/auth/index.js';
+} from '@local-sim/modules/auth/index.js';
 
 export function createAuthActions({ setSession, setUser }) {
   const composeResult = (result) => {

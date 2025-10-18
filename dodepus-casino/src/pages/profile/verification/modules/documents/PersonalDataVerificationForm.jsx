@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Form, Row, Col, Button, Alert } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/providers';
-import { useVerificationState } from '../../state/useVerificationState.js';
+import { useAuth } from '@/app/providers';
+import { useVerificationState } from '@/pages/profile/verification/state';
 import { VerificationFormLayout } from '../shared';
 
 const GENDER_OPTIONS = [
@@ -38,20 +38,20 @@ export function PersonalDataVerificationForm({ layout = 'card' }) {
     () => ({
       firstName: (firstName || '').trim(),
       lastName: (lastName || '').trim(),
-      gender,
-      dob: dob || null,
+      gender: (gender || '').trim(),
+      dob: (dob || '').trim(),
     }),
     [firstName, lastName, gender, dob],
   );
 
-  const hasChanges =
-    !personalLocked &&
-    (
-      trimmed.firstName !== (user?.firstName ?? '').trim() ||
-      trimmed.lastName !== (user?.lastName ?? '').trim() ||
-      trimmed.gender !== (user?.gender === 'male' || user?.gender === 'female' ? user.gender : '') ||
-      trimmed.dob !== (user?.dob ?? null)
-    );
+  const hasPersonalChanges = !personalLocked && (
+    trimmed.firstName !== (user?.firstName ?? '').trim() ||
+    trimmed.lastName !== (user?.lastName ?? '').trim() ||
+    trimmed.gender !== (user?.gender ?? '').trim() ||
+    trimmed.dob !== (user?.dob ?? '').trim()
+  );
+
+  const hasChanges = hasPersonalChanges;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -67,31 +67,28 @@ export function PersonalDataVerificationForm({ layout = 'card' }) {
       return;
     }
 
-    const patch = {
-      firstName: trimmed.firstName,
-      lastName: trimmed.lastName,
-      gender: trimmed.gender || '',
-      dob: trimmed.dob,
-    };
+    const patch = {};
+    if (hasPersonalChanges) {
+      patch.firstName = trimmed.firstName;
+      patch.lastName = trimmed.lastName;
+      patch.gender = trimmed.gender;
+      patch.dob = trimmed.dob;
+    }
 
     setIsSaving(true);
     try {
       await Promise.resolve(updateProfile(patch));
-      setStatus({ type: 'success', message: 'Персональные данные сохранены.' });
+      setStatus({ type: 'success', message: 'Данные сохранены.' });
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
-          : 'Не удалось сохранить персональные данные. Попробуйте ещё раз.';
+          : 'Не удалось сохранить данные профиля. Попробуйте ещё раз.';
       setStatus({ type: 'error', message });
     } finally {
       setIsSaving(false);
     }
   };
-
-  const infoMessage = personalLocked
-    ? 'Поля блокируются во время проверки документов. Отмените запрос или дождитесь решения администратора.'
-    : 'Эти данные используются для проверки документов.';
 
   const formContent = (
     <Form onSubmit={handleSubmit} className="d-grid gap-3">
@@ -146,34 +143,31 @@ export function PersonalDataVerificationForm({ layout = 'card' }) {
           <Form.Label>Дата рождения</Form.Label>
           <Form.Control
             type="date"
-            value={dob ?? ''}
+            value={dob}
             onChange={(event) => {
               if (personalLocked) return;
               setDob(event.target.value);
             }}
             disabled={personalLocked}
-            max={new Date(Date.now() - 568025136000).toISOString().slice(0, 10)}
           />
         </Col>
       </Row>
 
-      <div className="text-secondary small">{infoMessage}</div>
+      <div className="text-secondary small">
+        {personalLocked
+          ? 'Поля блокируются во время проверки документов. Отмените запрос или дождитесь решения администратора.'
+          : 'Эти данные сравниваются с документами, которые вы загрузите.'}
+      </div>
 
       <div className="d-flex justify-content-center">
         <Button type="submit" disabled={!hasChanges || isSaving}>
-          {isSaving ? 'Сохранение…' : 'Сохранить изменения'}
+          {isSaving ? 'Сохранение…' : 'Сохранить данные'}
         </Button>
       </div>
 
       {status.type ? (
         <Alert
-          variant={
-            status.type === 'error'
-              ? 'danger'
-              : status.type === 'success'
-                ? 'success'
-                : 'secondary'
-          }
+          variant={status.type === 'error' ? 'danger' : status.type === 'success' ? 'success' : 'secondary'}
           className="mb-0"
         >
           {status.message}

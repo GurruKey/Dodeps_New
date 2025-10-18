@@ -1,10 +1,11 @@
 import { Card, Badge } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/providers';
+import { useAuth } from '@/app/providers';
 
 function fmtCurrency(v, curr) {
   try {
-    return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: curr || 'USD' })
-      .format(Number(v || 0));
+    return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: curr || 'USD' }).format(
+      Number(v || 0),
+    );
   } catch {
     return `${Number(v || 0).toFixed(2)} ${curr || ''}`;
   }

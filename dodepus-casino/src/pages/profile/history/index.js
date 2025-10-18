@@ -1,1 +1,1 @@
-export { default } from './History.jsx';
+export { default } from './page/ProfileHistoryPage.jsx';

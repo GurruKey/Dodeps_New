@@ -1,1 +1,1 @@
-export { default } from './RoleEdit.jsx';
+export { default } from './page/AdminRoleEditPage.jsx';

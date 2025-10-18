@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import { useAuth } from '../../../../app/providers';
+import { useAuth } from '@/app/providers';
 import {
   useVerificationModules,
   computeModuleLocks,
-} from '../../../../shared/verification/index.js';
+} from '@/shared/verification';
 
 export function useVerificationState() {
   const { user } = useAuth();

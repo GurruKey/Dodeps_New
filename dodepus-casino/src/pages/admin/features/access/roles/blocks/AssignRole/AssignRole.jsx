@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Alert, Button, Card, Col, Form, InputGroup, Row, Stack, } from 'react-bootstrap';
-import { listAvailableAdminRoles } from '../../../../../../../../local-sim/modules/access/index.js';
-import { assignUserRole } from '../../../../../../../features/auth/index.js';
+import { listAvailableAdminRoles } from '@local-sim/modules/access/index.js';
+import { assignUserRole } from '@/features/auth/index.js';
 
 const availableRoles = listAvailableAdminRoles();
 const idPlaceholderExamples = ['ID-10192', 'ID-20204', 'ID-30881'];

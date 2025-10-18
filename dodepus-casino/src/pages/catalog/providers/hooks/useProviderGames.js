@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { games } from '@/data/games.js';
+import { games } from '@/data';
 
 export function useProviderGames(providerSlug) {
   return useMemo(() => {

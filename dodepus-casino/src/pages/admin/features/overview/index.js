@@ -1,1 +1,1 @@
-export { default } from './Overview.jsx';
+export { default } from './page/AdminOverviewPage.jsx';

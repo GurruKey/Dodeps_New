@@ -4,7 +4,6 @@ import {
   normalizeString,
   normalizeStatus,
   normalizeBooleanMap,
-  normalizeFieldsPatch,
   mergeFieldStates,
   normalizeNotes,
 } from './helpers.js';

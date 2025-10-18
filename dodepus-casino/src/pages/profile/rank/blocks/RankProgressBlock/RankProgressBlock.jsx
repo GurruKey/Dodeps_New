@@ -1,91 +1,98 @@
-import { Card, Table, ProgressBar } from 'react-bootstrap';
-import { buildBadgePreview, getBadgeEffectMeta } from '../../../../../shared/rank/badgeEffects.js';
-import RankBadge from '../../../../../shared/rank/components/RankBadge.jsx';
+import { Card, ProgressBar } from 'react-bootstrap';
+import { buildBadgePreview, getBadgeEffectMeta } from '@/shared/rank';
+import { RankBadge } from '@/shared/rank';
 
-const formatAmount = (value, currency) => {
-  const numeric = Number(value);
-  const safeAmount = Number.isFinite(numeric) ? numeric : 0;
-  const safeCurrency = typeof currency === 'string' && currency ? currency : 'USD';
-  return new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency: safeCurrency,
-    maximumFractionDigits: 0,
-  }).format(safeAmount);
+const fallbackLevel = Object.freeze({
+  label: 'VIP 0',
+  shortLabel: 'VIP 0',
+  rewardTitle: 'Начните путь к бонусам',
+});
+
+const resolveRewardTitle = (level) => {
+  if (typeof level?.rewardTitle === 'string' && level.rewardTitle.trim()) {
+    return level.rewardTitle.trim();
+  }
+  if (typeof level?.description === 'string' && level.description.trim()) {
+    return level.description.trim();
+  }
+  return fallbackLevel.rewardTitle;
 };
 
-export default function RankProgressBlock({ summary, levels }) {
-  const currency = summary?.currency || 'USD';
-  const progressPercent = Number.isFinite(summary?.progressPercent)
-    ? summary.progressPercent
-    : 0;
+const clampPercent = (value) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 0;
+  return Math.max(0, Math.min(100, numeric));
+};
+
+export default function RankProgressBlock({ summary, levels = [] }) {
+  const currentLevel = summary?.currentLevel ?? fallbackLevel;
   const nextLevel = summary?.nextLevel ?? null;
-  const currentLabel = summary?.currentLevel?.label ?? 'VIP 0';
-
-  const currentPreview = buildBadgePreview(summary?.currentLevel ?? {});
-  const currentEffect = getBadgeEffectMeta(summary?.currentLevel?.badgeEffect);
-  const currentSpeed = Number.isFinite(summary?.currentLevel?.badgeEffectSpeed)
-    ? summary.currentLevel.badgeEffectSpeed
-    : 6;
-
-  const renderBadge = () => (
-    <RankBadge preview={currentPreview} className="px-3">
-      {currentLabel}
-    </RankBadge>
-  );
+  const progressPercent = clampPercent(summary?.progressPercent ?? 0);
+  const preview = buildBadgePreview(currentLevel);
+  const rewardTitle = resolveRewardTitle(currentLevel);
+  const currentLevelMeta = getBadgeEffectMeta(currentLevel);
+  const nextLevelMeta = nextLevel ? getBadgeEffectMeta(nextLevel) : null;
 
   return (
     <Card>
-      <Card.Body>
-        <Card.Title className="d-flex justify-content-between align-items-center flex-wrap gap-3">
-          <div className="d-flex align-items-center gap-2">
-            {renderBadge()}
-            <span>Ранг пополнения</span>
+      <Card.Body className="d-grid gap-3">
+        <div className="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-3">
+          <RankBadge preview={preview} className="px-4 py-2 fs-5 fw-semibold text-uppercase">
+            {currentLevel.shortLabel || currentLevel.label}
+          </RankBadge>
+          <div className="d-flex flex-column gap-1">
+            <Card.Title className="mb-0">Прогресс до следующего уровня</Card.Title>
+            <div className="text-muted">{rewardTitle}</div>
           </div>
-          {renderBadge()}
-        </Card.Title>
-
-        <div className="text-muted mb-1">
-          Эффект бейджа: {currentEffect.label}
-          {currentEffect.value !== 'solid' && ` · ${currentSpeed}s`}
         </div>
 
-        <div className="text-muted mb-3">
-          Сумма пополнений: {formatAmount(summary?.totalDeposits ?? 0, currency)}
+        <ProgressBar now={progressPercent} label={`${Math.round(progressPercent)}%`} />
+
+        <div className="row g-3">
+          <div className="col-md-6">
+            <Card className="bg-body-tertiary h-100">
+              <Card.Body className="d-grid gap-1">
+                <div className="text-secondary text-uppercase small">Текущий уровень</div>
+                <div className="fw-semibold">{currentLevel.label}</div>
+                {currentLevelMeta?.description ? (
+                  <div className="text-muted small">{currentLevelMeta.description}</div>
+                ) : null}
+              </Card.Body>
+            </Card>
+          </div>
+
+          <div className="col-md-6">
+            <Card className="bg-body-tertiary h-100">
+              <Card.Body className="d-grid gap-1">
+                <div className="text-secondary text-uppercase small">Следующий уровень</div>
+                <div className="fw-semibold">{nextLevel?.label ?? 'Максимальный уровень'}</div>
+                {nextLevelMeta?.description ? (
+                  <div className="text-muted small">{nextLevelMeta.description}</div>
+                ) : null}
+              </Card.Body>
+            </Card>
+          </div>
         </div>
 
-        <ProgressBar
-          now={progressPercent}
-          label={`${progressPercent}%`}
-          aria-label="Прогресс до следующего ранга"
-          className="mb-3"
-        />
-
-        {nextLevel ? (
-          <div className="small text-muted mb-4">
-            До {nextLevel.label} осталось {formatAmount(nextLevel.depositsRemaining ?? 0, currency)}.
+        {Array.isArray(levels) && levels.length > 0 ? (
+          <div className="d-grid gap-2">
+            <div className="text-secondary small text-uppercase">Все уровни</div>
+            <div className="d-flex flex-wrap gap-2">
+              {levels.map((level) => {
+                const levelPreview = buildBadgePreview(level);
+                return (
+                  <RankBadge
+                    key={level.id || level.label}
+                    preview={levelPreview}
+                    className="px-3 py-1"
+                  >
+                    {level.shortLabel || level.label}
+                  </RankBadge>
+                );
+              })}
+            </div>
           </div>
-        ) : (
-          <div className="small text-muted mb-4">Вы достигли максимального ранга VIP 10.</div>
-        )}
-
-        <Table striped bordered hover responsive size="sm" className="mb-0">
-          <thead>
-            <tr>
-              <th className="text-center">Ранг</th>
-              <th>Пополнение для уровня</th>
-              <th>Сумма пополнений всего</th>
-            </tr>
-          </thead>
-          <tbody>
-            {levels.map((level) => (
-              <tr key={level.level}>
-                <td className="text-center fw-semibold">{level.label}</td>
-                <td>{formatAmount(level.depositStep, currency)}</td>
-                <td>{formatAmount(level.totalDeposit, currency)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        ) : null}
       </Card.Body>
     </Card>
   );
