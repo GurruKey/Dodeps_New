@@ -1,23 +1,43 @@
-import { Navbar, Nav, Button, Badge, Container } from 'react-bootstrap';
+import { useState } from 'react';
+import { Navbar, Nav, Button, Badge, Container, Dropdown } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { Coins, Sun, Moon, LogOut } from 'lucide-react';
+import { Coins, Sun, Moon, LogOut, Menu as MenuIcon } from 'lucide-react';
 import { useAuth, useTheme } from '@/app/providers';
 
-function ThemeToggle() {
+function ThemeToggleButton({ withLabel = false, onAfterToggle, className = '' }) {
   const { theme, toggle } = useTheme();
   const Icon = theme === 'dark' ? Moon : Sun;
+  const label = theme === 'dark' ? 'Ночь' : 'День';
+
+  const handleClick = () => {
+    toggle();
+    if (typeof onAfterToggle === 'function') {
+      onAfterToggle();
+    }
+  };
+
+  const baseClass = withLabel
+    ? `d-flex align-items-center gap-2 justify-content-start px-3 py-2 ${className}`.trim()
+    : `d-flex align-items-center justify-content-center p-1 ${className}`.trim();
 
   return (
     <Button
       variant={theme === 'dark' ? 'outline-light' : 'outline-secondary'}
       size="sm"
-      className="d-flex align-items-center justify-content-center p-1"
-      onClick={toggle}
+      className={baseClass}
+      onClick={handleClick}
       aria-label="Переключить тему"
-      title={theme === 'dark' ? 'Тёмная тема' : 'Светлая тема'}
-      style={{ width: 32, height: 32 }}
+      title={`Переключить на ${theme === 'dark' ? 'светлую' : 'тёмную'} тему`}
+      style={withLabel ? undefined : { width: 32, height: 32 }}
     >
-      <Icon size={16} />
+      {withLabel ? (
+        <span className="d-flex align-items-center gap-2">
+          <Icon size={16} />
+          <span>Тема: {label}</span>
+        </span>
+      ) : (
+        <Icon size={16} />
+      )}
     </Button>
   );
 }
@@ -37,7 +57,11 @@ export default function Header() {
   const balance = Number(user?.balance || 0);
   const currency = user?.currency || 'USD';
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const stackClass = 'd-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2';
+
+  const closeMenu = () => setIsMenuOpen(false);
 
   return (
     <Navbar bg="body-tertiary" expand="md" sticky="top" data-bs-theme={theme} className="shadow-sm">
@@ -56,54 +80,88 @@ export default function Header() {
             </Nav.Link>
           </Nav>
 
-          <div className={`${stackClass} ms-md-auto`}> 
+          <div className={`${stackClass} ms-md-auto`}>
             {isAuthed ? (
-              <>
-                <div className={stackClass}>
-                  <Button as={Link} to="/profile" size="sm" variant="outline-primary">
-                    Профиль
-                  </Button>
+              <div className="d-flex flex-column flex-md-row align-items-md-center gap-2 w-100 justify-content-md-end">
+                <div className="d-flex align-items-center gap-2 justify-content-md-end">
+                  <Badge bg="secondary" className="fs-6">
+                    {fmtCurrency(balance, currency)}
+                  </Badge>
                   {(isAdmin || canAccessAdminPanel?.()) && (
                     <Button as={Link} to="/admin" size="sm" variant="danger">
                       Админ
                     </Button>
                   )}
-                  <Button
-                    size="sm"
-                    variant="outline-secondary"
-                    className="d-flex align-items-center justify-content-center p-1"
-                    onClick={logout}
-                    aria-label="Выйти"
-                    title="Выйти"
-                    style={{ width: 36, height: 36 }}
+                  <Dropdown
+                    align="end"
+                    show={isMenuOpen}
+                    onToggle={(nextOpen) => setIsMenuOpen(nextOpen)}
                   >
-                    <LogOut size={16} />
+                    <Dropdown.Toggle
+                      id="header-menu"
+                      variant="outline-secondary"
+                      size="sm"
+                      className="d-flex align-items-center gap-2"
+                    >
+                      <MenuIcon size={16} />
+                      Меню
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className="p-2" align="end">
+                      <div className="d-flex flex-column gap-2" style={{ minWidth: '12rem' }}>
+                        <Button
+                          as={Link}
+                          to="/profile"
+                          size="sm"
+                          variant="outline-primary"
+                          className="w-100"
+                          onClick={closeMenu}
+                        >
+                          Профиль
+                        </Button>
+                        <Button
+                          as={Link}
+                          to="/profile/terminal"
+                          size="sm"
+                          variant="primary"
+                          className="w-100"
+                          onClick={closeMenu}
+                        >
+                          Пополнить
+                        </Button>
+                        <ThemeToggleButton withLabel className="w-100" onAfterToggle={closeMenu} />
+                        <Button
+                          size="sm"
+                          variant="outline-danger"
+                          className="w-100 d-flex align-items-center justify-content-between"
+                          onClick={() => {
+                            closeMenu();
+                            logout();
+                          }}
+                        >
+                          <span>Выйти</span>
+                          <LogOut size={16} />
+                        </Button>
+                      </div>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className={stackClass}>
+                  <Button as={Link} to="/login" size="sm" variant="outline-primary">
+                    Вход
+                  </Button>
+                  <Button as={Link} to="/register" size="sm" variant="warning">
+                    Регистрация
                   </Button>
                 </div>
-
-                <div className={stackClass}>
-                  <Button as={Link} to="/profile/terminal" size="sm" variant="primary">
-                    Пополнить
-                  </Button>
-                  <Badge bg="secondary" className="fs-6">
-                    {fmtCurrency(balance, currency)}
-                  </Badge>
+                <div className="d-flex justify-content-md-end">
+                  <ThemeToggleButton />
                 </div>
               </>
-            ) : (
-              <div className={stackClass}>
-                <Button as={Link} to="/login" size="sm" variant="outline-primary">
-                  Вход
-                </Button>
-                <Button as={Link} to="/register" size="sm" variant="warning">
-                  Регистрация
-                </Button>
-              </div>
             )}
 
-            <div className="d-flex justify-content-md-end">
-              <ThemeToggle />
-            </div>
           </div>
         </Navbar.Collapse>
       </Container>
