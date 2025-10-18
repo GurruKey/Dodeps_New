@@ -18,7 +18,7 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: {
         ecmaVersion: 2024,
-        ecmaFeatures: { jsx: true },
+        ecmaFeatures: { jsx: true, importAttributes: true },
         sourceType: 'module',
       },
     },
@@ -33,6 +33,7 @@ export default defineConfig([
       globals: globals.node,
       parserOptions: {
         ecmaVersion: 2024,
+        ecmaFeatures: { importAttributes: true },
         sourceType: 'module',
       },
     },
