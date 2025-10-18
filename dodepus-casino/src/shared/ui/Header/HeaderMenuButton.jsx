@@ -29,7 +29,7 @@ export default function HeaderMenuButton({ balanceLabel, onLogout }) {
         show={isOpen}
         onHide={closeMenu}
         aria-labelledby="header-menu"
-        style={{ '--bs-offcanvas-width': '180px' }}
+        style={{ '--bs-offcanvas-width': '240px' }}
       >
         <Offcanvas.Header
           closeButton
