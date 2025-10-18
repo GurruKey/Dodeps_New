@@ -1,1 +1,1 @@
-export { default as AdminLogPage } from './log-admin/index.js';
+export { default as AdminLogPage } from './log/index.js';

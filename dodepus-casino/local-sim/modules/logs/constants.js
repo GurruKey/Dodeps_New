@@ -16,7 +16,7 @@ export const ADMIN_LOG_SECTIONS = Object.freeze({
   MODERATORS_CHAT: 'moderators-chat',
   ADMINISTRATORS_CHAT: 'administrators-chat',
   STAFF_CHAT: 'staff-chat',
-  LOG_ADMIN: 'log-admin',
+  LOG_ADMIN: 'log',
 });
 
 export const ADMIN_LOG_SECTION_LABELS = Object.freeze({
@@ -32,7 +32,7 @@ export const ADMIN_LOG_SECTION_LABELS = Object.freeze({
   [ADMIN_LOG_SECTIONS.MODERATORS_CHAT]: 'Модератор Чат',
   [ADMIN_LOG_SECTIONS.ADMINISTRATORS_CHAT]: 'Админ Чат',
   [ADMIN_LOG_SECTIONS.STAFF_CHAT]: 'Стаф Чат',
-  [ADMIN_LOG_SECTIONS.LOG_ADMIN]: 'Log Admin',
+  [ADMIN_LOG_SECTIONS.LOG_ADMIN]: 'Лог',
 });
 
 export const ADMIN_LOG_SECTION_OPTIONS = freezeOptionList(Object.entries(ADMIN_LOG_SECTION_LABELS));
