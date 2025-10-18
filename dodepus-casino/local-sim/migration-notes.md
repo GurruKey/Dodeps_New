@@ -1,5 +1,10 @@
 # Migration Notes
 
+## 2025-10-18 — Auth sign-up default owner role
+- Регистрация через local-sim (`signUpEmailPassword`, `signUpPhonePassword`) создаёт запись `auth_users` с базовой ролью `owner`.
+- Поле `roles` для новых аккаунтов содержит `owner`, `admin`, `user`; флаг `isAdmin` сразу включён в `app_metadata` и `user_metadata`.
+- При миграциях нужно заложить дефолт для новых записей `auth_users`: `role = 'owner'`, `roles` содержит `{'owner','admin','user'}`, `user_metadata.isAdmin = true`.
+
 ## 2025-10-17 — Dataset validation & admin routes
 - Добавлен скрипт `local-sim/scripts/validateCanonicalDataset.js`, который валидирует referential integrity (`user_id`, `rank_level_id`,
   `thread_id`, `request_id`) между JSON-таблицами и проверяет уникальность `id`/`code` перед переносом в SQL.

@@ -1,8 +1,10 @@
+export type AuthRole = 'owner' | 'admin' | 'user' | (string & {});
+
 export interface AuthUserMetadata {
-  role?: string;
+  role?: AuthRole;
   roleId?: string;
   roleLevel?: number;
-  roles?: ReadonlyArray<string>;
+  roles?: ReadonlyArray<AuthRole>;
   isAdmin?: boolean;
   playerRankId?: string;
   playerRankTier?: number;
@@ -16,12 +18,12 @@ export interface AuthUserRow {
   phone: string;
   password: string;
   status: string;
-  role?: string;
+  role?: AuthRole;
   role_id?: string;
   roleId?: string;
   role_level?: number | null;
   roleLevel?: number | null;
-  roles?: string[];
+  roles?: AuthRole[];
   created_at: string | null;
   confirmed_at: string | null;
   email_confirmed_at: string | null;
@@ -33,7 +35,7 @@ export interface AuthUserRow {
 }
 
 export interface AuthUserRecord extends AuthUserRow {
-  roles: ReadonlyArray<string>;
+  roles: ReadonlyArray<AuthRole>;
   app_metadata: Readonly<AuthUserMetadata>;
   user_metadata: Readonly<AuthUserMetadata>;
   raw: Readonly<Record<string, unknown>>;
