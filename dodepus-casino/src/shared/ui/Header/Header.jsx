@@ -103,11 +103,27 @@ export default function Header() {
                     <MenuIcon size={16} />
                     Меню
                   </Button>
-                  <Offcanvas placement="end" show={isMenuOpen} onHide={closeMenu} aria-labelledby="header-menu">
-                    <Offcanvas.Header closeButton closeVariant={theme === 'dark' ? 'white' : undefined}>
-                      <Offcanvas.Title>Меню</Offcanvas.Title>
+                  <Offcanvas
+                    placement="end"
+                    show={isMenuOpen}
+                    onHide={closeMenu}
+                    aria-labelledby="header-menu"
+                    style={{ '--bs-offcanvas-width': '155px' }}
+                  >
+                    <Offcanvas.Header
+                      closeButton
+                      closeVariant={theme === 'dark' ? 'white' : undefined}
+                      className="justify-content-center"
+                    >
+                      <Offcanvas.Title className="w-100 text-center">Меню</Offcanvas.Title>
                     </Offcanvas.Header>
-                    <Offcanvas.Body className="d-flex flex-column gap-2">
+                    <Offcanvas.Body className="d-flex flex-column align-items-center gap-3 text-center h-100 pt-2">
+                      <div className="w-100 d-flex flex-column align-items-center">
+                        <span className="text-uppercase text-muted small">Баланс</span>
+                        <Badge bg="secondary" className="fs-6 mt-1 px-3 py-2">
+                          {fmtCurrency(balance, currency)}
+                        </Badge>
+                      </div>
                       <Button
                         as={Link}
                         to="/profile"
@@ -132,14 +148,14 @@ export default function Header() {
                       <Button
                         size="sm"
                         variant="outline-danger"
-                        className="w-100 d-flex align-items-center justify-content-between"
+                        className="w-100 d-flex align-items-center justify-content-center gap-2 mt-auto"
                         onClick={() => {
                           closeMenu();
                           logout();
                         }}
                       >
-                        <span>Выйти</span>
                         <LogOut size={16} />
+                        <span>Выйти</span>
                       </Button>
                     </Offcanvas.Body>
                   </Offcanvas>
