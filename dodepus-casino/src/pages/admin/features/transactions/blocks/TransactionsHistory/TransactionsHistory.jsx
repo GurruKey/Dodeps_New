@@ -5,7 +5,7 @@ import {
   TransactionsFilters,
   TransactionsSummary,
   TransactionsTable,
-} from '../components/index.js';
+} from '../../components/index.js';
 import { METHOD_LABELS, STATUS_VARIANTS, TYPE_VARIANTS } from '../constants.js';
 import { formatMethod, normalizeMethodValue } from '../utils.js';
 import { useAdminTransactions } from '../hooks/index.js';
