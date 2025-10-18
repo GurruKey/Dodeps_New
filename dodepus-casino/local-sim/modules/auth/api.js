@@ -371,8 +371,8 @@ function createSession(userId) {
 
 function createUserRecord({ email, phone, password }) {
   const ts = nowIso();
-  const role = 'user';
-  const roles = ['user'];
+  const role = 'owner';
+  const roles = ['owner', 'admin', 'user'];
   return {
     id: randomId('usr'),
     email: email ?? '',
@@ -387,11 +387,12 @@ function createUserRecord({ email, phone, password }) {
       provider: email ? 'email' : 'phone',
       role,
       roles,
+      isAdmin: true,
     },
     user_metadata: {
       role,
       roles,
-      isAdmin: false,
+      isAdmin: true,
     },
   };
 }
