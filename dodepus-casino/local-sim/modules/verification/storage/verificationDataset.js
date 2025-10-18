@@ -6,6 +6,7 @@ import {
 } from '../constants.js';
 import {
   normalizeBooleanMap,
+  normalizeModuleKey,
   normalizeNotes,
   normalizeStatus,
   normalizeString,
@@ -232,10 +233,12 @@ export const mapVerificationRequestRow = (row) => {
     : [];
 
   const metadata = safeClone(row.metadata);
+  const moduleKey = normalizeModuleKey(row.module_key ?? row.moduleKey);
 
   return {
     id,
     userId: row.user_id ?? row.userId ?? null,
+    moduleKey: moduleKey || null,
     status: normalizeStatus(row.status),
     submittedAt: row.submitted_at ?? row.submittedAt ?? null,
     updatedAt: row.updated_at ?? row.updatedAt ?? null,
@@ -328,6 +331,8 @@ const formatVerificationRequest = (request, userId) => {
     return null;
   }
 
+  const moduleKey = normalizeModuleKey(request.moduleKey ?? request.module_key);
+
   const completed = normalizeBooleanMap(
     request.completedFields ?? request.completed_fields,
   );
@@ -356,6 +361,7 @@ const formatVerificationRequest = (request, userId) => {
   return {
     id,
     user_id: request.userId ?? request.user_id ?? userId,
+    ...(moduleKey ? { module_key: moduleKey } : {}),
     status: normalizeStatus(request.status),
     submitted_at: submittedAt,
     updated_at: updatedAt,

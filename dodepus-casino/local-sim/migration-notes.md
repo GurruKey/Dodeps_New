@@ -146,7 +146,7 @@
 
 ## 2025-10-16 — Verification tables
 - **verification_requests**
-  - Columns: `id text PK`, `user_id text not null`, `status text not null`, `submitted_at timestamptz`,
+  - Columns: `id text PK`, `user_id text not null`, `module_key text`, `status text not null`, `submitted_at timestamptz`,
     `updated_at timestamptz`, `reviewed_at timestamptz`, `reviewer_id text`, `reviewer_name text`,
     `reviewer_role text`, `notes text`, `completed_fields jsonb not null`, `requested_fields jsonb not null`,
     `cleared_fields jsonb not null`, `history jsonb`, `metadata jsonb`
@@ -167,6 +167,7 @@
 
 - **Parity заметки (verification):**
 - JSONы `verification_requests.json`, `verification_uploads.json`, `verification_queue.json` содержат актуальные заявки и загрузки для предустановленных аккаунтов (owner/ops/vip/support) и выступают каноничными записями local-sim.
+- Поле `module_key` в `verification_requests` фиксирует модуль проверки (`email`, `phone`, `address`, `doc`) и теперь заполняется для каждой записи; один запрос = один модуль.
 - Storage helper `modules/verification/storage/verificationDataset` мапит таблицы `verification_requests`, `verification_uploads`, `verification_queue` в canonical структуры, строит snapshot с индексами `byId`/`byRequestId`/`byUserId` и используется `profileExtras` и админ-модулями.
 - `profileExtras` мапит snake_case данные в camelCase для фронта и обратно при сохранении через storage-хелпер.
 - Очередь (`modules/verification/queue`) читает snapshot storage-хелпера, форматирует `submitted_at` для UI и переиспользует canonical данные.

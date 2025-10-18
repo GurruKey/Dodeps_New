@@ -7,6 +7,14 @@ export const VERIFICATION_MODULES = Object.freeze([
   { key: 'doc', label: 'Документы' },
 ]);
 
+const normalizeModuleKey = (value) => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+  const trimmed = value.trim().toLowerCase();
+  return MODULE_KEYS.includes(trimmed) ? trimmed : '';
+};
+
 export const VERIFICATION_STATUS_LABELS = Object.freeze({
   idle: 'Нет запроса',
   pending: 'На проверке',
@@ -149,6 +157,14 @@ const collectRecordsFromRequest = (request) => {
     request.updatedAt || request.reviewedAt || request.submittedAt,
   );
   const baseNotes = typeof request.notes === 'string' ? request.notes : '';
+  const moduleOverride = normalizeModuleKey(request.moduleKey || request.module_key);
+
+  const matchesModuleOverride = (key) => {
+    if (!moduleOverride) {
+      return true;
+    }
+    return key === moduleOverride;
+  };
 
   const pushRecord = ({
     key,
@@ -192,6 +208,9 @@ const collectRecordsFromRequest = (request) => {
   const clearedFields = normalizeBooleanMap(request.clearedFields);
 
   MODULE_KEYS.forEach((key) => {
+    if (!matchesModuleOverride(key)) {
+      return;
+    }
     pushRecord({
       key,
       status: baseStatus,
@@ -222,6 +241,9 @@ const collectRecordsFromRequest = (request) => {
       const entryCleared = normalizeBooleanMap(entry.clearedFields);
 
       MODULE_KEYS.forEach((key) => {
+        if (!matchesModuleOverride(key)) {
+          return;
+        }
         pushRecord({
           key,
           status: entryStatus,

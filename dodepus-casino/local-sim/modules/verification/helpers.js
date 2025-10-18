@@ -7,6 +7,8 @@ const VALID_STATUSES = Object.freeze([
   'cancelled',
 ]);
 
+const MODULE_KEYS = Object.freeze(['email', 'phone', 'address', 'doc']);
+
 export const normalizeString = (value, fallback = '') => {
   if (typeof value !== 'string') return fallback;
   const trimmed = value.trim();
@@ -46,12 +48,32 @@ export const normalizeStatus = (value) => {
 export const normalizeBooleanMap = (fields = {}) => {
   const result = {};
   if (!fields || typeof fields !== 'object') {
-    return { email: false, phone: false, address: false, doc: false };
+    return MODULE_KEYS.reduce((acc, key) => {
+      acc[key] = false;
+      return acc;
+    }, {});
   }
-  ['email', 'phone', 'address', 'doc'].forEach((key) => {
+  MODULE_KEYS.forEach((key) => {
     result[key] = Boolean(fields[key]);
   });
   return result;
+};
+
+export const normalizeModuleKey = (value) => {
+  const normalized = normalizeString(value).toLowerCase();
+  if (!normalized) {
+    return '';
+  }
+
+  if (MODULE_KEYS.includes(normalized)) {
+    return normalized;
+  }
+
+  if (normalized === 'document' || normalized === 'documents') {
+    return 'doc';
+  }
+
+  return '';
 };
 
 export const mergeFieldStates = (current = {}, patch = {}) => {
