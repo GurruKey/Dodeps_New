@@ -8,7 +8,6 @@ import {
   PhoneBlock,
   EmailBlock,
   AddressBlock,
-  AuthenticatorBlock,
   SavePersonalBlock,
 } from './blocks';
 
@@ -23,7 +22,6 @@ export default function Personal() {
       <PhoneBlock />
       <EmailBlock />
       <AddressBlock />
-      <AuthenticatorBlock />
       <SavePersonalBlock />
     </ProfileBlocksLayout>
   );

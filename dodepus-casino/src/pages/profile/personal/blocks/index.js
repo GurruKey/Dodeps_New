@@ -1,6 +1,5 @@
 export { default as AccountIdBlock } from './AccountIdBlock';
 export { default as AddressBlock } from './AddressBlock';
-export { default as AuthenticatorBlock } from './AuthenticatorBlock';
 export { default as EmailBlock } from './EmailBlock';
 export { default as GenderDobBlock } from './GenderDobBlock';
 export { default as NameBlock } from './NameBlock';
