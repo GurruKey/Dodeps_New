@@ -7,7 +7,6 @@ import { useAuth, useTheme } from '@/app/providers';
 function ThemeToggleButton({ withLabel = false, onAfterToggle, className = '' }) {
   const { theme, toggle } = useTheme();
   const Icon = theme === 'dark' ? Moon : Sun;
-  const label = theme === 'dark' ? 'Ночь' : 'День';
 
   const handleClick = () => {
     toggle();
@@ -33,7 +32,7 @@ function ThemeToggleButton({ withLabel = false, onAfterToggle, className = '' })
       {withLabel ? (
         <span className="d-flex align-items-center justify-content-center gap-2 w-100 text-center">
           <Icon size={16} />
-          <span>Тема: {label}</span>
+          <span>Тема</span>
         </span>
       ) : (
         <Icon size={16} />
@@ -108,7 +107,7 @@ export default function Header() {
                     show={isMenuOpen}
                     onHide={closeMenu}
                     aria-labelledby="header-menu"
-                    style={{ '--bs-offcanvas-width': '155px' }}
+                    style={{ '--bs-offcanvas-width': '180px' }}
                   >
                     <Offcanvas.Header
                       closeButton
@@ -119,8 +118,7 @@ export default function Header() {
                     </Offcanvas.Header>
                     <Offcanvas.Body className="d-flex flex-column align-items-center gap-3 text-center h-100 pt-2">
                       <div className="w-100 d-flex flex-column align-items-center">
-                        <span className="text-uppercase text-muted small">Баланс</span>
-                        <Badge bg="secondary" className="fs-6 mt-1 px-3 py-2">
+                        <Badge bg="secondary" className="fs-6 px-3 py-2">
                           {fmtCurrency(balance, currency)}
                         </Badge>
                       </div>
