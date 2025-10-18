@@ -1,8 +1,5 @@
-import {
-  AUTH_USERS_TABLE,
-  DEFAULT_AUTH_STATUS,
-  PROFILES_TABLE,
-} from '../auth/constants.js';
+import { AUTH_USERS_TABLE, PROFILES_TABLE } from '../auth/constants.js';
+import { DEFAULT_AUTH_STATUS } from '../auth/statuses.js';
 
 export { AUTH_USERS_TABLE, PROFILES_TABLE };
 
