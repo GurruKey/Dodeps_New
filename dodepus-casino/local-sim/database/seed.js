@@ -1,4 +1,3 @@
-import { createRequire } from 'node:module';
 import {
   AUTH_USERS_TABLE,
   PRESET_ACCOUNTS,
@@ -29,22 +28,78 @@ import {
 import { getLocalDatabase, resetLocalDatabase } from './engine.js';
 import { DEFAULT_LOCAL_DB_SCHEMA } from './schema.js';
 
-const require = createRequire(import.meta.url);
+const isNodeRuntime = typeof process !== 'undefined' && Boolean(process.versions?.node);
 
-const adminLogsDataset = require('../db/admin_logs.json');
-const adminPermissionsDataset = require('../db/admin_permissions.json');
-const adminPromocodesDataset = require('../db/admin_promocodes.json');
-const adminRolePermissionsDataset = require('../db/admin_role_permissions.json');
-const adminRolesDataset = require('../db/admin_roles.json');
-const communicationMessages = require('../db/communication_messages.json');
-const communicationThreadParticipants = require('../db/communication_thread_participants.json');
-const communicationThreads = require('../db/communication_threads.json');
-const profileTransactionsDataset = require('../db/profile_transactions.json');
-const rankLevelsDataset = require('../db/rank_levels.json');
-const rankRewardsDataset = require('../db/rank_rewards.json');
-const verificationQueueDataset = require('../db/verification_queue.json');
-const verificationRequestsDataset = require('../db/verification_requests.json');
-const verificationUploadsDataset = require('../db/verification_uploads.json');
+const browserJsonLoaders = {
+  '../db/admin_logs.json': () => import('../db/admin_logs.json?raw'),
+  '../db/admin_permissions.json': () => import('../db/admin_permissions.json?raw'),
+  '../db/admin_promocodes.json': () => import('../db/admin_promocodes.json?raw'),
+  '../db/admin_role_permissions.json': () => import('../db/admin_role_permissions.json?raw'),
+  '../db/admin_roles.json': () => import('../db/admin_roles.json?raw'),
+  '../db/communication_messages.json': () => import('../db/communication_messages.json?raw'),
+  '../db/communication_thread_participants.json': () =>
+    import('../db/communication_thread_participants.json?raw'),
+  '../db/communication_threads.json': () => import('../db/communication_threads.json?raw'),
+  '../db/profile_transactions.json': () => import('../db/profile_transactions.json?raw'),
+  '../db/rank_levels.json': () => import('../db/rank_levels.json?raw'),
+  '../db/rank_rewards.json': () => import('../db/rank_rewards.json?raw'),
+  '../db/verification_queue.json': () => import('../db/verification_queue.json?raw'),
+  '../db/verification_requests.json': () => import('../db/verification_requests.json?raw'),
+  '../db/verification_uploads.json': () => import('../db/verification_uploads.json?raw'),
+};
+
+let nodeRequire;
+
+const loadJsonDataset = async (relativePath) => {
+  if (isNodeRuntime) {
+    if (!nodeRequire) {
+      const { createRequire } = await import('node:module');
+      nodeRequire = createRequire(import.meta.url);
+    }
+
+    return nodeRequire(relativePath);
+  }
+
+  const loader = browserJsonLoaders[relativePath];
+  if (!loader) {
+    throw new Error(`Unsupported dataset: ${relativePath}`);
+  }
+
+  const { default: rawJson } = await loader();
+  return JSON.parse(rawJson);
+};
+
+const [
+  adminLogsDataset,
+  adminPermissionsDataset,
+  adminPromocodesDataset,
+  adminRolePermissionsDataset,
+  adminRolesDataset,
+  communicationMessages,
+  communicationThreadParticipants,
+  communicationThreads,
+  profileTransactionsDataset,
+  rankLevelsDataset,
+  rankRewardsDataset,
+  verificationQueueDataset,
+  verificationRequestsDataset,
+  verificationUploadsDataset,
+] = await Promise.all([
+  loadJsonDataset('../db/admin_logs.json'),
+  loadJsonDataset('../db/admin_permissions.json'),
+  loadJsonDataset('../db/admin_promocodes.json'),
+  loadJsonDataset('../db/admin_role_permissions.json'),
+  loadJsonDataset('../db/admin_roles.json'),
+  loadJsonDataset('../db/communication_messages.json'),
+  loadJsonDataset('../db/communication_thread_participants.json'),
+  loadJsonDataset('../db/communication_threads.json'),
+  loadJsonDataset('../db/profile_transactions.json'),
+  loadJsonDataset('../db/rank_levels.json'),
+  loadJsonDataset('../db/rank_rewards.json'),
+  loadJsonDataset('../db/verification_queue.json'),
+  loadJsonDataset('../db/verification_requests.json'),
+  loadJsonDataset('../db/verification_uploads.json'),
+]);
 
 const clone = (value) => {
   try {
