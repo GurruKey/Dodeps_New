@@ -178,17 +178,7 @@
 #### Response 200
 ```json
 {
-  "data": [
-    {
-      "id": "admin_log_seed_0001",
-      "adminId": "admin-0001",
-      "adminName": "Алина Грин",
-      "role": "superadmin",
-      "section": "overview",
-      "action": "Просмотрела сводку показателей",
-      "createdAt": "2025-10-15T06:45:00.000Z"
-    }
-  ]
+  "data": []
 }
 ```
 
