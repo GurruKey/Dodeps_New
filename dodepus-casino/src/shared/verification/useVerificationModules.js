@@ -5,14 +5,14 @@ import {
 } from './modules.js';
 
 export function useVerificationModules(user) {
-  const requests = Array.isArray(user?.verificationRequests)
-    ? user.verificationRequests
-    : [];
-  const emailVerified = Boolean(user?.emailVerified);
-
   return useMemo(() => {
+    const requests = Array.isArray(user?.verificationRequests)
+      ? user.verificationRequests
+      : [];
+    const emailVerified = Boolean(user?.emailVerified);
+
     const modules = deriveModuleStatesFromRequests(requests, { emailVerified });
     const summary = summarizeModuleStates(modules);
     return { modules, summary };
-  }, [requests, emailVerified]);
+  }, [user?.verificationRequests, user?.emailVerified]);
 }

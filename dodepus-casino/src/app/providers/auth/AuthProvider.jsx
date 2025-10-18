@@ -5,7 +5,7 @@ import {
   createAuthActions,
   createUserProfileActions,
   useAuthState,
-} from '../../auth/index.js';
+} from '@/app/auth';
 
 const AuthCtx = createContext(null);
 

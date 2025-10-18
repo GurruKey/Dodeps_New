@@ -1,51 +1,90 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, Form } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/providers';
-
-const options = [
-  { value: 'employed',   label: 'Трудоустроен(а)' },
-  { value: 'retired',    label: 'Пенсионер(ка)' },
-  { value: 'student',    label: 'Студент(ка)' },
-  { value: 'unemployed', label: 'Безработный(ая)' },
-];
+import { useAuth } from '@/app/providers';
+import {
+  useVerificationModules,
+  computeModuleLocks,
+} from '@/shared/verification';
 
 export default function SocialStatusBlock() {
   const { user, updateProfile } = useAuth();
-  const [value, setValue] = useState(user?.socialStatus ?? 'employed');
+  const verification = useVerificationModules(user);
+  const locks = useMemo(
+    () => computeModuleLocks(verification?.modules ?? {}),
+    [verification?.modules],
+  );
+  const socialLocked = locks.doc;
 
-  useEffect(() => setValue(user?.socialStatus ?? 'employed'), [user?.socialStatus]);
+  const [status, setStatus] = useState(user?.socialStatus ?? '');
+  const [occupation, setOccupation] = useState(user?.occupation ?? '');
 
-  const changed = value !== (user?.socialStatus ?? 'employed');
+  useEffect(() => setStatus(user?.socialStatus ?? ''), [user?.socialStatus]);
+  useEffect(() => setOccupation(user?.occupation ?? ''), [user?.occupation]);
 
-  // dirty-индикатор
+  const changed =
+    !socialLocked &&
+    (status !== (user?.socialStatus ?? '') || occupation !== (user?.occupation ?? ''));
+
   useEffect(() => {
     const id = 'block:social';
-    window.dispatchEvent(new CustomEvent('personal:dirty', { detail: { id, dirty: !!changed } }));
-    return () => window.dispatchEvent(new CustomEvent('personal:dirty', { detail: { id, dirty: false } }));
+    window.dispatchEvent(
+      new CustomEvent('personal:dirty', { detail: { id, dirty: Boolean(changed) } }),
+    );
+    return () =>
+      window.dispatchEvent(
+        new CustomEvent('personal:dirty', { detail: { id, dirty: false } }),
+      );
   }, [changed]);
 
-  // Save
   useEffect(() => {
     const onSave = () => {
-      if (!changed) return;
-      updateProfile({ socialStatus: value });
+      if (!changed || socialLocked) return;
+      updateProfile({
+        socialStatus: (status || '').trim(),
+        occupation: (occupation || '').trim(),
+      });
     };
     window.addEventListener('personal:save', onSave);
     return () => window.removeEventListener('personal:save', onSave);
-  }, [changed, value, updateProfile]);
+  }, [changed, occupation, status, updateProfile, socialLocked]);
 
   return (
     <Card>
       <Card.Body>
         <Card.Title className="mb-3">Социальный статус</Card.Title>
-        <Form onSubmit={(e) => e.preventDefault()}>
-          <Form.Label>Социальный статус</Form.Label>
-          <Form.Select value={value} onChange={(e) => setValue(e.target.value)}>
-            {options.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </Form.Select>
+        <Form onSubmit={(event) => event.preventDefault()}>
+          <Form.Group className="mb-3" controlId="profile-social-status">
+            <Form.Label>Статус</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Работаю"
+              value={status}
+              onChange={(event) => {
+                if (socialLocked) return;
+                setStatus(event.target.value);
+              }}
+              disabled={socialLocked}
+            />
+          </Form.Group>
+          <Form.Group controlId="profile-occupation">
+            <Form.Label>Профессия</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Разработчик"
+              value={occupation}
+              onChange={(event) => {
+                if (socialLocked) return;
+                setOccupation(event.target.value);
+              }}
+              disabled={socialLocked}
+            />
+          </Form.Group>
         </Form>
+        {socialLocked ? (
+          <div className="text-secondary small mt-3">
+            Изменение недоступно, пока документы на проверке или подтверждены.
+          </div>
+        ) : null}
       </Card.Body>
     </Card>
   );

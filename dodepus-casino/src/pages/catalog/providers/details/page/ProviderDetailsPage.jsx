@@ -1,7 +1,7 @@
 import { Alert, Button } from 'react-bootstrap';
 import { Link, useParams } from 'react-router-dom';
-import { ProviderGamesGrid } from '../../blocks';
-import { useProviderGames } from '../../hooks';
+import { ProviderGamesGrid } from '@/pages/catalog/providers/blocks';
+import { useProviderGames } from '@/pages/catalog/providers/hooks';
 
 export default function ProviderDetailsPage() {
   const { provider: providerSlug } = useParams();

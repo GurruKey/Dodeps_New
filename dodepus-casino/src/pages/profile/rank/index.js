@@ -1,1 +1,1 @@
-export { default } from './ProfileRank.jsx';
+export { default } from './page/ProfileRankPage.jsx';

@@ -1,1 +1,1 @@
-export { default } from './Wallet.jsx';
+export { default } from './page/ProfileWalletPage.jsx';

@@ -1,3 +1,5 @@
+import { createElement } from 'react';
+
 export function ProfileBlocksLayout({
   as: Component = 'div',
   gap = 3,
@@ -7,7 +9,7 @@ export function ProfileBlocksLayout({
   const gapClass = typeof gap === 'number' ? `gap-${gap}` : gap;
   const classes = ['d-grid', gapClass, className].filter(Boolean).join(' ');
 
-  return <Component className={classes}>{children}</Component>;
+  return createElement(Component, { className: classes }, children);
 }
 
 export default ProfileBlocksLayout;

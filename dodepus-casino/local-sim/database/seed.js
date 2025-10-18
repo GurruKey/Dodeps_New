@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import {
   AUTH_USERS_TABLE,
   PRESET_ACCOUNTS,
@@ -5,20 +6,6 @@ import {
   buildSeedUserRecords,
   pickExtras,
 } from '../modules/auth/index.js';
-import adminLogsDataset from '../db/admin_logs.json' assert { type: 'json' };
-import adminPermissionsDataset from '../db/admin_permissions.json' assert { type: 'json' };
-import adminPromocodesDataset from '../db/admin_promocodes.json' assert { type: 'json' };
-import adminRolePermissionsDataset from '../db/admin_role_permissions.json' assert { type: 'json' };
-import adminRolesDataset from '../db/admin_roles.json' assert { type: 'json' };
-import communicationMessages from '../db/communication_messages.json' assert { type: 'json' };
-import communicationThreadParticipants from '../db/communication_thread_participants.json' assert { type: 'json' };
-import communicationThreads from '../db/communication_threads.json' assert { type: 'json' };
-import profileTransactionsDataset from '../db/profile_transactions.json' assert { type: 'json' };
-import rankLevelsDataset from '../db/rank_levels.json' assert { type: 'json' };
-import rankRewardsDataset from '../db/rank_rewards.json' assert { type: 'json' };
-import verificationQueueDataset from '../db/verification_queue.json' assert { type: 'json' };
-import verificationRequestsDataset from '../db/verification_requests.json' assert { type: 'json' };
-import verificationUploadsDataset from '../db/verification_uploads.json' assert { type: 'json' };
 import { ADMIN_PROMOCODES_TABLE } from '../modules/promo/index.js';
 import {
   ADMIN_PERMISSIONS_TABLE,
@@ -41,6 +28,23 @@ import {
 } from '../modules/verification/index.js';
 import { getLocalDatabase, resetLocalDatabase } from './engine.js';
 import { DEFAULT_LOCAL_DB_SCHEMA } from './schema.js';
+
+const require = createRequire(import.meta.url);
+
+const adminLogsDataset = require('../db/admin_logs.json');
+const adminPermissionsDataset = require('../db/admin_permissions.json');
+const adminPromocodesDataset = require('../db/admin_promocodes.json');
+const adminRolePermissionsDataset = require('../db/admin_role_permissions.json');
+const adminRolesDataset = require('../db/admin_roles.json');
+const communicationMessages = require('../db/communication_messages.json');
+const communicationThreadParticipants = require('../db/communication_thread_participants.json');
+const communicationThreads = require('../db/communication_threads.json');
+const profileTransactionsDataset = require('../db/profile_transactions.json');
+const rankLevelsDataset = require('../db/rank_levels.json');
+const rankRewardsDataset = require('../db/rank_rewards.json');
+const verificationQueueDataset = require('../db/verification_queue.json');
+const verificationRequestsDataset = require('../db/verification_requests.json');
+const verificationUploadsDataset = require('../db/verification_uploads.json');
 
 const clone = (value) => {
   try {
@@ -189,7 +193,8 @@ const normalizeRankRewardRow = (row, index = 0, { byId, byLevel } = {}) => {
   const resolvedRankLevelId = normalizeText(row.rank_level_id ?? row.rankLevelId ?? '');
   const relatedLevelByLevel = byLevel && byLevel.get(resolvedLevel);
   const relatedLevelById = resolvedRankLevelId && byId ? byId.get(resolvedRankLevelId) : null;
-  const finalRankLevelId = resolvedRankLevelId || relatedLevelByLevel?.id || null;
+  const finalRankLevelId =
+    resolvedRankLevelId || relatedLevelByLevel?.id || relatedLevelById?.id || null;
   if (!finalRankLevelId) {
     return null;
   }

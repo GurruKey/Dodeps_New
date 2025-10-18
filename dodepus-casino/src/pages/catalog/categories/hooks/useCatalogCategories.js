@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { games, categories } from '@/data/games.js';
+import { games, categories } from '@/data';
 
 export function useCatalogCategories() {
   return useMemo(() => {

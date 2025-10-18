@@ -1,1 +1,1 @@
-export { default as TransactionsHistory } from './TransactionsHistory.jsx';
+export { default as TransactionsHistory } from './TransactionsHistory/index.js';

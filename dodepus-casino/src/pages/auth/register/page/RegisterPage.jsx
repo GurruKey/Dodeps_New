@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Card, Button, Alert } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../../../app/providers';
+import { useAuth } from '@/app/providers';
 
 // Формы регистрации берём из barrel `features/auth`
-import { EmailRegisterForm, PhoneRegisterForm } from '../../../../features/auth/index.js';
+import { EmailRegisterForm, PhoneRegisterForm } from '@/features/auth/index.js';
 
-export default function Register() {
+export default function RegisterPage() {
   const { isAuthed } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();

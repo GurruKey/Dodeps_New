@@ -1,5 +1,5 @@
 import { Badge, Card, ListGroup } from 'react-bootstrap';
-import { listAdminVerificationQueue } from '../../../../../../../../local-sim/modules/verification/index.js';
+import { listAdminVerificationQueue } from '@local-sim/modules/verification/index.js';
 
 const statusLabels = {
   idle: { label: 'Ожидает', variant: 'secondary' },

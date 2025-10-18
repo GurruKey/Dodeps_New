@@ -1,7 +1,7 @@
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { CatalogCategoriesSections } from '../blocks/index.js';
-import { useCatalogCategories } from '../hooks/index.js';
+import { CatalogCategoriesSections } from '@/pages/catalog/categories/blocks';
+import { useCatalogCategories } from '@/pages/catalog/categories/hooks';
 
 export default function CategoriesPage() {
   const categories = useCatalogCategories();

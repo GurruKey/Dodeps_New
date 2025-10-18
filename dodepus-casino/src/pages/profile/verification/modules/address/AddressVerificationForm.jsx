@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Form, Row, Col, Button, Alert } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/providers';
-import { useVerificationState } from '../../state/useVerificationState.js';
+import { useAuth } from '@/app/providers';
+import { useVerificationState } from '@/pages/profile/verification/state';
 import { VerificationFormLayout } from '../shared';
 
 export function AddressVerificationForm({ layout = 'card' }) {

@@ -1,7 +1,5 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-
-const ThemeCtx = createContext(null);
-export const useTheme = () => useContext(ThemeCtx);
+import { useEffect, useMemo, useState } from 'react';
+import { ThemeCtx } from './ThemeContext.js';
 
 const LS_KEY = 'dodepus_theme_v1';
 const VALID = new Set(['light', 'dark']);
@@ -14,7 +12,9 @@ export function ThemeProvider({ children }) {
     try {
       const saved = localStorage.getItem(LS_KEY);
       if (saved && VALID.has(saved)) setTheme(saved);
-    } catch {}
+    } catch (error) {
+      console.warn('ThemeProvider: unable to read theme from storage', error);
+    }
   }, []);
 
   // Применяем к документу и сохраняем
@@ -22,7 +22,9 @@ export function ThemeProvider({ children }) {
     document.documentElement.setAttribute('data-bs-theme', theme);
     try {
       localStorage.setItem(LS_KEY, theme);
-    } catch {}
+    } catch (error) {
+      console.warn('ThemeProvider: unable to persist theme', error);
+    }
   }, [theme]);
 
   const toggle = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));

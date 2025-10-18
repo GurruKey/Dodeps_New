@@ -1,5 +1,4 @@
-export { default as ActivationChart } from './ActivationChart.jsx';
-export { default as PromoCodesHeader } from './PromoCodesHeader.jsx';
-export { default as PromoCodesTable } from './PromoCodesTable.jsx';
-export { default as PromoDetailsPanel } from './PromoDetailsPanel.jsx';
-
+export { default as ActivationChart } from './ActivationChart/index.js';
+export { default as PromoCodesHeader } from './PromoCodesHeader/index.js';
+export { default as PromoCodesTable } from './PromoCodesTable/index.js';
+export { default as PromoDetailsPanel } from './PromoDetailsPanel/index.js';

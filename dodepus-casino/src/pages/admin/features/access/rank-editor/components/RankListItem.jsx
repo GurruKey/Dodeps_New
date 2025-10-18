@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Card, Col, Collapse, Form, Row, Stack } from 'react-bootstrap';
 import {
   BADGE_EFFECT_OPTIONS,
+  RankBadge,
   buildBadgePreview,
   getBadgeEffectMeta,
   normalizeBadgeEffect,
   normalizeBadgeSpeed,
   normalizeHexColor,
   resolveAutoTextColor,
-} from '../../../../../../shared/rank/badgeEffects.js';
-import RankBadge from '../../../../../../shared/rank/components/RankBadge.jsx';
+} from '@/shared/rank';
 
 const EFFECT_HINTS = {
   solid: 'Статичный фон без анимации — используйте один цвет.',

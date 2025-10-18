@@ -1,9 +1,9 @@
 import { Card, Form } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/providers';
+import { useAuth } from '@/app/providers';
 import {
   useVerificationModules,
   computeModuleLocks,
-} from '../../../../../shared/verification/index.js';
+} from '@/shared/verification';
 
 export default function EmailBlock() {
   const { user } = useAuth();

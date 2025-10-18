@@ -1,47 +1,64 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, Form } from 'react-bootstrap';
-import { useAuth } from '../../../../../app/providers';
+import { useAuth } from '@/app/providers';
+import { useVerificationModules, computeModuleLocks } from '@/shared/verification';
 
 export default function NicknameBlock() {
-  const { user, setNickname } = useAuth();
+  const { user, updateProfile } = useAuth();
+  const verification = useVerificationModules(user);
+  const locks = computeModuleLocks(verification?.modules ?? {});
+  const nicknameLocked = locks.nickname;
 
-  const initial = user?.nickname ?? user?.email ?? '';
-  const [value, setValue] = useState(initial);
+  const [nickname, setNickname] = useState(user?.nickname ?? '');
 
-  useEffect(() => setValue(user?.nickname ?? user?.email ?? ''), [user?.nickname, user?.email]);
+  useEffect(() => setNickname(user?.nickname ?? ''), [user?.nickname]);
 
-  const changed = value !== (user?.nickname ?? user?.email ?? '');
+  const changed = !nicknameLocked && nickname !== (user?.nickname ?? '');
 
-  // dirty-индикатор
   useEffect(() => {
     const id = 'block:nickname';
-    window.dispatchEvent(new CustomEvent('personal:dirty', { detail: { id, dirty: !!changed } }));
-    return () => window.dispatchEvent(new CustomEvent('personal:dirty', { detail: { id, dirty: false } }));
+    window.dispatchEvent(
+      new CustomEvent('personal:dirty', { detail: { id, dirty: Boolean(changed) } }),
+    );
+    return () =>
+      window.dispatchEvent(
+        new CustomEvent('personal:dirty', { detail: { id, dirty: false } }),
+      );
   }, [changed]);
 
-  // Save
   useEffect(() => {
     const onSave = () => {
-      if (!changed) return;
-      setNickname((value || '').trim());
+      if (!changed || nicknameLocked) return;
+      updateProfile({
+        nickname: (nickname || '').trim(),
+      });
     };
     window.addEventListener('personal:save', onSave);
     return () => window.removeEventListener('personal:save', onSave);
-  }, [changed, value, setNickname]);
+  }, [changed, nickname, updateProfile, nicknameLocked]);
 
   return (
     <Card>
       <Card.Body>
-        <Card.Title className="mb-2">Никнейм</Card.Title>
-        <Form onSubmit={(e) => e.preventDefault()}>
+        <Card.Title className="mb-3">Никнейм</Card.Title>
+        <Form.Group controlId="profile-nickname">
+          <Form.Label>Никнейм</Form.Label>
           <Form.Control
-            type="text" placeholder="Введите никнейм" value={value}
-            onChange={(e) => setValue(e.target.value)}
+            type="text"
+            placeholder="AcePlayer"
+            value={nickname}
+            onChange={(event) => {
+              if (nicknameLocked) return;
+              setNickname(event.target.value);
+            }}
+            disabled={nicknameLocked}
           />
-          <Form.Text className="text-muted">
-            По умолчанию — E-mail; если вход по номеру телефона, поле может быть пустым.
-          </Form.Text>
-        </Form>
+        </Form.Group>
+        {nicknameLocked ? (
+          <div className="text-secondary small mt-3">
+            Ник заблокирован: он используется в истории игр и публичном профиле.
+          </div>
+        ) : null}
       </Card.Body>
     </Card>
   );

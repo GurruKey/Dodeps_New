@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { Row, Col, Card, Badge, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import GameCover from '@/shared/ui/GameCover.jsx';
+import { GameCover } from '@/shared/ui';
 
 function DefaultMedia({ game }) {
   return (

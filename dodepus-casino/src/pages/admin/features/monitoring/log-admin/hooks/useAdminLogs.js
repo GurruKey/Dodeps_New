@@ -3,7 +3,7 @@ import {
   listAdminLogs,
   listAdminLogSections,
   listAdminLogRoleOptions,
-} from '../../../../../../../local-sim/modules/logs/index.js';
+} from '@local-sim/modules/logs/index.js';
 
 const normalizeLogs = (value) => {
   if (!Array.isArray(value)) {

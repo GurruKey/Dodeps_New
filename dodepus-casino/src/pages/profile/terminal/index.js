@@ -1,1 +1,1 @@
-export { default } from './Terminal.jsx';
+export { default } from './page/ProfileTerminalPage.jsx';

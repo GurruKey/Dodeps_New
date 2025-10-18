@@ -1,10 +1,10 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Row, Col, Form, Button, Stack } from 'react-bootstrap';
 import { useSearchParams } from 'react-router-dom';
-import { games, categories, providers } from '../../../data/games.js';
-import GameCard from '../../../shared/ui/GameCard.jsx';
+import { games, categories, providers } from '@/data';
+import { GameCard } from '@/shared/ui';
 
-export default function Lobby() {
+export default function LobbyPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const initialCat = searchParams.get('cat') || '';

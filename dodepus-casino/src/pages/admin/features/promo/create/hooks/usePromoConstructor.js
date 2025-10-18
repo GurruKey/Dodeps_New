@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   createAdminPromocode,
   promoTypeDefinitions,
-} from '../../../../../../../local-sim/modules/promo/index.js';
+} from '@local-sim/modules/promo/index.js';
 import {
   BALANCE_OPTIONS,
   DEFAULT_HIGHLIGHT_COLOR,

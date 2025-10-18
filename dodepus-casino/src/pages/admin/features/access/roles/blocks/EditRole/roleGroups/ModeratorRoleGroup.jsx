@@ -1,10 +1,14 @@
 import RoleGroupSection from './RoleGroupSection.jsx';
 
-export const metadata = {
+const metadata = {
   key: 'moderator',
   label: 'Модератор',
 };
 
-export default function ModeratorRoleGroup(props) {
+function ModeratorRoleGroup(props) {
   return <RoleGroupSection {...props} />;
 }
+
+ModeratorRoleGroup.metadata = metadata;
+
+export default ModeratorRoleGroup;

@@ -1,1 +1,1 @@
-export { default } from './RankEditor.jsx';
+export { default } from './page/AdminRankEditorPage.jsx';

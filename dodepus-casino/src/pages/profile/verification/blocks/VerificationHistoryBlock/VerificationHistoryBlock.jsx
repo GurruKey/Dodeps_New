@@ -1,5 +1,5 @@
 import { Card, Table } from 'react-bootstrap';
-import { useVerificationState } from '../../state/useVerificationState.js';
+import { useVerificationState } from '@/pages/profile/verification/state';
 
 const DOCUMENT_TYPE_LABELS = Object.freeze({
   internet_statement: 'Интернет-выписка',

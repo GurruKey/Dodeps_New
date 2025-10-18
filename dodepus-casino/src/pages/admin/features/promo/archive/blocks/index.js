@@ -1,1 +1,1 @@
-export { default as PromoArchiveHeader } from './PromoArchiveHeader.jsx';
+export { default as PromoArchiveHeader } from './PromoArchiveHeader/index.js';

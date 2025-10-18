@@ -1,7 +1,7 @@
 import { Container, Row, Col } from 'react-bootstrap';
 import { Outlet } from 'react-router-dom';
-import { useAuth } from '../../../app/providers';
-import { useVerificationModules } from '../../../shared/verification/index.js';
+import { useAuth } from '@/app/providers';
+import { useVerificationModules } from '@/shared/verification';
 import { useProfileRankSummary } from '../rank/hooks';
 import { ProfileSidebarBlock } from './blocks';
 

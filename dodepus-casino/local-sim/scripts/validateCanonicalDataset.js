@@ -1,21 +1,25 @@
 #!/usr/bin/env node
-import authUsers from '../db/auth_users.json' with { type: 'json' };
-import profiles from '../db/profiles.json' with { type: 'json' };
-import adminRoles from '../db/admin_roles.json' with { type: 'json' };
-import adminPermissions from '../db/admin_permissions.json' with { type: 'json' };
-import adminRolePermissions from '../db/admin_role_permissions.json' with { type: 'json' };
-import adminPromocodes from '../db/admin_promocodes.json' with { type: 'json' };
-import adminLogs from '../db/admin_logs.json' with { type: 'json' };
-import profileTransactions from '../db/profile_transactions.json' with { type: 'json' };
-import rankLevels from '../db/rank_levels.json' with { type: 'json' };
-import rankRewards from '../db/rank_rewards.json' with { type: 'json' };
-import verificationRequests from '../db/verification_requests.json' with { type: 'json' };
-import verificationUploads from '../db/verification_uploads.json' with { type: 'json' };
-import verificationQueue from '../db/verification_queue.json' with { type: 'json' };
-import communicationThreads from '../db/communication_threads.json' with { type: 'json' };
-import communicationThreadParticipants from '../db/communication_thread_participants.json' with { type: 'json' };
-import communicationMessages from '../db/communication_messages.json' with { type: 'json' };
+import { createRequire } from 'node:module';
 import { TABLES } from '../modules/shared/index.js';
+
+const require = createRequire(import.meta.url);
+
+const authUsers = require('../db/auth_users.json');
+const profiles = require('../db/profiles.json');
+const adminRoles = require('../db/admin_roles.json');
+const adminPermissions = require('../db/admin_permissions.json');
+const adminRolePermissions = require('../db/admin_role_permissions.json');
+const adminPromocodes = require('../db/admin_promocodes.json');
+const adminLogs = require('../db/admin_logs.json');
+const profileTransactions = require('../db/profile_transactions.json');
+const rankLevels = require('../db/rank_levels.json');
+const rankRewards = require('../db/rank_rewards.json');
+const verificationRequests = require('../db/verification_requests.json');
+const verificationUploads = require('../db/verification_uploads.json');
+const verificationQueue = require('../db/verification_queue.json');
+const communicationThreads = require('../db/communication_threads.json');
+const communicationThreadParticipants = require('../db/communication_thread_participants.json');
+const communicationMessages = require('../db/communication_messages.json');
 
 const errors = [];
 
@@ -105,7 +109,6 @@ const rolesDataset = registerDataset(adminRoles, TABLES.adminRoles);
 const permissionsDataset = registerDataset(adminPermissions, TABLES.adminPermissions);
 const rolePermissionsDataset = registerDataset(adminRolePermissions, TABLES.adminRolePermissions);
 const promocodeDataset = registerDataset(adminPromocodes, TABLES.adminPromocodes, 'code');
-const promoIdDataset = registerDataset(adminPromocodes, `${TABLES.adminPromocodes}_by_id`);
 const adminLogsDataset = registerDataset(adminLogs, TABLES.adminLogs);
 const transactionsDataset = registerDataset(profileTransactions, TABLES.profileTransactions);
 const rankLevelsDataset = registerDataset(rankLevels, TABLES.rankLevels);

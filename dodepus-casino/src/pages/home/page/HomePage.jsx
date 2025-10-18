@@ -1,8 +1,8 @@
 import { Row, Col, Badge } from 'react-bootstrap';
-import { games, categories } from '../../../data/games.js';
-import GameCard from '../../../shared/ui/GameCard.jsx';
+import { games, categories } from '@/data';
+import { GameCard } from '@/shared/ui';
 
-export default function Home() {
+export default function HomePage() {
   const top = games.slice(0, 6);
 
   return (

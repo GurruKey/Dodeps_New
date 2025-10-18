@@ -1,10 +1,9 @@
 import { Row, Col, Card, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import GameCanvas from '../GameCanvas.jsx';
-import GameSidebar from '../GameSidebar.jsx';
-import useGameData from '../useGameData.js';
+import { GameCanvas, GameSidebar } from '../blocks';
+import { useGameData } from '../shared';
 
-export default function Game() {
+export default function GamePage() {
   const { game, recs, providerSlug, gameSlug, notFound } = useGameData();
 
   if (notFound) {

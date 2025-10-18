@@ -1,1 +1,1 @@
-export { default } from './Season.jsx';
+export { default } from './page/ProfileSeasonPage.jsx';

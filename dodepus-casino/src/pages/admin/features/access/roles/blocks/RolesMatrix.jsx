@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Badge, Card, Table } from 'react-bootstrap';
-import { listRolePermissionMatrix, getRolePermissionLegend, } from '../../../../../../../local-sim/modules/access/index.js';
-import { ADMIN_PANEL_VISIBILITY_EVENT, loadAdminPanelVisibility, } from '../../../../../../../local-sim/modules/auth/index.js';
+import { listRolePermissionMatrix, getRolePermissionLegend, } from '@local-sim/modules/access/index.js';
+import { ADMIN_PANEL_VISIBILITY_EVENT, loadAdminPanelVisibility, } from '@local-sim/modules/auth/index.js';
 
 const roleMatrixLegend = getRolePermissionLegend();
 const rolePermissionMatrix = listRolePermissionMatrix();

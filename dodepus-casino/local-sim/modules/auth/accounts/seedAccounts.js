@@ -1,6 +1,10 @@
-import authUsersDataset from '../../../db/auth_users.json' assert { type: 'json' };
-import profilesDataset from '../../../db/profiles.json' assert { type: 'json' };
+import { createRequire } from 'node:module';
 import { enrichAccountsWithTransactions } from './transactionsSeed.js';
+
+const require = createRequire(import.meta.url);
+
+const authUsersDataset = require('../../../db/auth_users.json');
+const profilesDataset = require('../../../db/profiles.json');
 
 const ensureArray = (value) => (Array.isArray(value) ? value : []);
 

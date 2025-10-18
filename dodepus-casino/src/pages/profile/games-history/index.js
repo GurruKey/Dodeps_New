@@ -1,1 +1,1 @@
-export { default } from './GamesHistory.jsx';
+export { default } from './page/ProfileGamesHistoryPage.jsx';
