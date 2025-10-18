@@ -5,33 +5,12 @@
 ## Auth & Profiles
 
 ### GET /local-sim/admin/auth/users
-Возвращает список предустановленных админских аккаунтов с профилями.
+Возвращает список админских аккаунтов с профилями. По умолчанию данных нет.
 
 #### Response 200
 ```json
 {
-  "data": [
-    {
-      "id": "11111111-1111-4111-8111-111111111111",
-      "email": "owner@dodepus.dev",
-      "phone": "+380441112233",
-      "status": "active",
-      "roles": ["owner", "admin", "user"],
-      "roleLevel": 100,
-      "createdAt": "2024-01-05T09:15:00.000Z",
-      "profile": {
-        "nickname": "grinch-owner",
-        "firstName": "Олексій",
-        "lastName": "Гринчук",
-        "country": "UA",
-        "city": "Kyiv",
-        "balance": 12500.5,
-        "casinoBalance": 3200.0,
-        "currency": "UAH",
-        "updatedAt": "2024-10-14T08:30:00.000Z"
-      }
-    }
-  ]
+  "data": []
 }
 ```
 
@@ -41,9 +20,9 @@
 #### Request
 ```json
 {
-  "firstName": "Олексій",
-  "lastName": "Гринчук",
-  "departments": ["executive"],
+  "firstName": "Admin",
+  "lastName": "User",
+  "departments": ["operations"],
   "mfaEnabled": true
 }
 ```
@@ -124,67 +103,28 @@
 ## Transactions
 
 ### GET /local-sim/admin/transactions
-Возвращает транзакции профилей с join на email и никнейм.
+Возвращает транзакции профилей с join на email и никнейм. В стартовой поставке список пустой.
 
 #### Response 200
 ```json
 {
-  "data": [
-    {
-      "id": "11111111-1111-4111-8111-111111111111-txn-01",
-      "userId": "11111111-1111-4111-8111-111111111111",
-      "clientEmail": "owner@dodepus.dev",
-      "clientNickname": "grinch-owner",
-      "amount": 25000.0,
-      "currency": "UAH",
-      "type": "deposit",
-      "status": "success",
-      "createdAt": "2024-10-09T09:10:00.000Z"
-    }
-  ]
+  "data": []
 }
 ```
 
 ## Verification
 
 ### GET /local-sim/admin/verification/requests
-Возвращает заявки KYC, историю и загрузки в одном payload.
+Возвращает заявки KYC, историю и загрузки в одном payload. Базовая выборка пуста.
 
 #### Response 200
 ```json
 {
-  "data": [
-    {
-      "id": "vr-ops-001",
-      "userId": "22222222-2222-4222-8222-222222222222",
-      "status": "in_review",
-      "submittedAt": "2024-10-11T08:00:00.000Z",
-      "reviewerId": "11111111-1111-4111-8111-111111111111",
-      "history": [
-        {
-          "id": "vr-ops-001-h1",
-          "action": "documents_received",
-          "createdAt": "2024-10-11T08:05:00.000Z"
-        }
-      ],
-      "uploads": [
-        {
-          "id": "vu-ops-001",
-          "fileName": "ops_passport.pdf",
-          "status": "approved",
-          "uploadedAt": "2024-10-11T08:05:00.000Z"
-        }
-      ],
-      "queue": {
-        "id": "vq-ops-001",
-        "documentType": "passport",
-        "status": "processing",
-        "priority": "high"
-      }
-    }
-  ]
+  "data": []
 }
 ```
+
+`moduleKey` показывает, к какому модулю проверки относится заявка (`email`, `phone`, `address`, `doc`).
 
 ### POST /local-sim/admin/verification/requests/:id/decision
 Фиксирует решение ревьюера и переносит запись из очереди.
@@ -193,7 +133,7 @@
 ```json
 {
   "status": "approved",
-  "reviewerId": "11111111-1111-4111-8111-111111111111",
+  "reviewerId": "<uuid>",
   "notes": "Всё в порядке"
 }
 ```

@@ -6,6 +6,7 @@ import {
   normalizeBooleanMap,
   normalizeStatus,
   normalizeString,
+  normalizeModuleKey,
 } from '../verification/index.js';
 
 const toNumber = (value, fallback = 0) => {
@@ -35,6 +36,196 @@ const persistExtras = (uid, computeNext) => {
   const next = pickExtras(computeNext(current));
   saveExtras(uid, next);
   return next;
+};
+
+const VERIFICATION_MODULE_KEYS = Object.freeze(['email', 'phone', 'address', 'doc']);
+
+const buildModuleHistory = (historyInput, requestId, moduleKey) => {
+  if (!Array.isArray(historyInput)) {
+    return [];
+  }
+
+  const normalizedModuleKey = normalizeModuleKey(moduleKey);
+
+  return historyInput
+    .map((entry) => {
+      if (!entry || typeof entry !== 'object') {
+        return null;
+      }
+
+      const entryRequested = normalizeBooleanMap(
+        entry.requestedFields ?? entry.completedFields,
+      );
+      const entryCompleted = normalizeBooleanMap(entry.completedFields);
+      const entryCleared = normalizeBooleanMap(entry.clearedFields);
+
+      const fallbackModule = normalizeModuleKey(entry.moduleKey ?? entry.module_key);
+
+      const targetModule = normalizedModuleKey
+        ? normalizedModuleKey
+        : fallbackModule ||
+          VERIFICATION_MODULE_KEYS.find(
+            (key) => entryRequested[key] || entryCompleted[key] || entryCleared[key],
+          );
+
+      if (!targetModule) {
+        return null;
+      }
+
+      if (
+        normalizedModuleKey &&
+        !entryRequested[normalizedModuleKey] &&
+        !entryCompleted[normalizedModuleKey] &&
+        !entryCleared[normalizedModuleKey]
+      ) {
+        return null;
+      }
+
+      return {
+        ...entry,
+        requestId,
+        requestedFields: normalizeBooleanMap({
+          [targetModule]: entryRequested[targetModule],
+        }),
+        completedFields: normalizeBooleanMap({
+          [targetModule]: entryCompleted[targetModule],
+        }),
+        clearedFields: normalizeBooleanMap({
+          [targetModule]: entryCleared[targetModule],
+        }),
+        moduleKey: targetModule,
+      };
+    })
+    .filter(Boolean);
+};
+
+const deriveRequestIdForModule = (request, moduleKey, index, uid) => {
+  const normalizedModuleKey = normalizeModuleKey(moduleKey);
+  const baseId = normalizeString(request?.id) || normalizeString(request?.requestId);
+
+  if (baseId) {
+    if (!normalizedModuleKey) {
+      return index === 0 ? baseId : `${baseId}:${index}`;
+    }
+
+    return index === 0 ? baseId : `${baseId}:${normalizedModuleKey}`;
+  }
+
+  const timestamp =
+    Date.parse(
+      request?.submittedAt ||
+        request?.submitted_at ||
+        request?.updatedAt ||
+        request?.updated_at ||
+        '',
+    ) || Date.now();
+  const userSeed = normalizeString(request?.userId || request?.user_id || uid) || 'user';
+  const seed = `${userSeed}_${timestamp.toString(36)}`;
+
+  if (!normalizedModuleKey) {
+    return index === 0 ? seed : `${seed}:${index}`;
+  }
+
+  return `${seed}:${normalizedModuleKey}`;
+};
+
+const splitVerificationRequestsByModule = (queue, uid) => {
+  const normalizedQueue = [];
+  const source = Array.isArray(queue) ? queue : [];
+
+  source.forEach((request) => {
+    if (!request || typeof request !== 'object') {
+      return;
+    }
+
+    const requestedFields = normalizeBooleanMap(
+      request.requestedFields ?? request.completedFields,
+    );
+    const completedFields = normalizeBooleanMap(request.completedFields);
+    const clearedFields = normalizeBooleanMap(request.clearedFields);
+
+    const fallbackModuleKey = normalizeModuleKey(request.moduleKey ?? request.module_key);
+    const involvedModules = (() => {
+      if (fallbackModuleKey) {
+        return [fallbackModuleKey];
+      }
+      return VERIFICATION_MODULE_KEYS.filter(
+        (key) => requestedFields[key] || completedFields[key] || clearedFields[key],
+      );
+    })();
+
+    if (involvedModules.length === 0) {
+      normalizedQueue.push({
+        ...request,
+        requestedFields: normalizeBooleanMap(),
+        completedFields: normalizeBooleanMap(),
+        clearedFields: normalizeBooleanMap(),
+        moduleKey: '',
+        history: [],
+      });
+      return;
+    }
+
+    involvedModules.forEach((moduleKey, index) => {
+      const requestId = deriveRequestIdForModule(request, moduleKey, index, uid);
+      const moduleRequested = normalizeBooleanMap({
+        [moduleKey]: requestedFields[moduleKey],
+      });
+      const moduleCompleted = normalizeBooleanMap({
+        [moduleKey]: completedFields[moduleKey],
+      });
+      const moduleCleared = normalizeBooleanMap({
+        [moduleKey]: clearedFields[moduleKey],
+      });
+
+      normalizedQueue.push({
+        ...request,
+        id: requestId,
+        requestedFields: moduleRequested,
+        completedFields: moduleCompleted,
+        clearedFields: moduleCleared,
+        moduleKey,
+        history: buildModuleHistory(request.history, requestId, moduleKey),
+      });
+    });
+  });
+
+  return normalizedQueue;
+};
+
+const findPendingRequestIndex = (queue, moduleKey) => {
+  const normalizedModuleKey = normalizeModuleKey(moduleKey);
+
+  for (let index = 0; index < queue.length; index += 1) {
+    const request = queue[index];
+    if (!request) {
+      continue;
+    }
+
+    const status = normalizeStatus(request.status);
+    if (status !== 'pending') {
+      continue;
+    }
+
+    if (normalizedModuleKey) {
+      if (normalizeModuleKey(request.moduleKey) === normalizedModuleKey) {
+        return index;
+      }
+
+      const requested = normalizeBooleanMap(
+        request.requestedFields ?? request.completedFields,
+      );
+      if (requested[normalizedModuleKey]) {
+        return index;
+      }
+
+      continue;
+    }
+
+    return index;
+  }
+
+  return -1;
 };
 
 export const createProfileActions = (uid) => {
@@ -298,131 +489,9 @@ export const createProfileActions = (uid) => {
       const nowIso = new Date().toISOString();
       const sourceQueue = Array.isArray(requests) ? requests.slice() : [];
 
-      const buildModuleHistory = (history, requestId, moduleKey) => {
-        if (!Array.isArray(history)) {
-          return [];
-        }
+      const queue = splitVerificationRequestsByModule(sourceQueue, uid);
 
-        return history
-          .map((entry) => {
-            if (!entry || typeof entry !== 'object') {
-              return null;
-            }
-
-            const entryRequested = normalizeBooleanMap(
-              entry.requestedFields ?? entry.completedFields,
-            );
-            const entryCompleted = normalizeBooleanMap(entry.completedFields);
-            const entryCleared = normalizeBooleanMap(entry.clearedFields);
-
-            if (
-              !entryRequested[moduleKey] &&
-              !entryCompleted[moduleKey] &&
-              !entryCleared[moduleKey]
-            ) {
-              return null;
-            }
-
-            return {
-              ...entry,
-              requestId,
-              requestedFields: normalizeBooleanMap({ [moduleKey]: entryRequested[moduleKey] }),
-              completedFields: normalizeBooleanMap({ [moduleKey]: entryCompleted[moduleKey] }),
-              clearedFields: normalizeBooleanMap({ [moduleKey]: entryCleared[moduleKey] }),
-            };
-          })
-          .filter(Boolean);
-      };
-
-      const deriveRequestId = (request, moduleKey, index) => {
-        const baseId = normalizeString(request?.id) || normalizeString(request?.requestId);
-        if (baseId) {
-          return index === 0 ? baseId : `${baseId}:${moduleKey}`;
-        }
-
-        const timestamp =
-          Date.parse(request?.submittedAt || request?.updatedAt || '') || Date.now();
-        const seed = `${request?.userId || uid}_${timestamp.toString(36)}`;
-        return index === 0 ? seed : `${seed}:${moduleKey}`;
-      };
-
-      const splitRequestsByModule = (queue) => {
-        const normalizedQueue = [];
-
-        queue.forEach((request) => {
-          if (!request || typeof request !== 'object') {
-            return;
-          }
-
-          const requestedFields = normalizeBooleanMap(
-            request.requestedFields ?? request.completedFields,
-          );
-          const completedFields = normalizeBooleanMap(request.completedFields);
-          const clearedFields = normalizeBooleanMap(request.clearedFields);
-
-          const involvedModules = ['email', 'phone', 'address', 'doc'].filter(
-            (key) => requestedFields[key] || completedFields[key] || clearedFields[key],
-          );
-
-          if (involvedModules.length === 0) {
-            normalizedQueue.push({
-              ...request,
-              requestedFields: normalizeBooleanMap(),
-              completedFields: normalizeBooleanMap(),
-              clearedFields: normalizeBooleanMap(),
-              moduleKey: '',
-              history: [],
-            });
-            return;
-          }
-
-          involvedModules.forEach((moduleKey, index) => {
-            const requestId = deriveRequestId(request, moduleKey, index);
-            const moduleRequested = normalizeBooleanMap({
-              [moduleKey]: requestedFields[moduleKey],
-            });
-            const moduleCompleted = normalizeBooleanMap({
-              [moduleKey]: completedFields[moduleKey],
-            });
-            const moduleCleared = normalizeBooleanMap({
-              [moduleKey]: clearedFields[moduleKey],
-            });
-
-            normalizedQueue.push({
-              ...request,
-              id: requestId,
-              requestedFields: moduleRequested,
-              completedFields: moduleCompleted,
-              clearedFields: moduleCleared,
-              moduleKey,
-              history: buildModuleHistory(request.history, requestId, moduleKey),
-            });
-          });
-        });
-
-        return normalizedQueue;
-      };
-
-      const queue = splitRequestsByModule(sourceQueue);
-
-      const findPendingIndex = (moduleKey) =>
-        queue.findIndex((request) => {
-          if (!request) {
-            return false;
-          }
-
-          const status = normalizeStatus(request.status);
-          if (status !== 'pending') {
-            return false;
-          }
-
-          if (request.moduleKey === moduleKey) {
-            return true;
-          }
-
-          const requested = normalizeBooleanMap(request.requestedFields ?? request.completedFields);
-          return Boolean(requested[moduleKey]);
-        });
+      const findPendingIndex = (moduleKey) => findPendingRequestIndex(queue, moduleKey);
 
       requestedKeys.forEach((moduleKey) => {
         const requestedFields = normalizeBooleanMap({ [moduleKey]: true });
@@ -519,7 +588,8 @@ export const createProfileActions = (uid) => {
 
   const cancelVerificationRequest = (input = {}) => {
     const nextExtras = updateVerificationSnapshot(uid, ({ requests, extras }) => {
-      const queue = Array.isArray(requests) ? requests.slice() : [];
+      const sourceQueue = Array.isArray(requests) ? requests.slice() : [];
+      const queue = splitVerificationRequestsByModule(sourceQueue, uid);
       const normalizedSelection = normalizeBooleanMap(
         normalizeCancellationCandidates(input),
       );
@@ -544,7 +614,7 @@ export const createProfileActions = (uid) => {
             return i;
           }
 
-          const moduleKey = normalizeString(request.moduleKey);
+          const moduleKey = normalizeModuleKey(request.moduleKey);
           if (moduleKey && selectionKeys.includes(moduleKey)) {
             return i;
           }
@@ -621,7 +691,8 @@ export const createProfileActions = (uid) => {
         }
       });
 
-      const stillRequested = Object.values(nextRequested).some(Boolean);
+      const normalizedRequestedNext = normalizeBooleanMap(nextRequested);
+      const stillRequested = Object.values(normalizedRequestedNext).some(Boolean);
       const nowIso = new Date().toISOString();
       const clearedMap = {
         email: Boolean(cancelSelection.email),
@@ -637,6 +708,9 @@ export const createProfileActions = (uid) => {
         }
       });
 
+      const normalizedCompletedNext = normalizeBooleanMap(completedFieldsNormalized);
+      const normalizedClearedMap = normalizeBooleanMap(clearedMap);
+
       const nextHistoryEntry = {
         id: `vrh_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
         requestId: target.id,
@@ -644,9 +718,9 @@ export const createProfileActions = (uid) => {
         actor: 'client',
         notes: normalizeNotes(input.notes),
         updatedAt: nowIso,
-        requestedFields: nextRequested,
-        completedFields: completedFieldsNormalized,
-        clearedFields: clearedMap,
+        requestedFields: normalizedRequestedNext,
+        completedFields: normalizedCompletedNext,
+        clearedFields: normalizedClearedMap,
       };
 
       const nextHistory = [nextHistoryEntry, ...history];
@@ -656,15 +730,16 @@ export const createProfileActions = (uid) => {
       const nextRequest = {
         ...target,
         status: nextStatus,
-        requestedFields: nextRequested,
+        requestedFields: normalizedRequestedNext,
         updatedAt: nowIso,
         history: nextHistory,
         notes: normalizeNotes(input.notes) || target.notes || '',
+        moduleKey: normalizeModuleKey(target.moduleKey) || null,
         clearedFields: {
-          email: Boolean(target?.clearedFields?.email) || clearedMap.email,
-          phone: Boolean(target?.clearedFields?.phone) || clearedMap.phone,
-          address: Boolean(target?.clearedFields?.address) || clearedMap.address,
-          doc: Boolean(target?.clearedFields?.doc) || clearedMap.doc,
+          email: Boolean(target?.clearedFields?.email) || normalizedClearedMap.email,
+          phone: Boolean(target?.clearedFields?.phone) || normalizedClearedMap.phone,
+          address: Boolean(target?.clearedFields?.address) || normalizedClearedMap.address,
+          doc: Boolean(target?.clearedFields?.doc) || normalizedClearedMap.doc,
         },
       };
 

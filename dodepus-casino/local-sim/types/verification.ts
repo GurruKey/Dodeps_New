@@ -5,6 +5,8 @@ export interface VerificationFieldState {
   doc: boolean;
 }
 
+export type VerificationModuleKey = 'email' | 'phone' | 'address' | 'doc';
+
 export interface VerificationRequestHistoryRow {
   id: string;
   request_id: string;
@@ -22,6 +24,7 @@ export interface VerificationRequestHistoryRow {
 export interface VerificationRequestRow {
   id: string;
   user_id: string;
+  module_key?: VerificationModuleKey | null;
   status: string;
   submitted_at: string | null;
   updated_at: string | null;
@@ -97,6 +100,7 @@ export interface VerificationRequestHistoryEntry {
 export interface VerificationRequestRecord {
   id: string;
   userId: string | null;
+  moduleKey?: VerificationModuleKey | null;
   status: string;
   submittedAt: string | null;
   updatedAt: string | null;
