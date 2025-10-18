@@ -83,7 +83,7 @@ export default function AppRoutes() {
         <Route path="moderators-chat" element={<AdminModeratorsChatPage />} />
         <Route path="administrators-chat" element={<AdminAdministratorsChatPage />} />
         <Route path="staff-chat" element={<AdminStaffChatPage />} />
-        <Route path="log-admin" element={<AdminLogPage />} />
+        <Route path="log" element={<AdminLogPage />} />
       </Route>
 
       {/* Только для авторизованных */}

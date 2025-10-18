@@ -11,4 +11,4 @@ export { default as AdminRankEditorPage } from './access/rank-editor/index.js';
 export { default as AdminModeratorsChatPage } from './communications/moderators-chat/index.js';
 export { default as AdminAdministratorsChatPage } from './communications/administrators-chat/index.js';
 export { default as AdminStaffChatPage } from './communications/staff-chat/index.js';
-export { default as AdminLogPage } from './monitoring/log-admin/index.js';
+export { default as AdminLogPage } from './monitoring/log/index.js';

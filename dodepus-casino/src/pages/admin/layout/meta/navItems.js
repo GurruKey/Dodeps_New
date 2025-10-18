@@ -26,5 +26,5 @@ export const ADMIN_NAV_ITEMS = [
   { key: 'administrators-chat', to: 'administrators-chat', label: 'Админ Чат', permission: 'chat' },
   { key: 'staff-chat', to: 'staff-chat', label: 'Стаф Чат', permission: 'chat' },
   { key: 'divider-4', type: 'divider' },
-  { key: 'log-admin', to: 'log-admin', label: 'Log Admin', permission: 'adminPanel' },
+  { key: 'log', to: 'log', label: 'Лог', permission: 'adminPanel' },
 ];
