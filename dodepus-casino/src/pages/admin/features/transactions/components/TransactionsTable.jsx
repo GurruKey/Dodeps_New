@@ -1,7 +1,12 @@
 import { Badge, Spinner, Table } from 'react-bootstrap';
 
-import { STATUS_VARIANTS, TYPE_VARIANTS } from '../constants.js';
-import { formatAmount, formatDateTime, formatMethod } from '../utils.js';
+import {
+  STATUS_VARIANTS,
+  TYPE_VARIANTS,
+  formatAmount,
+  formatDateTime,
+  formatMethod,
+} from '../shared/index.js';
 
 export default function TransactionsTable({ transactions, filteredTransactions, loading }) {
   const renderRows = (rows) => {

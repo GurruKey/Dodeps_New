@@ -22,7 +22,7 @@ import {
   getAdminId,
   getAdminRole,
   getUserDisplayName,
-} from '../utils.js';
+} from '../shared/index.js';
 import {
   deriveModuleStatesFromRequests,
   summarizeModuleStates,

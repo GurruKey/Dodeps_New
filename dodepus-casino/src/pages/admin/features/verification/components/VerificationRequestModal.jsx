@@ -12,7 +12,7 @@ import {
   Alert,
 } from 'react-bootstrap';
 import { Eye } from 'lucide-react';
-import { FIELD_LABELS, formatDateTime, getStatusLabel } from '../utils.js';
+import { FIELD_LABELS, formatDateTime, getStatusLabel } from '../shared/index.js';
 
 const EMPTY_FIELDS = Object.freeze({ email: false, phone: false, address: false, doc: false });
 const FIELD_KEYS = Object.freeze(Object.keys(FIELD_LABELS));
