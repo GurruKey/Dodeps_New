@@ -1,6 +1,6 @@
 import { Col, Row } from 'react-bootstrap';
 
-import { formatCurrency } from '../utils.js';
+import { formatCurrency } from '../shared/index.js';
 
 export default function TransactionsSummary({ totals = [] }) {
   if (!totals.length) {

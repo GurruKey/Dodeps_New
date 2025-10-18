@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Form, ListGroup, Modal, Spinner } from 'react-bootstrap';
-import { formatDateTime } from '../utils.js';
+import { formatDateTime } from '../shared/index.js';
 
 const formatBalance = (value) => {
   const numeric = Number(value);

@@ -1,7 +1,11 @@
 import { Badge, Button, Card, Collapse, ListGroup, Spinner } from 'react-bootstrap';
 import { ChevronDown } from 'lucide-react';
 import { VerificationFieldBadges } from '../../components/index.js';
-import { formatDateTime, getInReviewVerificationVariant, getStatusLabel } from '../../utils.js';
+import {
+  formatDateTime,
+  getInReviewVerificationVariant,
+  getStatusLabel,
+} from '../../shared/index.js';
 
 export default function VerificationRequestsBlock({
   requests = [],
